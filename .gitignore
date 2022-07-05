@@ -17,3 +17,4 @@
 .idea
 .vscode
 
+/config.yaml

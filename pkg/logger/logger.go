@@ -5,32 +5,57 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/codfrm/gocat/pkg/logger/loki"
+	"github.com/codfrm/cago/config"
+	"github.com/codfrm/cago/pkg/logger/loki"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
-var Logger *zap.Logger
+func InitWithConfig(ctx context.Context, config *config.Config) (*zap.Logger, error) {
+	opts := make([]Option, 0)
+	cfg := &struct {
+		Level     string `json:"level" env:"LOGGER_LEVEL"`
+		Debug     bool   `json:"debug" env:"LOGGER_DEBUG"`
+		LokiLevel string `json:"loki_level" env:"LOGGER_LOKI_LEVEL"`
+		LokiUrl   string `json:"loki_url" env:"LOGGER_LOKI_URL"`
+	}{}
+	if err := config.Scan("logger", cfg); err != nil {
+		return nil, err
+	}
+	if cfg.Level != "" {
+		opts = append(opts, Level(cfg.Level))
+	}
+	if cfg.Debug {
+		opts = append(opts, Debug())
+	}
+	if cfg.LokiLevel != "" && cfg.LokiUrl != "" {
+		opts = append(opts, WithLoki(&LokiConfig{
+			Level: cfg.LokiLevel,
+			Url:   cfg.LokiUrl,
+		}))
+	}
+	return Init(ctx, opts...)
+}
 
-func InitLogger(ctx context.Context, opt ...Option) (*zap.Logger, error) {
+func Init(ctx context.Context, opt ...Option) (*zap.Logger, error) {
 	options := &Options{}
 	for _, o := range opt {
 		o(options)
 	}
-	core := make([]zapcore.Core, 1)
+	core := make([]zapcore.Core, 0, 1)
 	level := toLevel(options.level)
 	levelEnable := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
 		return lvl >= level
 	})
 	if options.debug {
 		core = append(core, zapcore.NewCore(
-			zapcore.NewConsoleEncoder(zapcore.EncoderConfig{}),
+			zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig()),
 			zapcore.AddSync(os.Stdout),
 			levelEnable,
 		))
 	} else {
 		core = append(core, zapcore.NewCore(
-			zapcore.NewJSONEncoder(zapcore.EncoderConfig{}),
+			zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig()),
 			zapcore.AddSync(os.Stdout),
 			levelEnable,
 		))
@@ -51,7 +76,6 @@ func InitLogger(ctx context.Context, opt ...Option) (*zap.Logger, error) {
 	}
 
 	logger := zap.New(zapcore.NewTee(core...))
-	Logger = logger
 	return logger, nil
 }
 
