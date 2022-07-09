@@ -11,8 +11,7 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-func InitWithConfig(ctx context.Context, config *config.Config) (*zap.Logger, error) {
-	opts := make([]Option, 0)
+func InitWithConfig(ctx context.Context, config *config.Config, opts ...Option) (*zap.Logger, error) {
 	cfg := &struct {
 		Level     string `yaml:"level" env:"LOGGER_LEVEL"`
 		Debug     bool   `yaml:"debug" env:"LOGGER_DEBUG"`

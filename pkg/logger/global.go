@@ -16,8 +16,12 @@ func Logger(ctx context.Context, config *config.Config) error {
 	if err != nil {
 		return err
 	}
-	logger = l
+	logger = l.With(zap.String("app", config.AppName))
 	return nil
+}
+
+func SetLogger(l *zap.Logger) {
+	logger = l
 }
 
 func Ctx(ctx cago.Context) *zap.Logger {

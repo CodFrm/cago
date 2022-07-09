@@ -29,9 +29,7 @@ func (h *http) Start(ctx context.Context, cfg *config.Config) error {
 }
 
 func (h *http) StartCancel(ctx context.Context, cancel context.CancelFunc, cfg *config.Config) error {
-	l := logger.Ctx(cago.Background()).With(
-		zap.String("app", cfg.AppName),
-	)
+	l := logger.Ctx(cago.Background())
 	mux := mux.New(l)
 	if err := h.callback(mux.Group()); err != nil {
 		return errors.New("failed to register http")
