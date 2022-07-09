@@ -76,6 +76,9 @@ func Init(ctx context.Context, opt ...Option) (*zap.Logger, error) {
 	}
 
 	logger := zap.New(zapcore.NewTee(core...))
+	if options.fields != nil {
+		logger = logger.With(options.fields...)
+	}
 	return logger, nil
 }
 

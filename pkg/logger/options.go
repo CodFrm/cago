@@ -1,11 +1,14 @@
 package logger
 
+import "go.uber.org/zap"
+
 type Option func(*Options)
 
 type Options struct {
-	level string
-	debug bool
-	loki  *LokiConfig
+	level  string
+	debug  bool
+	loki   *LokiConfig
+	fields []zap.Field
 }
 
 type LokiConfig struct {
@@ -28,5 +31,11 @@ func Level(level string) Option {
 func Debug() Option {
 	return func(options *Options) {
 		options.debug = true
+	}
+}
+
+func WithFields(fields ...zap.Field) Option {
+	return func(options *Options) {
+		options.fields = fields
 	}
 }
