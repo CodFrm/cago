@@ -32,6 +32,7 @@ func (e *lokiEncode) clone() *lokiEncode {
 	}
 	return &lokiEncode{
 		MapObjectEncoder: encode,
+		pool:             e.pool,
 	}
 }
 

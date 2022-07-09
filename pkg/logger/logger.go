@@ -14,10 +14,10 @@ import (
 func InitWithConfig(ctx context.Context, config *config.Config) (*zap.Logger, error) {
 	opts := make([]Option, 0)
 	cfg := &struct {
-		Level     string `json:"level" env:"LOGGER_LEVEL"`
-		Debug     bool   `json:"debug" env:"LOGGER_DEBUG"`
-		LokiLevel string `json:"loki_level" env:"LOGGER_LOKI_LEVEL"`
-		LokiUrl   string `json:"loki_url" env:"LOGGER_LOKI_URL"`
+		Level     string `yaml:"level" env:"LOGGER_LEVEL"`
+		Debug     bool   `yaml:"debug" env:"LOGGER_DEBUG"`
+		LokiLevel string `yaml:"lokiLevel" env:"LOGGER_LOKI_LEVEL"`
+		LokiUrl   string `yaml:"lokiUrl" env:"LOGGER_LOKI_URL"`
 	}{}
 	if err := config.Scan("logger", cfg); err != nil {
 		return nil, err

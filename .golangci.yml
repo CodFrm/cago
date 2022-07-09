@@ -1,0 +1,23 @@
+linters-settings:
+  golint:
+    min-confidence: 0
+  misspell:
+    locale: US
+linters:
+  # https://golangci-lint.run/usage/linters/
+  disable-all: true
+  enable:
+    - typecheck
+    - goimports
+    - misspell
+    - govet
+#    - golint
+    - ineffassign
+    - gosimple
+    - deadcode
+    - structcheck
+    - unused
+    - errcheck
+
+run:
+  timeout: 5m

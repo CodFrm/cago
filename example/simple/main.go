@@ -6,6 +6,7 @@ import (
 
 	"github.com/codfrm/cago"
 	"github.com/codfrm/cago/config"
+	"github.com/codfrm/cago/config/file"
 	"github.com/codfrm/cago/mux"
 	"github.com/codfrm/cago/pkg/logger"
 	"github.com/codfrm/cago/server"
@@ -13,7 +14,11 @@ import (
 
 func main() {
 	ctx := context.Background()
-	cfg, err := config.NewConfig("simple", config.YamlFile("config.yaml"))
+	source, err := file.NewSource("config.yaml", file.Yaml())
+	if err != nil {
+		log.Fatal(err)
+	}
+	cfg, err := config.NewConfig("simple", source)
 	if err != nil {
 		log.Fatalf("load config err: %v", err)
 	}

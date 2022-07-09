@@ -1,0 +1,15 @@
+apiVersion: v1
+data:
+  config.yaml: |
+    mode: release
+    mysql:
+      dsn: root:password@tcp(localhost:3306)/admin?charset=utf8mb4&parseTime=True&loc=Local
+    logger:
+      level: info
+      debug: false
+      lokiLevel: info
+      lokiUrl: "http://loki.com/loki/api/v1/push"
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: app

@@ -1,0 +1,56 @@
+variables:
+  APP_NAME: application
+  APP_VERSION: 1.0.0
+  NAMESPACE: app
+  IMAGE_REPOSITORY: "cago/application"
+  IMAGE_REGISTRY: "docker.io"
+  GO111MODULE: "on"
+  GOPROXY: "https://goproxy.cn,direct"
+  GOPATH: "$CI_PROJECT_DIR/.cache"
+  GOLANGCI_LINT_CACHE: "$CI_PROJECT_DIR/.lint-cache"
+
+stages:
+  - test
+  - build
+  - deploy
+
+test-job:
+  stage: test
+  image: golang:1.18
+  cache:
+    key: go-cache
+    paths:
+      - .cache
+  script:
+    - go test -v ./...
+
+lint-job:
+  stage: test
+  image: golangci/golangci-lint:v1.46
+  cache:
+    key: go-cache
+    paths:
+      - .cache
+      - .lint-cache
+  script:
+    - golangci-lint run
+
+
+build-job:
+  stage: build
+  image: docker:rc
+  variables:
+    DOCKER_HOST: tcp://docker-dind:2375
+  before_script:
+    - docker login $IMAGE_REGISTRY --username $DOCKER_USERNAME --password $DOCKER_PASSWORD
+  script:
+    - docker build --build-arg=GOPROXY=$GOPROXY -t $IMAGE_REGISTRY/$IMAGE_REPOSITORY:$APP_VERSION -f resources/Dockerfile .
+    - docker push $IMAGE_REGISTRY/$IMAGE_REPOSITORY:$APP_VERSION
+
+deploy-job:
+  stage: deploy
+  image: alpine/helm:3.9.0
+  script:
+    - cd resources/helm-chart
+    - "helm upgrade --install --namespace $NAMESPACE $APP_NAME .
+        --set image.tag=$APP_VERSION --set image.repository=$IMAGE_REGISTRY/$IMAGE_REPOSITORY"
