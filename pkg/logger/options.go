@@ -12,8 +12,8 @@ type Options struct {
 }
 
 type LokiConfig struct {
-	Level string
-	Url   string
+	Level string `yaml:"level"`
+	Url   string `yaml:"url"`
 }
 
 func WithLoki(config *LokiConfig) Option {

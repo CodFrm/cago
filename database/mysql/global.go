@@ -5,7 +5,9 @@ import (
 
 	"github.com/codfrm/cago"
 	"github.com/codfrm/cago/config"
-	"github.com/jinzhu/gorm"
+	mysqlDriver "gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
 )
 
 var db *mysql
@@ -14,17 +16,25 @@ type mysql struct {
 	*gorm.DB
 }
 
-type mysqlConfig struct {
+type Config struct {
 	Dsn    string `yaml:"dsn" env:"MYSQL_DSN"`
-	Prefix string `yaml:"prefix" env:"MYSQL_PREFIX"`
+	Prefix string `yaml:"prefix,omitempty" env:"MYSQL_PREFIX"`
 }
 
 func Mysql(ctx context.Context, config *config.Config) error {
-	cfg := &mysqlConfig{}
+	cfg := &Config{}
 	if err := config.Scan("mysql", cfg); err != nil {
 		return err
 	}
-	orm, err := gorm.Open(cfg.Dsn)
+	orm, err := gorm.Open(mysqlDriver.New(mysqlDriver.Config{
+		DSN: cfg.Dsn,
+	}), &gorm.Config{
+		DisableForeignKeyConstraintWhenMigrating: true,
+		NamingStrategy: schema.NamingStrategy{
+			TablePrefix:   cfg.Prefix,
+			SingularTable: true,
+		},
+	})
 	if err != nil {
 		return err
 	}
@@ -35,5 +45,5 @@ func Mysql(ctx context.Context, config *config.Config) error {
 }
 
 func Ctx(ctx cago.Context) *gorm.DB {
-	return db.DB.New()
+	return db.DB
 }

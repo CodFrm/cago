@@ -11,13 +11,14 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+type Config struct {
+	Level string      `yaml:"level"`
+	Debug bool        `yaml:"debug"`
+	Loki  *LokiConfig `yaml:"loki"`
+}
+
 func InitWithConfig(ctx context.Context, config *config.Config, opts ...Option) (*zap.Logger, error) {
-	cfg := &struct {
-		Level     string `yaml:"level" env:"LOGGER_LEVEL"`
-		Debug     bool   `yaml:"debug" env:"LOGGER_DEBUG"`
-		LokiLevel string `yaml:"lokiLevel" env:"LOGGER_LOKI_LEVEL"`
-		LokiUrl   string `yaml:"lokiUrl" env:"LOGGER_LOKI_URL"`
-	}{}
+	cfg := &Config{}
 	if err := config.Scan("logger", cfg); err != nil {
 		return nil, err
 	}
@@ -27,10 +28,10 @@ func InitWithConfig(ctx context.Context, config *config.Config, opts ...Option) 
 	if cfg.Debug {
 		opts = append(opts, Debug())
 	}
-	if cfg.LokiLevel != "" && cfg.LokiUrl != "" {
+	if cfg.Loki != nil {
 		opts = append(opts, WithLoki(&LokiConfig{
-			Level: cfg.LokiLevel,
-			Url:   cfg.LokiUrl,
+			Level: cfg.Loki.Level,
+			Url:   cfg.Loki.Url,
 		}))
 	}
 	return Init(ctx, opts...)
