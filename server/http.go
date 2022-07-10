@@ -11,6 +11,10 @@ import (
 	"go.uber.org/zap"
 )
 
+type HttpConfig struct {
+	Addrs []string `yaml:"addrs"`
+}
+
 type http struct {
 	ctx      context.Context
 	cancel   context.CancelFunc
@@ -25,10 +29,14 @@ func Http(callback func(r *mux.RouterGroup) error) cago.ComponentCancel {
 }
 
 func (h *http) Start(ctx context.Context, cfg *config.Config) error {
-	panic("not implement")
+	return h.StartCancel(ctx, nil, cfg)
 }
 
 func (h *http) StartCancel(ctx context.Context, cancel context.CancelFunc, cfg *config.Config) error {
+	config := &HttpConfig{}
+	if err := cfg.Scan("http", config); err != nil {
+		return err
+	}
 	l := logger.Ctx(cago.Background())
 	mux := mux.New(l)
 	if err := h.callback(mux.Group()); err != nil {
@@ -36,7 +44,7 @@ func (h *http) StartCancel(ctx context.Context, cancel context.CancelFunc, cfg *
 	}
 	// 启动http服务
 	go func() {
-		if err := mux.Run(":8080"); err != nil {
+		if err := mux.Run(config.Addrs...); err != nil {
 			l.Error("failed to start http", zap.Error(err))
 			cancel()
 		}

@@ -29,7 +29,7 @@ func (f FuncComponent) CloseHandle() {
 type FuncComponentCancel func(ctx context.Context, cancel context.CancelFunc, cfg *config.Config) error
 
 func (f FuncComponentCancel) Start(ctx context.Context, cfg *config.Config) error {
-	panic("not support")
+	return f.StartCancel(ctx, nil, cfg)
 }
 
 func (f FuncComponentCancel) StartCancel(ctx context.Context, cancel context.CancelFunc, cfg *config.Config) error {
