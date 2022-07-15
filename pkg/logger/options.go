@@ -8,7 +8,7 @@ type Options struct {
 	level  string
 	debug  bool
 	loki   *LokiConfig
-	fields []zap.Field
+	labels []zap.Field
 }
 
 type LokiConfig struct {
@@ -34,8 +34,8 @@ func Debug() Option {
 	}
 }
 
-func WithFields(fields ...zap.Field) Option {
+func WithLabels(labels ...zap.Field) Option {
 	return func(options *Options) {
-		options.fields = fields
+		options.labels = labels
 	}
 }

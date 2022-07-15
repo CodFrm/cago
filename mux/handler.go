@@ -3,6 +3,7 @@ package mux
 import (
 	"net/http"
 
+	"github.com/codfrm/cago"
 	"github.com/codfrm/cago/pkg/logger"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -19,18 +20,19 @@ func (c *customResponseWriter) WriteHeader(status int) {
 	c.ResponseWriter.WriteHeader(status)
 }
 
-func initHandler(c *WebContext) {
-	c.logger = logger.Ctx(c).With(
+func initHandler(c *gin.Context) {
+	logger := logger.Ctx(cago.Background()).With(
 		zap.String("request_id", uuid.New().String()),
 		zap.String("client_ip", c.ClientIP()),
 		zap.String("method", c.Request.Method),
 		zap.String("path", c.Request.URL.Path),
 		zap.String("user_agent", c.Request.UserAgent()),
 	)
+	c.Set("logger", logger)
 	defer func() {
 		if r := recover(); r != nil {
 			if err, ok := r.(error); ok {
-				c.Error("internal server error", zap.Error(err), zap.Stack("stack"))
+				logger.Error("internal server error", zap.Error(err), zap.Stack("stack"))
 				_ = c.AbortWithError(http.StatusInternalServerError, err)
 			} else {
 				panic(err)

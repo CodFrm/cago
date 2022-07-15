@@ -18,7 +18,7 @@ func New(logger *zap.Logger) *Mux {
 		group:  e.Group(""),
 		logger: logger,
 	}
-	group.Use(initHandler)
+	group.group.Use(initHandler)
 	return &Mux{
 		engine: e,
 		group:  group,
@@ -87,7 +87,8 @@ func (r *RouterGroup) WrapHandlers(handlers ...HandlerFunc) []gin.HandlerFunc {
 	for i, handler := range handlers {
 		handler := handler
 		funcs[i] = func(c *gin.Context) {
-			handler(NewContext(c, r.logger))
+			logger, _ := c.Get("logger")
+			handler(NewContext(c, logger.(*zap.Logger)))
 		}
 	}
 	return funcs

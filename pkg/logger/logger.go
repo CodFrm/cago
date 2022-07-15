@@ -47,38 +47,39 @@ func Init(ctx context.Context, opt ...Option) (*zap.Logger, error) {
 	levelEnable := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
 		return lvl >= level
 	})
+	var encode zapcore.Encoder
 	if options.debug {
-		core = append(core, zapcore.NewCore(
-			zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig()),
-			zapcore.AddSync(os.Stdout),
-			levelEnable,
-		))
+		encode = zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig())
 	} else {
-		core = append(core, zapcore.NewCore(
-			zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig()),
-			zapcore.AddSync(os.Stdout),
-			levelEnable,
-		))
+		encode = zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig())
 	}
+	for _, v := range options.labels {
+		v.AddTo(encode)
+	}
+	core = append(core, zapcore.NewCore(
+		encode,
+		zapcore.AddSync(os.Stdout),
+		levelEnable,
+	))
 	if options.loki != nil {
 		u, err := url.Parse(options.loki.Url)
 		if err != nil {
 			return nil, err
 		}
 		level := toLevel(options.loki.Level)
+		lokiOptions := make([]loki.Option, 0)
+		if options.labels != nil {
+			lokiOptions = append(lokiOptions, loki.WithLabels(options.labels...))
+		}
 		lokiCore, err := loki.NewLokiCore(ctx, u, zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
 			return lvl >= level
-		}))
+		}), lokiOptions...)
 		if err != nil {
 			return nil, err
 		}
 		core = append(core, lokiCore)
 	}
-
 	logger := zap.New(zapcore.NewTee(core...))
-	if options.fields != nil {
-		logger = logger.With(options.fields...)
-	}
 	return logger, nil
 }
 

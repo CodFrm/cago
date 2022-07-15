@@ -13,6 +13,7 @@ import (
 
 type lokiCore struct {
 	zapcore.Core
+	options *Options
 }
 
 func NewLokiCore(ctx context.Context, lokiUrl *url.URL, enab zapcore.LevelEnabler, opt ...Option) (*lokiCore, error) {
@@ -25,12 +26,17 @@ func NewLokiCore(ctx context.Context, lokiUrl *url.URL, enab zapcore.LevelEnable
 	if options.sync != nil {
 		sync = zapcore.NewMultiWriteSyncer(options.sync, sync)
 	}
+	encode, err := NewLokiEncode(options.labels...)
+	if err != nil {
+		return nil, err
+	}
 	return &lokiCore{
 		Core: zapcore.NewCore(
-			NewLokiEncode(),
+			encode,
 			sync,
 			enab,
 		),
+		options: options,
 	}, nil
 }
 

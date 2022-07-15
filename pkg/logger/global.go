@@ -10,13 +10,13 @@ import (
 
 var logger *zap.Logger
 
-// Logger 日志组件,默认是会注册到cago的
+// Logger 日志组件,核心组件,必须注册
 func Logger(ctx context.Context, config *config.Config) error {
-	l, err := InitWithConfig(ctx, config)
+	l, err := InitWithConfig(ctx, config, WithLabels(zap.String("app", config.AppName)))
 	if err != nil {
 		return err
 	}
-	logger = l.With(zap.String("app", config.AppName))
+	logger = l
 	return nil
 }
 

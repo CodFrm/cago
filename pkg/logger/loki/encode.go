@@ -10,15 +10,22 @@ import (
 )
 
 type lokiEncode struct {
-	*zapcore.MapObjectEncoder
-	pool buffer.Pool
+	zapcore.Encoder
+	labels map[string]interface{}
+	pool   buffer.Pool
 }
 
-func NewLokiEncode() zapcore.Encoder {
-	return &lokiEncode{
-		MapObjectEncoder: zapcore.NewMapObjectEncoder(),
-		pool:             buffer.NewPool(),
+func NewLokiEncode(labels ...zap.Field) (zapcore.Encoder, error) {
+	ret := &lokiEncode{
+		Encoder: zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig()),
+		pool:    buffer.NewPool(),
 	}
+	m := zapcore.NewMapObjectEncoder()
+	for _, v := range labels {
+		v.AddTo(m)
+	}
+	ret.labels = m.Fields
+	return ret, nil
 }
 
 func (e *lokiEncode) Clone() zapcore.Encoder {
@@ -26,13 +33,10 @@ func (e *lokiEncode) Clone() zapcore.Encoder {
 }
 
 func (e *lokiEncode) clone() *lokiEncode {
-	encode := zapcore.NewMapObjectEncoder()
-	for k, v := range e.MapObjectEncoder.Fields {
-		encode.Fields[k] = v
-	}
 	return &lokiEncode{
-		MapObjectEncoder: encode,
-		pool:             e.pool,
+		Encoder: e.Encoder.Clone(),
+		pool:    e.pool,
+		labels:  e.labels,
 	}
 }
 
@@ -46,32 +50,31 @@ type lokiPushStream struct {
 }
 
 func (e *lokiEncode) EncodeEntry(ent zapcore.Entry, fields []zap.Field) (*buffer.Buffer, error) {
-	final := e.clone()
 	push := &lokiPush{
 		Streams: [1]lokiPushStream{
 			{
-				Stream: nil,
+				Stream: e.labels,
 				Values: [1][2]string{{
 					utils.ToString(ent.Time.UnixNano()),
-					ent.Message,
 				}},
 			},
 		},
 	}
 
-	for _, v := range fields {
-		v.AddTo(final)
+	buf, err := e.Encoder.EncodeEntry(ent, fields)
+	if err != nil {
+		return nil, err
 	}
 
-	push.Streams[0].Stream = final.Fields
+	push.Streams[0].Values[0][1] = buf.String()
 
-	buf := e.pool.Get()
 	b, err := json.Marshal(push)
 	if err != nil {
 		return nil, err
 	}
-	if _, err := buf.Write(b); err != nil {
+	retBuf := e.pool.Get()
+	if _, err := retBuf.Write(b); err != nil {
 		return nil, err
 	}
-	return buf, nil
+	return retBuf, nil
 }

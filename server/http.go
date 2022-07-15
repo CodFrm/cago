@@ -12,7 +12,7 @@ import (
 )
 
 type HttpConfig struct {
-	Addrs []string `yaml:"addrs"`
+	Address []string `yaml:"address"`
 }
 
 type http struct {
@@ -44,7 +44,10 @@ func (h *http) StartCancel(ctx context.Context, cancel context.CancelFunc, cfg *
 	}
 	// 启动http服务
 	go func() {
-		if err := mux.Run(config.Addrs...); err != nil {
+		if len(config.Address) == 0 {
+			config.Address = []string{"127.0.0.1:8080"}
+		}
+		if err := mux.Run(config.Address...); err != nil {
 			l.Error("failed to start http", zap.Error(err))
 			cancel()
 		}
