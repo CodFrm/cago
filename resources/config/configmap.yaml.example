@@ -7,8 +7,9 @@ data:
     logger:
       level: info
       debug: false
-      lokiLevel: info
-      lokiUrl: "http://loki.com/loki/api/v1/push"
+      loki:
+        level: info
+        url: "http://loki.com/loki/api/v1/push"
 kind: ConfigMap
 metadata:
   name: app-config

@@ -1,6 +1,10 @@
 package logger
 
-import "go.uber.org/zap"
+import (
+	"os"
+
+	"go.uber.org/zap"
+)
 
 type Option func(*Options)
 
@@ -34,8 +38,25 @@ func Debug() Option {
 	}
 }
 
-func WithLabels(labels ...zap.Field) Option {
+func AppendLabels(labels ...zap.Field) Option {
 	return func(options *Options) {
-		options.labels = labels
+		if options.labels == nil {
+			options.labels = make([]zap.Field, 0)
+		}
+		for _, v := range labels {
+			options.labels = append(options.labels, v)
+		}
 	}
+}
+
+func WithKubernetes() Option {
+	namespace := os.Getenv("KUBERNETES_NAMESPACE")
+	if namespace == "" {
+		return func(options *Options) {}
+	}
+	return AppendLabels(
+		zap.String("namespace", namespace),
+		zap.String("pod", os.Getenv("KUBERNETES_POD_NAME")),
+		zap.String("node", os.Getenv("KUBERNETES_NODE_NAME")),
+	)
 }

@@ -12,7 +12,7 @@ var logger *zap.Logger
 
 // Logger 日志组件,核心组件,必须注册
 func Logger(ctx context.Context, config *config.Config) error {
-	l, err := InitWithConfig(ctx, config, WithLabels(zap.String("app", config.AppName)))
+	l, err := InitWithConfig(ctx, config, AppendLabels(zap.String("app", config.AppName)))
 	if err != nil {
 		return err
 	}
@@ -25,5 +25,9 @@ func SetLogger(l *zap.Logger) {
 }
 
 func Ctx(ctx cago.Context) *zap.Logger {
+	return logger
+}
+
+func Default() *zap.Logger {
 	return logger
 }

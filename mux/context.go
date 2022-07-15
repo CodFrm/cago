@@ -21,3 +21,7 @@ func (c *WebContext) Error(msg string, fields ...zap.Field) {
 func (c *WebContext) Logger() *zap.Logger {
 	return c.logger
 }
+
+func (c *WebContext) UserID() string {
+	return ""
+}

@@ -1,7 +1,9 @@
 package mux
 
 import (
+	"github.com/codfrm/cago/pkg/utils/validator"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 	"go.uber.org/zap"
 )
 
@@ -13,6 +15,7 @@ type Mux struct {
 }
 
 func New(logger *zap.Logger) *Mux {
+	binding.Validator = validator.NewValidator()
 	e := gin.New()
 	group := &RouterGroup{
 		group:  e.Group(""),

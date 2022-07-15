@@ -47,3 +47,7 @@ func Mysql(ctx context.Context, config *config.Config) error {
 func Ctx(ctx cago.Context) *gorm.DB {
 	return db.DB
 }
+
+func Default() *gorm.DB {
+	return db.DB
+}
