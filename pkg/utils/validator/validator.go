@@ -30,7 +30,7 @@ func NewValidator() *defaultValidator {
 	zhTran = zh.New()
 	uni = ut.New(zhTran, zhTran)
 	trans, _ = uni.GetTranslator("zh")
-	zh_translations.RegisterDefaultTranslations(ret.validate, trans)
+	_ = zh_translations.RegisterDefaultTranslations(ret.validate, trans)
 	ret.registerValidation()
 	ret.validate.RegisterTagNameFunc(func(fld reflect.StructField) string {
 		name := fld.Tag.Get("label")

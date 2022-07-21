@@ -3,8 +3,7 @@ package mysql
 import (
 	"context"
 
-	"github.com/codfrm/cago"
-	"github.com/codfrm/cago/config"
+	"github.com/codfrm/cago/configs"
 	mysqlDriver "gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
@@ -21,7 +20,7 @@ type Config struct {
 	Prefix string `yaml:"prefix,omitempty" env:"MYSQL_PREFIX"`
 }
 
-func Mysql(ctx context.Context, config *config.Config) error {
+func Mysql(ctx context.Context, config *configs.Config) error {
 	cfg := &Config{}
 	if err := config.Scan("mysql", cfg); err != nil {
 		return err
@@ -42,10 +41,6 @@ func Mysql(ctx context.Context, config *config.Config) error {
 		DB: orm,
 	}
 	return nil
-}
-
-func Ctx(ctx cago.Context) *gorm.DB {
-	return db.DB
 }
 
 func Default() *gorm.DB {

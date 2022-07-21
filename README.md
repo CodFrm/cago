@@ -2,7 +2,7 @@
 
 ## 核心组件包
 
-- [config](./config)
+- [config](configs)
 - [registry](./registry)
 
 ## 常用组件包

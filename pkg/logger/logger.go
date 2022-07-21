@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/codfrm/cago/config"
+	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/pkg/logger/loki"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -17,7 +17,7 @@ type Config struct {
 	Loki  *LokiConfig `yaml:"loki"`
 }
 
-func InitWithConfig(ctx context.Context, config *config.Config, opts ...Option) (*zap.Logger, error) {
+func InitWithConfig(ctx context.Context, config *configs.Config, opts ...Option) (*zap.Logger, error) {
 	cfg := &Config{}
 	if err := config.Scan("logger", cfg); err != nil {
 		return nil, err

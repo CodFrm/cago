@@ -4,14 +4,12 @@ linters-settings:
   misspell:
     locale: US
 linters:
-  # https://golangci-lint.run/usage/linters/
   disable-all: true
   enable:
     - typecheck
     - goimports
     - misspell
     - govet
-#    - golint
     - ineffassign
     - gosimple
     - deadcode

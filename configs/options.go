@@ -1,4 +1,4 @@
-package config
+package configs
 
 type Option func(*Options)
 

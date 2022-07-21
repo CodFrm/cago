@@ -3,20 +3,20 @@ package cago
 import (
 	"context"
 
-	"github.com/codfrm/cago/config"
+	"github.com/codfrm/cago/configs"
 )
 
 type Cago struct {
 	ctx        context.Context
 	cancel     context.CancelFunc
-	cfg        *config.Config
+	cfg        *configs.Config
 	components []Component
 }
 
 type CloseHandle func()
 
 // New 初始化cago
-func New(ctx context.Context, cfg *config.Config) *Cago {
+func New(ctx context.Context, cfg *configs.Config) *Cago {
 	ctx, cancel := context.WithCancel(ctx)
 	cago := &Cago{
 		ctx:    ctx,

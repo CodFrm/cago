@@ -4,14 +4,14 @@ import (
 	"context"
 
 	"github.com/codfrm/cago"
-	"github.com/codfrm/cago/config"
+	"github.com/codfrm/cago/configs"
 	"go.uber.org/zap"
 )
 
 var logger *zap.Logger
 
 // Logger 日志组件,核心组件,必须注册
-func Logger(ctx context.Context, config *config.Config) error {
+func Logger(ctx context.Context, config *configs.Config) error {
 	l, err := InitWithConfig(ctx, config, AppendLabels(zap.String("app", config.AppName)))
 	if err != nil {
 		return err

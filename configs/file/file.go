@@ -3,7 +3,7 @@ package file
 import (
 	"io/ioutil"
 
-	"github.com/codfrm/cago/config"
+	"github.com/codfrm/cago/configs"
 )
 
 type fileSource struct {
@@ -12,7 +12,7 @@ type fileSource struct {
 	serialization Serialization
 }
 
-func NewSource(filename string, serialization Serialization) (config.Source, error) {
+func NewSource(filename string, serialization Serialization) (configs.Source, error) {
 	f := &fileSource{path: filename, serialization: serialization, config: make(map[string]interface{})}
 	b, err := f.Read()
 	if err != nil {

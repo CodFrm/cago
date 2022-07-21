@@ -1,8 +1,8 @@
 package token
 
 import (
+	"github.com/codfrm/cago/pkg/utils"
 	"github.com/gin-gonic/gin"
-	"github.com/scriptscat/cloudcat/pkg/utils"
 )
 
 func UserId(ctx *gin.Context) (int64, bool) {
@@ -10,7 +10,7 @@ func UserId(ctx *gin.Context) (int64, bool) {
 	if !ok {
 		return 0, false
 	}
-	return utils.StringToInt64(u.(gin.H)["uid"].(string)), true
+	return utils.ToNumber[int64](u.(gin.H)["uid"].(string)), true
 }
 
 func Isadmin(ctx *gin.Context) (int64, bool) {
@@ -18,7 +18,7 @@ func Isadmin(ctx *gin.Context) (int64, bool) {
 	if !ok {
 		return 0, false
 	}
-	return utils.StringToInt64(u.(gin.H)["uid"].(string)), false
+	return utils.ToNumber[int64](u.(gin.H)["uid"].(string)), false
 }
 
 func Authtoken(ctx *gin.Context) (*Token, bool) {

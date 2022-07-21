@@ -5,8 +5,8 @@ import (
 	"log"
 
 	"github.com/codfrm/cago"
-	"github.com/codfrm/cago/config"
-	"github.com/codfrm/cago/config/file"
+	"github.com/codfrm/cago/configs"
+	"github.com/codfrm/cago/configs/file"
 	"github.com/codfrm/cago/mux"
 	"github.com/codfrm/cago/pkg/logger"
 	"github.com/codfrm/cago/server"
@@ -18,7 +18,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	cfg, err := config.NewConfig("simple", source)
+	cfg, err := configs.NewConfig("simple", source)
 	if err != nil {
 		log.Fatalf("load config err: %v", err)
 	}

@@ -22,6 +22,6 @@ func (c *WebContext) Logger() *zap.Logger {
 	return c.logger
 }
 
-func (c *WebContext) UserID() string {
-	return ""
+func (c *WebContext) UserID() int64 {
+	return c.GetInt64("userID")
 }

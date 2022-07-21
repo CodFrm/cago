@@ -1,0 +1,10 @@
+http:
+  addrs:
+    - ":8080"
+
+logger:
+  level: info
+  debug: false
+  loki:
+    level: info
+    url: "http://loki.com/loki/api/v1/push"

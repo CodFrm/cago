@@ -5,9 +5,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/codfrm/cago/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/scriptscat/cloudcat/pkg/cache"
-	"github.com/scriptscat/cloudcat/pkg/utils"
 )
 
 const Userinfo = "userinfo"
@@ -97,6 +97,6 @@ func GenToken(c cache.Cache, info gin.H) (string, error) {
 	return tokenInfo.Token, nil
 }
 
-func DelToken(c cache.Cache, token string) error {
-	return c.Del("token:token:" + token)
-}
+//func DelToken(c cache.Cache, token string) error {
+//	return c.Del("token:token:" + token)
+//}

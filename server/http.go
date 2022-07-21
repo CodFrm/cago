@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	"github.com/codfrm/cago"
-	"github.com/codfrm/cago/config"
+	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/mux"
 	"github.com/codfrm/cago/pkg/logger"
 	"go.uber.org/zap"
@@ -28,11 +28,11 @@ func Http(callback func(r *mux.RouterGroup) error) cago.ComponentCancel {
 	}
 }
 
-func (h *http) Start(ctx context.Context, cfg *config.Config) error {
+func (h *http) Start(ctx context.Context, cfg *configs.Config) error {
 	return h.StartCancel(ctx, nil, cfg)
 }
 
-func (h *http) StartCancel(ctx context.Context, cancel context.CancelFunc, cfg *config.Config) error {
+func (h *http) StartCancel(ctx context.Context, cancel context.CancelFunc, cfg *configs.Config) error {
 	config := &HttpConfig{}
 	if err := cfg.Scan("http", config); err != nil {
 		return err

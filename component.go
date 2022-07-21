@@ -3,36 +3,36 @@ package cago
 import (
 	"context"
 
-	"github.com/codfrm/cago/config"
+	"github.com/codfrm/cago/configs"
 )
 
 type Component interface {
-	Start(ctx context.Context, cfg *config.Config) error
+	Start(ctx context.Context, cfg *configs.Config) error
 	CloseHandle()
 }
 
 type ComponentCancel interface {
 	Component
-	StartCancel(ctx context.Context, cancel context.CancelFunc, cfg *config.Config) error
+	StartCancel(ctx context.Context, cancel context.CancelFunc, cfg *configs.Config) error
 	CloseHandle()
 }
 
-type FuncComponent func(ctx context.Context, cfg *config.Config) error
+type FuncComponent func(ctx context.Context, cfg *configs.Config) error
 
-func (f FuncComponent) Start(ctx context.Context, cfg *config.Config) error {
+func (f FuncComponent) Start(ctx context.Context, cfg *configs.Config) error {
 	return f(ctx, cfg)
 }
 
 func (f FuncComponent) CloseHandle() {
 }
 
-type FuncComponentCancel func(ctx context.Context, cancel context.CancelFunc, cfg *config.Config) error
+type FuncComponentCancel func(ctx context.Context, cancel context.CancelFunc, cfg *configs.Config) error
 
-func (f FuncComponentCancel) Start(ctx context.Context, cfg *config.Config) error {
+func (f FuncComponentCancel) Start(ctx context.Context, cfg *configs.Config) error {
 	return f.StartCancel(ctx, nil, cfg)
 }
 
-func (f FuncComponentCancel) StartCancel(ctx context.Context, cancel context.CancelFunc, cfg *config.Config) error {
+func (f FuncComponentCancel) StartCancel(ctx context.Context, cancel context.CancelFunc, cfg *configs.Config) error {
 	return f(ctx, cancel, cfg)
 }
 
