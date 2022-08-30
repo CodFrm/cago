@@ -37,7 +37,7 @@ func (h *http) StartCancel(ctx context.Context, cancel context.CancelFunc, cfg *
 	if err := cfg.Scan("http", config); err != nil {
 		return err
 	}
-	l := logger.Ctx(cago.Background())
+	l := logger.Default()
 	mux := mux.New(l)
 	if err := h.callback(mux.Group()); err != nil {
 		return errors.New("failed to register http")

@@ -3,7 +3,6 @@ package mux
 import (
 	"net/http"
 
-	"github.com/codfrm/cago"
 	"github.com/codfrm/cago/pkg/logger"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -21,7 +20,7 @@ func (c *customResponseWriter) WriteHeader(status int) {
 }
 
 func initHandler(c *gin.Context) {
-	logger := logger.Ctx(cago.Background()).With(
+	logger := logger.Default().With(
 		zap.String("request_id", uuid.New().String()),
 		zap.String("client_ip", c.ClientIP()),
 		zap.String("method", c.Request.Method),

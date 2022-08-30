@@ -1,28 +1,36 @@
 package logger
 
 import (
-	"os"
+	"io"
 
-	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 type Option func(*Options)
 
 type Options struct {
-	level  string
-	debug  bool
-	loki   *LokiConfig
-	labels []zap.Field
+	w     io.Writer
+	cores []zapcore.Core
+	level string
+	debug bool
 }
 
 type LokiConfig struct {
-	Level string `yaml:"level"`
-	Url   string `yaml:"url"`
+	Url string `yaml:"url"`
 }
 
-func WithLoki(config *LokiConfig) Option {
-	return func(options *Options) {
-		options.loki = config
+func WithWriter(w io.Writer) Option {
+	return func(o *Options) {
+		o.w = w
+	}
+}
+
+func AppendCore(core ...zapcore.Core) Option {
+	return func(o *Options) {
+		if o.cores == nil {
+			o.cores = make([]zapcore.Core, 0)
+		}
+		o.cores = append(o.cores, core...)
 	}
 }
 
@@ -36,27 +44,4 @@ func Debug() Option {
 	return func(options *Options) {
 		options.debug = true
 	}
-}
-
-func AppendLabels(labels ...zap.Field) Option {
-	return func(options *Options) {
-		if options.labels == nil {
-			options.labels = make([]zap.Field, 0)
-		}
-		for _, v := range labels {
-			options.labels = append(options.labels, v)
-		}
-	}
-}
-
-func WithKubernetes() Option {
-	namespace := os.Getenv("KUBERNETES_NAMESPACE")
-	if namespace == "" {
-		return func(options *Options) {}
-	}
-	return AppendLabels(
-		zap.String("namespace", namespace),
-		zap.String("pod", os.Getenv("KUBERNETES_POD_NAME")),
-		zap.String("node", os.Getenv("KUBERNETES_NODE_NAME")),
-	)
 }

@@ -15,7 +15,7 @@ type lokiEncode struct {
 	pool   buffer.Pool
 }
 
-func NewLokiEncode(labels ...zap.Field) (zapcore.Encoder, error) {
+func NewLokiEncode(labels ...zap.Field) zapcore.Encoder {
 	ret := &lokiEncode{
 		Encoder: zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig()),
 		pool:    buffer.NewPool(),
@@ -25,7 +25,7 @@ func NewLokiEncode(labels ...zap.Field) (zapcore.Encoder, error) {
 		v.AddTo(m)
 	}
 	ret.labels = m.Fields
-	return ret, nil
+	return ret
 }
 
 func (e *lokiEncode) Clone() zapcore.Encoder {

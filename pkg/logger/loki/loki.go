@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"time"
 
+	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
@@ -16,28 +17,26 @@ type lokiCore struct {
 	options *Options
 }
 
-func NewLokiCore(ctx context.Context, lokiUrl *url.URL, enab zapcore.LevelEnabler, opt ...Option) (*lokiCore, error) {
-	options := &Options{}
+func NewLokiCore(ctx context.Context, opt ...Option) zapcore.Core {
+	options := &Options{
+		level: func(l zapcore.Level) bool {
+			return l >= zap.InfoLevel
+		},
+	}
 	for _, o := range opt {
 		o(options)
 	}
-	w := newLokiWriter(ctx, lokiUrl)
+	w := newLokiWriter(ctx, options.url)
 	sync := zapcore.AddSync(w)
-	if options.sync != nil {
-		sync = zapcore.NewMultiWriteSyncer(options.sync, sync)
-	}
-	encode, err := NewLokiEncode(options.labels...)
-	if err != nil {
-		return nil, err
-	}
+	encode := NewLokiEncode(options.labels...)
 	return &lokiCore{
 		Core: zapcore.NewCore(
 			encode,
 			sync,
-			enab,
+			options.level,
 		),
 		options: options,
-	}, nil
+	}
 }
 
 func (l *lokiCore) Check(ent zapcore.Entry, ce *zapcore.CheckedEntry) *zapcore.CheckedEntry {
@@ -73,7 +72,7 @@ func (l *lokiWriter) loop() {
 		case b := <-l.ch:
 			resp, err := l.c.Post(l.lokiUrl.String(), "application/json", bytes.NewBuffer(b))
 			if err != nil {
-				log.Printf("loki push err: %v", err)
+				log.Printf("loki push request err: %v", err)
 				break
 			}
 			buf := bytes.NewBuffer([]byte{})
@@ -81,7 +80,7 @@ func (l *lokiWriter) loop() {
 				defer resp.Body.Close()
 				_, err = buf.ReadFrom(resp.Body)
 				if err != nil {
-					log.Printf("loki push err: %v", err)
+					log.Printf("loki push response err: %v", err)
 					resp.Body.Close()
 					return
 				}

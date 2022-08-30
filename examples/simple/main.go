@@ -32,6 +32,10 @@ func main() {
 			})
 			return nil
 		})).
+		Registry(cago.FuncComponent(func(ctx context.Context, cfg *configs.Config) error {
+			logger.Default().Info("hello world")
+			return nil
+		})).
 		Start()
 	if err != nil {
 		log.Fatalf("start err: %v", err)
