@@ -7,16 +7,16 @@ import (
 	"time"
 
 	"github.com/caarlos0/env/v6"
-	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/configs/file"
+	"github.com/codfrm/cago/configs/source"
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 type Config struct {
-	Endpoints []string `env:"ETCD_ENDPOINT"`
-	Username  string   `env:"ETCD_USERNAME"`
-	Password  string   `env:"ETCD_PASSWORD"`
-	Prefix    string   `env:"ETCD_PREFIX"`
+	Endpoints []string
+	Username  string
+	Password  string
+	Prefix    string
 }
 
 type etcd struct {
@@ -25,7 +25,7 @@ type etcd struct {
 	serialization file.Serialization
 }
 
-func NewSource(cfg *Config, serialization file.Serialization) (configs.Source, error) {
+func NewSource(cfg *Config, serialization file.Serialization) (source.Source, error) {
 	if err := env.Parse(cfg); err != nil {
 		return nil, err
 	}
@@ -58,7 +58,7 @@ func (e *etcd) Scan(key string, value interface{}) error {
 		if _, err := e.Client.Put(context.Background(), path.Join(e.prefix, key), string(b)); err != nil {
 			return err
 		}
-		return errors.New("not found")
+		return errors.New("etcd config key not found")
 	}
 	return e.serialization.Unmarshal(resp.Kvs[0].Value, value)
 }

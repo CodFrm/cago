@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "etcd-config.fullname" . }}
+  labels:
+    {{- include "etcd-config.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+    - port: 2379
+      targetPort: etcd-2379
+      protocol: TCP
+      name: etcd-2379
+  selector:
+    {{- include "etcd-config.selectorLabels" . | nindent 4 }}

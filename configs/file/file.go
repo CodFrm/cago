@@ -1,9 +1,9 @@
 package file
 
 import (
-	"io/ioutil"
+	"os"
 
-	"github.com/codfrm/cago/configs"
+	"github.com/codfrm/cago/configs/source"
 )
 
 type fileSource struct {
@@ -12,7 +12,7 @@ type fileSource struct {
 	serialization Serialization
 }
 
-func NewSource(filename string, serialization Serialization) (configs.Source, error) {
+func NewSource(filename string, serialization Serialization) (source.Source, error) {
 	f := &fileSource{path: filename, serialization: serialization, config: make(map[string]interface{})}
 	b, err := f.Read()
 	if err != nil {
@@ -25,7 +25,7 @@ func NewSource(filename string, serialization Serialization) (configs.Source, er
 }
 
 func (f *fileSource) Read() ([]byte, error) {
-	return ioutil.ReadFile(f.path)
+	return os.ReadFile(f.path)
 }
 
 func (f *fileSource) Scan(key string, value interface{}) error {
