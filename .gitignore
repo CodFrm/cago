@@ -21,3 +21,7 @@
 
 /configs/config.yaml
 /configs/config.yaml.example
+
+/docs/docs.go
+/docs/swagger.json
+/docs/swagger.yaml

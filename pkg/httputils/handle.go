@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/codfrm/cago/mux"
-	"github.com/codfrm/cago/pkg/errs"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	pkgValidator "github.com/scriptscat/cloudcat/pkg/utils/validator"
@@ -24,9 +23,13 @@ func Handle(ctx *mux.WebContext, f func() interface{}) {
 		})
 		return
 	}
+	handleResp(ctx, resp)
+}
+
+func handleResp(ctx *mux.WebContext, resp interface{}) {
 	switch resp.(type) {
-	case *errs.JsonRespondError:
-		err := resp.(*errs.JsonRespondError)
+	case *JsonResponseError:
+		err := resp.(*JsonResponseError)
 		ctx.JSON(err.Status, err)
 	case validator.ValidationErrors:
 		err := resp.(validator.ValidationErrors)
@@ -42,30 +45,13 @@ func Handle(ctx *mux.WebContext, f func() interface{}) {
 	case *List:
 		list := resp.(*List)
 		ctx.JSON(http.StatusOK, gin.H{
-			"code": 0, "msg": "ok", "list": list.List, "total": list.Total,
+			"code": 0, "msg": "success", "list": list.List, "total": list.Total,
 		})
 	default:
-		ctx.JSON(http.StatusOK, gin.H{
-			"code": 0, "msg": "ok", "data": resp,
-		})
-	}
-}
-
-func HandleError(ctx *mux.WebContext, err error) {
-	switch err.(type) {
-	case *errs.JsonRespondError:
-		err := err.(*errs.JsonRespondError)
-		ctx.JSON(err.Status, err)
-	case validator.ValidationErrors:
-		err := err.(validator.ValidationErrors)
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"code": -1, "msg": pkgValidator.TransError(err),
-		})
-	case error:
-		err := err.(error)
-		ctx.Error("server internal error", zap.Error(err), zap.Stack("stack"))
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"code": -1, "msg": "系统错误",
+		ctx.JSON(http.StatusOK, JsonResponse{
+			Code: 0,
+			Msg:  "success",
+			Data: resp,
 		})
 	}
 }

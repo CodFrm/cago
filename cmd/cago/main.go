@@ -11,9 +11,11 @@ func main() {
 		Use: "cago",
 	}
 
-	initCmd := cmd.NewInitCmd()
+	init := cmd.NewInitCmd()
+	rootCmd.AddCommand(init.Commands()...)
 
-	rootCmd.AddCommand(initCmd.Commands()...)
+	swag := cmd.NewSwagCmd()
+	rootCmd.AddCommand(swag.Commands()...)
 
 	if err := rootCmd.Execute(); err != nil {
 		logrus.Fatalln(err)
