@@ -1,3 +1,13 @@
+source: etcd
+
+env: dev
+
+# 从etcd中读取配置
+etcd:
+  prefix: /config
+  endpoints:
+    - 127.0.0.1:2379
+
 http:
   addrs:
     - ":8080"

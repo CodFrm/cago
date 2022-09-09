@@ -8,8 +8,16 @@ import (
 	source2 "github.com/codfrm/cago/configs/source"
 )
 
+type Env string
+
+const (
+	DEV  Env = "dev"
+	PROD Env = "prod"
+)
+
 type Config struct {
 	AppName string
+	Env     Env
 	source  source2.Source
 	config  map[string]interface{}
 }
@@ -23,7 +31,7 @@ func NewConfig(appName string, opt ...Option) (*Config, error) {
 	if err := source.Scan("source", &configSource); err != nil {
 		return nil, err
 	}
-	env := ""
+	var env Env
 	if err := source.Scan("env", &env); err != nil {
 		return nil, err
 	}
@@ -35,7 +43,7 @@ func NewConfig(appName string, opt ...Option) (*Config, error) {
 			return nil, err
 		}
 		var err error
-		etcdConfig.Prefix = path.Join(etcdConfig.Prefix, env, appName)
+		etcdConfig.Prefix = path.Join(etcdConfig.Prefix, string(env), appName)
 		source, err = etcd.NewSource(etcdConfig, file.Yaml())
 		if err != nil {
 			return nil, err
@@ -48,6 +56,7 @@ func NewConfig(appName string, opt ...Option) (*Config, error) {
 	}
 	c := &Config{
 		AppName: appName,
+		Env:     env,
 		source:  source,
 	}
 	return c, nil

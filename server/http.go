@@ -8,6 +8,7 @@ import (
 	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/mux"
 	"github.com/codfrm/cago/pkg/logger"
+	"github.com/codfrm/cago/pkg/trace"
 	"go.uber.org/zap"
 )
 
@@ -38,7 +39,13 @@ func (h *http) StartCancel(ctx context.Context, cancel context.CancelFunc, cfg *
 		return err
 	}
 	l := logger.Default()
-	mux := mux.New(l)
+	opts := []mux.Option{
+		mux.ServiceName(cfg.AppName),
+	}
+	if tp := trace.Default(); tp != nil {
+		opts = append(opts, mux.WithTracerProvider(tp))
+	}
+	mux := mux.New(l, opts...)
 	if err := h.callback(mux.Group()); err != nil {
 		return errors.New("failed to register http")
 	}

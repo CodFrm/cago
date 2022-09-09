@@ -8,6 +8,7 @@ import (
 	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/mux"
 	"github.com/codfrm/cago/pkg/logger"
+	"github.com/codfrm/cago/pkg/trace"
 	"github.com/codfrm/cago/server"
 )
 
@@ -19,6 +20,7 @@ func main() {
 	}
 	err = cago.New(ctx, cfg).
 		Registry(cago.FuncComponent(logger.Logger)).
+		Registry(cago.FuncComponent(trace.Trace)).
 		//Registry(cago.FuncComponent(mysql.Mysql)).
 		RegistryCancel(server.Http(func(r *mux.RouterGroup) error {
 			r.GET("/", func(ctx *mux.WebContext) {

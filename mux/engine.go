@@ -4,19 +4,28 @@ import (
 	"github.com/codfrm/cago/pkg/utils/validator"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"go.uber.org/zap"
 )
 
 type HandlerFunc func(c *WebContext)
 
 type Mux struct {
-	engine *gin.Engine
-	group  *RouterGroup
+	engine  *gin.Engine
+	group   *RouterGroup
+	options *Options
 }
 
-func New(logger *zap.Logger) *Mux {
+func New(logger *zap.Logger, opts ...Option) *Mux {
+	options := &Options{}
+	for _, o := range opts {
+		o(options)
+	}
 	binding.Validator = validator.NewValidator()
 	e := gin.New()
+	if options.tracerProvider != nil {
+		e.Use(otelgin.Middleware(options.serviceName, otelgin.WithTracerProvider(options.tracerProvider)))
+	}
 	group := &RouterGroup{
 		group:  e.Group(""),
 		logger: logger,
