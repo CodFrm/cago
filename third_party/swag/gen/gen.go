@@ -157,6 +157,7 @@ func (g *Gen) Build(config *Config) error {
 	return nil
 }
 
+// 修改,处理Reponse结尾的结构体
 func (g *Gen) dealSwagger(swagger *spec.Swagger) *spec.Swagger {
 	for k, v := range swagger.Definitions {
 		if strings.HasSuffix(k, "Response") {
