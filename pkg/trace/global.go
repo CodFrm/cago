@@ -30,7 +30,7 @@ func Trace(ctx context.Context, config *configs.Config) error {
 	return nil
 }
 
-func SetTraceProvider(tp trace.TracerProvider) {
+func SetTracerProvider(tp trace.TracerProvider) {
 	tracerProvider = tp
 }
 

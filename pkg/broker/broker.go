@@ -5,13 +5,15 @@ import (
 	"errors"
 
 	broker2 "github.com/codfrm/cago/pkg/broker/broker"
+	"github.com/codfrm/cago/pkg/broker/event_bus"
 	"github.com/codfrm/cago/pkg/broker/nsq"
 )
 
 type BrokerType string
 
 const (
-	NSQ BrokerType = "nsq"
+	NSQ       BrokerType = "nsq"
+	EVENT_BUS BrokerType = "event_bus"
 )
 
 type NSQConfig struct {
@@ -29,6 +31,8 @@ func InitWithConfig(ctx context.Context, cfg *Config, opts ...Option) (broker2.B
 	switch cfg.Type {
 	case NSQ:
 		ret, err = nsq.NewBroker(cfg.NSQ.Addr)
+	case EVENT_BUS:
+		ret = event_bus.NewEvBusBroker()
 	default:
 		return nil, errors.New("type not found")
 	}

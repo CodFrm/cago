@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 
 	"github.com/codfrm/cago/pkg/broker/broker"
+	"github.com/codfrm/cago/pkg/logger"
 	"github.com/nsqio/go-nsq"
+	"go.uber.org/zap"
 )
 
 type subscribe struct {
@@ -21,6 +23,7 @@ func newSubscribe(b *nsqBroker, topic string, handler broker.Handler, options br
 	ret := &subscribe{
 		consumer: consumer, handler: handler,
 	}
+	logger := logger.Default().With(zap.String("topic", topic))
 	ret.consumer.AddHandler(nsq.HandlerFunc(func(message *nsq.Message) (err error) {
 		data := &broker.Message{}
 		defer func() {
@@ -30,9 +33,11 @@ func newSubscribe(b *nsqBroker, topic string, handler broker.Handler, options br
 				}
 			} else {
 				message.Requeue(-1)
+				logger.Error("nsq subscriber handle error", zap.Error(err))
 			}
 		}()
 		if err = json.Unmarshal(message.Body, data); err != nil {
+			logger.Error("nsq subscriber unmarshal error", zap.Error(err))
 			return err
 		}
 		err = handler(context.Background(), &event{
