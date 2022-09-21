@@ -81,7 +81,6 @@ func (l *lokiWriter) loop() {
 				_, err = buf.ReadFrom(resp.Body)
 				if err != nil {
 					log.Printf("loki push response err: %v", err)
-					resp.Body.Close()
 					return
 				}
 			}()

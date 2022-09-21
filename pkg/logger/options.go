@@ -3,20 +3,28 @@ package logger
 import (
 	"io"
 
+	"github.com/codfrm/cago/pkg/logger/loki"
 	"go.uber.org/zap/zapcore"
 )
 
 type Option func(*Options)
 
 type Options struct {
-	w     io.Writer
-	cores []zapcore.Core
-	level string
-	debug bool
+	w           io.Writer
+	cores       []zapcore.Core
+	level       string
+	debug       bool
+	lokiOptions []loki.Option
 }
 
 type LokiConfig struct {
-	Url string `yaml:"url"`
+	Url string
+}
+
+func WithLokiOptions(opt ...loki.Option) Option {
+	return func(o *Options) {
+		o.lokiOptions = append(o.lokiOptions, opt...)
+	}
 }
 
 func WithWriter(w io.Writer) Option {

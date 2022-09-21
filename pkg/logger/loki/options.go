@@ -32,9 +32,7 @@ func AppendLabels(labels ...zap.Field) Option {
 		if options.labels == nil {
 			options.labels = make([]zap.Field, 0)
 		}
-		for _, v := range labels {
-			options.labels = append(options.labels, v)
-		}
+		options.labels = append(options.labels, labels...)
 	}
 }
 

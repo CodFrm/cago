@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/codfrm/cago/third_party/swag/gen"
 	"github.com/spf13/cobra"
+	"github.com/swaggo/swag/format"
 )
 
 type swagCmd struct {
@@ -19,11 +20,21 @@ func (s *swagCmd) Commands() []*cobra.Command {
 		Short: "生成swagger文档",
 		RunE:  s.gen,
 	}
+	fmt := &cobra.Command{
+		Use:   "fmt",
+		Short: "格式化swagger注释",
+		RunE:  s.fmt,
+	}
+	ret.AddCommand(fmt)
 	ret.Flags().StringVarP(&s.dir, "dir", "d", "./", "搜索目录")
+	fmt.Flags().StringVarP(&s.dir, "dir", "d", "./", "搜索目录")
 	return []*cobra.Command{ret}
 }
 
 func (s *swagCmd) gen(cmd *cobra.Command, args []string) error {
+	if err := s.fmt(cmd, args); err != nil {
+		return err
+	}
 	return gen.New().Build(&gen.Config{
 		SearchDir:           s.dir,
 		Excludes:            "",
@@ -37,5 +48,12 @@ func (s *swagCmd) gen(cmd *cobra.Command, args []string) error {
 		GeneratedTime:       false,
 		CodeExampleFilesDir: "",
 		ParseDepth:          100,
+	})
+}
+func (s *swagCmd) fmt(cmd *cobra.Command, args []string) error {
+	return format.New().Build(&format.Config{
+		SearchDir: s.dir,
+		Excludes:  "",
+		MainFile:  "main.go",
 	})
 }

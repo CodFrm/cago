@@ -9,6 +9,8 @@ import (
 	"github.com/codfrm/cago/mux"
 	"github.com/codfrm/cago/pkg/logger"
 	"github.com/codfrm/cago/pkg/trace"
+	ginSwagger "github.com/swaggo/gin-swagger"
+	"github.com/swaggo/gin-swagger/swaggerFiles"
 	"go.uber.org/zap"
 )
 
@@ -33,7 +35,11 @@ func (h *http) Start(ctx context.Context, cfg *configs.Config) error {
 	return h.StartCancel(ctx, nil, cfg)
 }
 
-func (h *http) StartCancel(ctx context.Context, cancel context.CancelFunc, cfg *configs.Config) error {
+func (h *http) StartCancel(
+	ctx context.Context,
+	cancel context.CancelFunc,
+	cfg *configs.Config,
+) error {
 	config := &HttpConfig{}
 	if err := cfg.Scan("http", config); err != nil {
 		return err
@@ -45,8 +51,15 @@ func (h *http) StartCancel(ctx context.Context, cancel context.CancelFunc, cfg *
 	if tp := trace.Default(); tp != nil {
 		opts = append(opts, mux.WithTracerProvider(tp))
 	}
-	mux := mux.New(l, opts...)
-	if err := h.callback(mux.Group()); err != nil {
+	r := mux.New(l, opts...)
+	group := r.Group()
+	if cfg.Env != configs.PROD {
+		url := ginSwagger.URL("/swagger/doc.json")
+		group.GET("/swagger/*any", func(c *mux.WebContext) {
+			ginSwagger.WrapHandler(swaggerFiles.Handler, url)(c.Context)
+		})
+	}
+	if err := h.callback(group); err != nil {
 		return errors.New("failed to register http")
 	}
 	// 启动http服务
@@ -54,7 +67,7 @@ func (h *http) StartCancel(ctx context.Context, cancel context.CancelFunc, cfg *
 		if len(config.Address) == 0 {
 			config.Address = []string{"127.0.0.1:8080"}
 		}
-		if err := mux.Run(config.Address...); err != nil {
+		if err := r.Run(config.Address...); err != nil {
 			l.Error("failed to start http", zap.Error(err))
 			cancel()
 		}

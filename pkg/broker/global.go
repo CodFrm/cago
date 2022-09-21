@@ -11,12 +11,24 @@ import (
 var broker broker2.Broker
 
 func Broker(ctx context.Context, config *configs.Config) error {
-	b, err := InitWithConfig(ctx, config, WithTraceProvider(trace.Default()))
+	cfg := &Config{}
+	if err := config.Scan("broker", cfg); err != nil {
+		return err
+	}
+	options := make([]Option, 0)
+	if tp := trace.Default(); tp != nil {
+		options = append(options, WithTracer(tp.Tracer(config.AppName+".broker")))
+	}
+	b, err := InitWithConfig(ctx, cfg, options...)
 	if err != nil {
 		return err
 	}
 	broker = b
 	return nil
+}
+
+func SetBroker(b broker2.Broker) {
+	broker = b
 }
 
 func Default() broker2.Broker {

@@ -4,23 +4,18 @@ import (
 	"context"
 	"net/url"
 
-	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/pkg/logger/loki"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
 type Config struct {
-	Level string      `yaml:"level"`
-	Debug bool        `yaml:"debug"`
-	Loki  *LokiConfig `yaml:"loki"`
+	Level string
+	Debug bool
+	Loki  *LokiConfig
 }
 
-func InitWithConfig(ctx context.Context, config *configs.Config, opts ...Option) (*zap.Logger, error) {
-	cfg := &Config{}
-	if err := config.Scan("logger", cfg); err != nil {
-		return nil, err
-	}
+func InitWithConfig(ctx context.Context, cfg *Config, opts ...Option) (*zap.Logger, error) {
 	if cfg.Level != "" {
 		opts = append(opts, Level(cfg.Level))
 	}
@@ -38,7 +33,6 @@ func InitWithConfig(ctx context.Context, config *configs.Config, opts ...Option)
 		lokiOptions = append(lokiOptions, loki.WithLevelEnable(func(l zapcore.Level) bool {
 			return l >= level
 		}))
-		lokiOptions = append(lokiOptions, loki.AppendLabels(zap.String("app", config.AppName)))
 		lokiOptions = append(lokiOptions, loki.WithEnv())
 		opts = append(opts, AppendCore(loki.NewLokiCore(ctx, lokiOptions...)))
 	}

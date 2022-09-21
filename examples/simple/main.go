@@ -12,6 +12,9 @@ import (
 	"github.com/codfrm/cago/server"
 )
 
+// @title    api文档
+// @version  1.0
+// @BasePath /api/v1
 func main() {
 	ctx := context.Background()
 	cfg, err := configs.NewConfig("simple")
@@ -39,3 +42,16 @@ func main() {
 		return
 	}
 }
+
+// Api
+// @Author      CodFrm
+// @Summary     一个测试API
+// @Description 一个测试API描述
+// @ID          example
+// @Tags        example
+// @Accept      json
+// @Produce     json
+// @Param       Request body     ApiRequest true "请求信息"
+// @Success     200     {object} ApiResponse
+// @Failure     400     {object} ApiFailResponse
+// @Router      /api [POST]

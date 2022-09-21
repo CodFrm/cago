@@ -4,9 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/codfrm/cago/configs"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/exporters/jaeger"
+	"github.com/codfrm/cago/pkg/trace/exporter"
 	"go.opentelemetry.io/otel/sdk/resource"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
@@ -28,39 +26,40 @@ type Config struct {
 	Sample float64
 }
 
-func jaegerExporter(config *Config) (tracesdk.SpanExporter, error) {
-	return jaeger.New(jaeger.WithCollectorEndpoint(
-		jaeger.WithEndpoint(config.Endpoint),
-		jaeger.WithUsername(config.Username),
-		jaeger.WithPassword(config.Password),
-	))
-}
-
-func InitWithConfig(ctx context.Context, config *configs.Config) (trace.TracerProvider, error) {
-	cfg := &Config{}
-	if err := config.Scan("trace", cfg); err != nil {
-		return nil, err
-	}
+func InitWithConfig(ctx context.Context, cfg *Config, options ...Option) (trace.TracerProvider, error) {
 	var exp tracesdk.SpanExporter
 	var err error
 	switch cfg.Type {
 	case Jaeger:
-		exp, err = jaegerExporter(cfg)
+		exp, err = exporter.JaegerExporter(&exporter.JaegerConfig{
+			Endpoint: cfg.Endpoint,
+			Username: cfg.Username,
+			Password: cfg.Password,
+		})
 	default:
 		return nil, errors.New("type not found")
 	}
 	if err != nil {
 		return nil, err
 	}
+	options = append(options, Sample(cfg.Sample), WithExporter(exp))
+	return Init(options...)
+}
+
+func Init(opt ...Option) (trace.TracerProvider, error) {
+	options := &Options{}
+	for _, o := range opt {
+		o(options)
+	}
 
 	var sample tracesdk.Sampler
-	if cfg.Sample <= 0 {
+	if options.sample <= 0 {
 		// 总是关闭
 		sample = tracesdk.NeverSample()
-	} else if cfg.Sample < 1 {
+	} else if options.sample < 1 {
 		// 百分比采样，如果父开启了那么会开启
-		sample = tracesdk.ParentBased(tracesdk.TraceIDRatioBased(cfg.Sample))
-	} else if cfg.Sample == 1 {
+		sample = tracesdk.ParentBased(tracesdk.TraceIDRatioBased(options.sample))
+	} else if options.sample == 1 {
 		// 总是采样，如果父未开启那么不会开启
 		sample = tracesdk.ParentBased(tracesdk.AlwaysSample())
 	} else {
@@ -70,12 +69,11 @@ func InitWithConfig(ctx context.Context, config *configs.Config) (trace.TracerPr
 
 	tp := tracesdk.NewTracerProvider(
 		// Always be sure to batch in production.
-		tracesdk.WithBatcher(exp),
+		tracesdk.WithBatcher(options.exp),
 		// Record information about this application in a Resource.
 		tracesdk.WithResource(resource.NewWithAttributes(
 			semconv.SchemaURL,
-			semconv.ServiceNameKey.String(config.AppName),
-			attribute.String("environment", string(config.Env)),
+			options.attrs...,
 		)),
 		tracesdk.WithSampler(sample),
 	)

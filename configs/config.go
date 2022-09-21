@@ -12,6 +12,7 @@ type Env string
 
 const (
 	DEV  Env = "dev"
+	TEST Env = "test"
 	PROD Env = "prod"
 )
 
@@ -23,7 +24,14 @@ type Config struct {
 }
 
 func NewConfig(appName string, opt ...Option) (*Config, error) {
-	source, err := file.NewSource("./configs/config.yaml", file.Yaml())
+	options := &Options{
+		file:          "./configs/config.yaml",
+		serialization: file.Yaml(),
+	}
+	for _, o := range opt {
+		o(options)
+	}
+	source, err := file.NewSource(options.file, options.serialization)
 	if err != nil {
 		return nil, err
 	}
@@ -44,16 +52,12 @@ func NewConfig(appName string, opt ...Option) (*Config, error) {
 		}
 		var err error
 		etcdConfig.Prefix = path.Join(etcdConfig.Prefix, string(env), appName)
-		source, err = etcd.NewSource(etcdConfig, file.Yaml())
+		source, err = etcd.NewSource(etcdConfig, options.serialization)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	options := &Options{}
-	for _, opt := range opt {
-		opt(options)
-	}
 	c := &Config{
 		AppName: appName,
 		Env:     env,

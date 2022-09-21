@@ -14,8 +14,8 @@ type traceBroker struct {
 }
 
 // wrapTrace 包装链路追踪
-func wrapTrace(name string, broker broker2.Broker, tracerProvider trace.TracerProvider) broker2.Broker {
-	return &traceBroker{wrap: broker, tracer: tracerProvider.Tracer(name)}
+func wrapTrace(broker broker2.Broker, tracer trace.Tracer) broker2.Broker {
+	return &traceBroker{wrap: broker, tracer: tracer}
 }
 
 func (t *traceBroker) Publish(ctx context.Context, topic string, data *broker2.Message, opts ...broker2.PublishOption) error {

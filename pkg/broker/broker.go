@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 
-	"github.com/codfrm/cago/configs"
 	broker2 "github.com/codfrm/cago/pkg/broker/broker"
 	"github.com/codfrm/cago/pkg/broker/nsq"
 )
@@ -24,15 +23,7 @@ type Config struct {
 	NSQ  *NSQConfig
 }
 
-func InitWithConfig(ctx context.Context, config *configs.Config, opts ...Option) (broker2.Broker, error) {
-	cfg := &Config{}
-	if err := config.Scan("broker", cfg); err != nil {
-		return nil, err
-	}
-	options := &Options{}
-	for _, o := range opts {
-		o(options)
-	}
+func InitWithConfig(ctx context.Context, cfg *Config, opts ...Option) (broker2.Broker, error) {
 	var ret broker2.Broker
 	var err error
 	switch cfg.Type {
@@ -44,8 +35,18 @@ func InitWithConfig(ctx context.Context, config *configs.Config, opts ...Option)
 	if err != nil {
 		return nil, err
 	}
-	if options.traceProvider != nil {
-		ret = wrapTrace(config.AppName, ret, options.traceProvider)
+	opts = append(opts, WithBroker(ret))
+	return Init(opts...)
+}
+
+func Init(opts ...Option) (broker2.Broker, error) {
+	options := &Options{}
+	for _, o := range opts {
+		o(options)
+	}
+	ret := options.broker
+	if options.tracer != nil {
+		ret = wrapTrace(ret, options.tracer)
 	}
 	return ret, nil
 }

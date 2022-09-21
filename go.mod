@@ -3,10 +3,9 @@ module github.com/codfrm/cago
 go 1.18
 
 require (
-	github.com/caarlos0/env/v6 v6.9.3
 	github.com/ghodss/yaml v1.0.0
 	github.com/gin-gonic/gin v1.8.1
-	github.com/go-openapi/spec v0.20.3
+	github.com/go-openapi/spec v0.20.4
 	github.com/go-playground/locales v0.14.0
 	github.com/go-playground/universal-translator v0.18.0
 	github.com/go-playground/validator/v10 v10.10.0
@@ -16,7 +15,8 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.2.1
 	github.com/stretchr/testify v1.8.0
-	github.com/swaggo/swag v1.7.1
+	github.com/swaggo/gin-swagger v1.3.1
+	github.com/swaggo/swag v1.8.6
 	go.etcd.io/etcd/client/v3 v3.5.4
 	go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.34.0
 	go.opentelemetry.io/otel v1.9.0
@@ -69,10 +69,10 @@ require (
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97 // indirect
-	golang.org/x/net v0.0.0-20210825183410-e898025ed96a // indirect
+	golang.org/x/net v0.0.0-20220425223048-2871e0cb64e4 // indirect
 	golang.org/x/sys v0.0.0-20220319134239-a9b59b0215f8 // indirect
 	golang.org/x/text v0.3.7 // indirect
-	golang.org/x/tools v0.1.5 // indirect
+	golang.org/x/tools v0.1.10 // indirect
 	google.golang.org/genproto v0.0.0-20210602131652-f16073e35f0c // indirect
 	google.golang.org/grpc v1.38.0 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect

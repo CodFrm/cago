@@ -6,7 +6,6 @@ import (
 	"path"
 	"time"
 
-	"github.com/caarlos0/env/v6"
 	"github.com/codfrm/cago/configs/file"
 	"github.com/codfrm/cago/configs/source"
 	clientv3 "go.etcd.io/etcd/client/v3"
@@ -26,9 +25,6 @@ type etcd struct {
 }
 
 func NewSource(cfg *Config, serialization file.Serialization) (source.Source, error) {
-	if err := env.Parse(cfg); err != nil {
-		return nil, err
-	}
 	cli, err := clientv3.New(clientv3.Config{
 		Endpoints:   cfg.Endpoints,
 		Username:    cfg.Username,
