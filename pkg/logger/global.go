@@ -2,7 +2,6 @@ package logger
 
 import (
 	"context"
-	"os"
 
 	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/pkg/logger/loki"
@@ -17,7 +16,7 @@ func Logger(ctx context.Context, config *configs.Config) error {
 	if err := config.Scan("logger", cfg); err != nil {
 		return err
 	}
-	l, err := InitWithConfig(ctx, cfg, WithWriter(os.Stdout),
+	l, err := InitWithConfig(ctx, cfg,
 		WithLokiOptions(loki.AppendLabels(zap.String("app", config.AppName))))
 	if err != nil {
 		return err

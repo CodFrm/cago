@@ -2,17 +2,27 @@ package logger
 
 import (
 	"context"
+	"io"
 	"net/url"
+	"os"
 
 	"github.com/codfrm/cago/pkg/logger/loki"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	lumberjack "gopkg.in/natefinch/lumberjack.v2"
 )
 
 type Config struct {
-	Level string
-	Debug bool
-	Loki  *LokiConfig
+	Level   string
+	Debug   bool
+	LogFile *LogFileConfig
+	Loki    *LokiConfig
+}
+
+type LogFileConfig struct {
+	Enable    bool
+	Path      string
+	ErrorPath string
 }
 
 func InitWithConfig(ctx context.Context, cfg *Config, opts ...Option) (*zap.Logger, error) {
@@ -21,6 +31,16 @@ func InitWithConfig(ctx context.Context, cfg *Config, opts ...Option) (*zap.Logg
 	}
 	if cfg.Debug {
 		opts = append(opts, Debug())
+	}
+	if cfg.LogFile != nil {
+		if cfg.LogFile.Path != "" {
+			opts = append(opts, AppendCore(NewFileCore(toLevel(cfg.Level), cfg.LogFile.Path)))
+		}
+		if cfg.LogFile.ErrorPath != "" {
+			opts = append(opts, AppendCore(NewFileCore(zap.ErrorLevel, cfg.LogFile.ErrorPath)))
+		}
+	} else {
+		opts = append(opts, WithWriter(os.Stdout))
 	}
 	if cfg.Loki != nil {
 		lokiOptions := make([]loki.Option, 0)
@@ -81,4 +101,24 @@ func toLevel(level string) zapcore.Level {
 		return zap.ErrorLevel
 	}
 	return zap.InfoLevel
+}
+
+func NewFileCore(level zapcore.Level, filename string) zapcore.Core {
+	var w io.Writer = &lumberjack.Logger{
+		Filename:   filename,
+		MaxSize:    2,
+		MaxBackups: 10,
+		MaxAge:     30,
+		LocalTime:  true,
+		Compress:   false,
+	}
+	levelEnable := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
+		return lvl >= level
+	})
+	encode := zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig())
+	return zapcore.NewCore(
+		encode,
+		zapcore.AddSync(w),
+		levelEnable,
+	)
 }
