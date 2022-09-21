@@ -5,23 +5,15 @@ import (
 	"go.uber.org/zap"
 )
 
-type WebContext struct {
+type Context struct {
 	*gin.Context
 	logger *zap.Logger
 }
 
-func NewContext(ctx *gin.Context, logger *zap.Logger) *WebContext {
-	return &WebContext{Context: ctx, logger: logger}
+func NewContext(ctx *gin.Context, logger *zap.Logger) *Context {
+	return &Context{Context: ctx, logger: logger}
 }
 
-func (c *WebContext) Error(msg string, fields ...zap.Field) {
-	c.logger.Error(msg, fields...)
-}
-
-func (c *WebContext) Logger() *zap.Logger {
+func (c *Context) Logger() *zap.Logger {
 	return c.logger
-}
-
-func (c *WebContext) UserID() int64 {
-	return c.GetInt64("userID")
 }

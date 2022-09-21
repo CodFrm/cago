@@ -8,7 +8,7 @@ import (
 	"go.uber.org/zap"
 )
 
-type HandlerFunc func(c *WebContext)
+type HandlerFunc func(c *Context)
 
 type Mux struct {
 	engine  *gin.Engine

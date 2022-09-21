@@ -26,7 +26,7 @@ func main() {
 		Registry(cago.FuncComponent(trace.Trace)).
 		//Registry(cago.FuncComponent(mysql.Mysql)).
 		RegistryCancel(server.Http(func(r *mux.RouterGroup) error {
-			r.GET("/", func(ctx *mux.WebContext) {
+			r.GET("/", func(ctx *mux.Context) {
 				_, _ = ctx.Writer.Write([]byte("hello world"))
 				ctx.Logger().Info("hello world")
 			})

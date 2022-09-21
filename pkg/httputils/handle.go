@@ -15,7 +15,7 @@ type List struct {
 	Total int64       `json:"total"`
 }
 
-func Handle(ctx *mux.WebContext, f func() interface{}) {
+func Handle(ctx *mux.Context, f func() interface{}) {
 	resp := f()
 	if resp == nil {
 		ctx.JSON(http.StatusOK, gin.H{
@@ -26,7 +26,7 @@ func Handle(ctx *mux.WebContext, f func() interface{}) {
 	handleResp(ctx, resp)
 }
 
-func handleResp(ctx *mux.WebContext, resp interface{}) {
+func handleResp(ctx *mux.Context, resp interface{}) {
 	switch resp.(type) {
 	case *JsonResponseError:
 		err := resp.(*JsonResponseError)
@@ -38,7 +38,7 @@ func handleResp(ctx *mux.WebContext, resp interface{}) {
 		})
 	case error:
 		err := resp.(error)
-		ctx.Error("server internal error", zap.Error(err), zap.Stack("stack"))
+		ctx.Logger().Error("server internal error", zap.Error(err), zap.Stack("stack"))
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"code": -1, "msg": "系统错误",
 		})

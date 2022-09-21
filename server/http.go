@@ -55,7 +55,7 @@ func (h *http) StartCancel(
 	group := r.Group()
 	if cfg.Env != configs.PROD {
 		url := ginSwagger.URL("/swagger/doc.json")
-		group.GET("/swagger/*any", func(c *mux.WebContext) {
+		group.GET("/swagger/*any", func(c *mux.Context) {
 			ginSwagger.WrapHandler(swaggerFiles.Handler, url)(c.Context)
 		})
 	}
