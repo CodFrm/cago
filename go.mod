@@ -10,7 +10,6 @@ require (
 	github.com/go-playground/locales v0.14.0
 	github.com/go-playground/universal-translator v0.18.0
 	github.com/go-playground/validator/v10 v10.10.0
-	github.com/google/uuid v1.1.2
 	github.com/nsqio/go-nsq v1.1.0
 	github.com/scriptscat/cloudcat v0.1.0
 	github.com/sirupsen/logrus v1.8.1
@@ -19,7 +18,6 @@ require (
 	github.com/swaggo/gin-swagger v1.3.1
 	github.com/swaggo/swag v1.8.6
 	go.etcd.io/etcd/client/v3 v3.5.4
-	go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.34.0
 	go.opentelemetry.io/otel v1.9.0
 	go.opentelemetry.io/otel/exporters/jaeger v1.9.0
 	go.opentelemetry.io/otel/sdk v1.9.0

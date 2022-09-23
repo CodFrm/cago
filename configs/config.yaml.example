@@ -1,20 +1,31 @@
-source: etcd # file、etcd
+source: etcd
 
-env: dev # dev、test、prod
+env: dev
 
-# 从etcd中读取配置
 etcd:
-  Prefix: /config
-  Endpoints:
+  prefix: /config
+  endpoints:
     - 127.0.0.1:2379
 
+# 下面是各配置项
 http:
-  Addrs:
-    - ":8080"
+  address:
+    - "127.0.0.1:8080"
 
 logger:
   level: info
   debug: false
+  logfile:
+    enable: true
+    path: ./runtime/logs/
+    errorpath: ./runtime/logs/
   loki:
     level: info
-    url: "http://loki.com/loki/api/v1/push"
+    url: "http://127.0.0.1:3100/loki/api/v1/push"
+
+trace:
+  endpoint: "http://localhost:14268/api/traces"
+  type: "jaeger"
+  username: ""
+  password: ""
+  sample: 1

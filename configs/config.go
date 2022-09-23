@@ -18,6 +18,7 @@ const (
 
 type Config struct {
 	AppName string
+	Version string
 	Env     Env
 	source  source2.Source
 	config  map[string]interface{}

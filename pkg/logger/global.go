@@ -16,8 +16,12 @@ func Logger(ctx context.Context, config *configs.Config) error {
 	if err := config.Scan("logger", cfg); err != nil {
 		return err
 	}
-	l, err := InitWithConfig(ctx, cfg,
-		WithLokiOptions(loki.AppendLabels(zap.String("app", config.AppName))))
+	cfg.lokiOptions = append(cfg.lokiOptions,
+		loki.AppendLabels(zap.String("app", config.AppName)),
+		loki.AppendLabels(zap.String("version", config.Version)),
+		loki.AppendLabels(zap.String("env", string(config.Env))),
+	)
+	l, err := InitWithConfig(ctx, cfg)
 	if err != nil {
 		return err
 	}

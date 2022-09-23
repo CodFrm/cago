@@ -1,4 +1,4 @@
-package server
+package http
 
 import (
 	"context"
@@ -6,9 +6,9 @@ import (
 
 	"github.com/codfrm/cago"
 	"github.com/codfrm/cago/configs"
-	"github.com/codfrm/cago/mux"
 	"github.com/codfrm/cago/pkg/logger"
 	"github.com/codfrm/cago/pkg/trace"
+	"github.com/gin-gonic/gin"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/swaggo/gin-swagger/swaggerFiles"
 	"go.uber.org/zap"
@@ -21,11 +21,11 @@ type HttpConfig struct {
 type http struct {
 	ctx      context.Context
 	cancel   context.CancelFunc
-	callback func(r *mux.RouterGroup) error
+	callback func(r *gin.Engine) error
 }
 
 // Http http服务组件,需要先注册logger组件
-func Http(callback func(r *mux.RouterGroup) error) cago.ComponentCancel {
+func Http(callback func(r *gin.Engine) error) cago.ComponentCancel {
 	return &http{
 		callback: callback,
 	}
@@ -45,21 +45,18 @@ func (h *http) StartCancel(
 		return err
 	}
 	l := logger.Default()
-	opts := []mux.Option{
-		mux.ServiceName(cfg.AppName),
-	}
+	r := gin.New()
+	// 加入日志中间件
+	r.Use(logger.Middleware(logger.Default()))
 	if tp := trace.Default(); tp != nil {
-		opts = append(opts, mux.WithTracerProvider(tp))
+		// 加入链路追踪中间件
+		r.Use(trace.Middleware(cfg.AppName, tp))
 	}
-	r := mux.New(l, opts...)
-	group := r.Group()
 	if cfg.Env != configs.PROD {
 		url := ginSwagger.URL("/swagger/doc.json")
-		group.GET("/swagger/*any", func(c *mux.Context) {
-			ginSwagger.WrapHandler(swaggerFiles.Handler, url)(c.Context)
-		})
+		r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
 	}
-	if err := h.callback(group); err != nil {
+	if err := h.callback(r); err != nil {
 		return errors.New("failed to register http")
 	}
 	// 启动http服务

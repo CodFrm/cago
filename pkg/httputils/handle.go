@@ -3,7 +3,7 @@ package httputils
 import (
 	"net/http"
 
-	"github.com/codfrm/cago/mux"
+	"github.com/codfrm/cago/pkg/logger"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	pkgValidator "github.com/scriptscat/cloudcat/pkg/utils/validator"
@@ -15,7 +15,7 @@ type List struct {
 	Total int64       `json:"total"`
 }
 
-func Handle(ctx *mux.Context, f func() interface{}) {
+func Handle(ctx *gin.Context, f func() interface{}) {
 	resp := f()
 	if resp == nil {
 		ctx.JSON(http.StatusOK, gin.H{
@@ -26,7 +26,7 @@ func Handle(ctx *mux.Context, f func() interface{}) {
 	handleResp(ctx, resp)
 }
 
-func handleResp(ctx *mux.Context, resp interface{}) {
+func handleResp(ctx *gin.Context, resp interface{}) {
 	switch resp.(type) {
 	case *JsonResponseError:
 		err := resp.(*JsonResponseError)
@@ -38,7 +38,7 @@ func handleResp(ctx *mux.Context, resp interface{}) {
 		})
 	case error:
 		err := resp.(error)
-		ctx.Logger().Error("server internal error", zap.Error(err), zap.Stack("stack"))
+		logger.Ctx(ctx).Error("internal server error", zap.Error(err), zap.Stack("stack"))
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"code": -1, "msg": "系统错误",
 		})

@@ -16,8 +16,10 @@ type lokiEncode struct {
 }
 
 func NewLokiEncode(labels ...zap.Field) zapcore.Encoder {
+	encodeConfig := zap.NewProductionEncoderConfig()
+	encodeConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 	ret := &lokiEncode{
-		Encoder: zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig()),
+		Encoder: zapcore.NewJSONEncoder(encodeConfig),
 		pool:    buffer.NewPool(),
 	}
 	m := zapcore.NewMapObjectEncoder()

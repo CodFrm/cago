@@ -1,0 +1,52 @@
+# 一些环境
+
+version: '3'
+
+services:
+
+  etcd:
+    image: "quay.io/coreos/etcd:latest"
+    environment:
+      ETCD_ADVERTISE_CLIENT_URLS: "http://0.0.0.0:2379"
+      ETCD_LISTEN_CLIENT_URLS: "http://0.0.0.0:2379"
+      ETCDCTL_API: "2"
+    ports:
+    - 2379:2379
+    networks:
+      - cago
+
+  etcdkeeper:
+    image: evildecay/etcdkeeper:latest
+    environment:
+      HOST: "0.0.0.0"
+    ports:
+    - 12000:8080
+    networks:
+      - cago
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "14268:14268"
+      - "16686:16686"
+    networks:
+      - cago
+
+  loki:
+    image: grafana/loki:latest
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - cago
+
+  # 默认账号密码:admin/admin
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    networks:
+      - cago
+
+networks:
+  cago:

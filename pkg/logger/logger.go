@@ -13,37 +13,34 @@ import (
 )
 
 type Config struct {
-	Level   string
-	Debug   bool
-	LogFile *LogFileConfig
-	Loki    *LokiConfig
+	Level       string
+	LogFile     LogFileConfig
+	Loki        LokiConfig
+	lokiOptions []loki.Option
 }
 
 type LogFileConfig struct {
-	Enable    bool
-	Path      string
-	ErrorPath string
+	Enable        bool
+	Filename      string
+	ErrorFilename string
 }
 
 func InitWithConfig(ctx context.Context, cfg *Config, opts ...Option) (*zap.Logger, error) {
 	if cfg.Level != "" {
 		opts = append(opts, Level(cfg.Level))
 	}
-	if cfg.Debug {
-		opts = append(opts, Debug())
-	}
-	if cfg.LogFile != nil {
-		if cfg.LogFile.Path != "" {
-			opts = append(opts, AppendCore(NewFileCore(toLevel(cfg.Level), cfg.LogFile.Path)))
+	if cfg.LogFile.Enable {
+		if cfg.LogFile.Filename != "" {
+			opts = append(opts, AppendCore(NewFileCore(toLevel(cfg.Level), cfg.LogFile.Filename)))
 		}
-		if cfg.LogFile.ErrorPath != "" {
-			opts = append(opts, AppendCore(NewFileCore(zap.ErrorLevel, cfg.LogFile.ErrorPath)))
+		if cfg.LogFile.ErrorFilename != "" {
+			opts = append(opts, AppendCore(NewFileCore(zap.ErrorLevel, cfg.LogFile.ErrorFilename)))
 		}
 	} else {
 		opts = append(opts, WithWriter(os.Stdout))
 	}
-	if cfg.Loki != nil {
-		lokiOptions := make([]loki.Option, 0)
+	if cfg.Loki.Enable {
+		lokiOptions := cfg.lokiOptions
 		u, err := url.Parse(cfg.Loki.Url)
 		if err != nil {
 			return nil, err
@@ -70,12 +67,9 @@ func Init(opt ...Option) (*zap.Logger, error) {
 		return lvl >= level
 	})
 	if options.w != nil {
-		var encode zapcore.Encoder
-		if options.debug {
-			encode = zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig())
-		} else {
-			encode = zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig())
-		}
+		encodeConfig := zap.NewProductionEncoderConfig()
+		encodeConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+		encode := zapcore.NewJSONEncoder(encodeConfig)
 		core = append(core, zapcore.NewCore(
 			encode,
 			zapcore.AddSync(options.w),
@@ -85,7 +79,7 @@ func Init(opt ...Option) (*zap.Logger, error) {
 	if options.cores != nil {
 		core = append(core, options.cores...)
 	}
-	logger := zap.New(zapcore.NewTee(core...))
+	logger := zap.New(zapcore.NewTee(core...), zap.AddCaller())
 	return logger, nil
 }
 
@@ -115,7 +109,9 @@ func NewFileCore(level zapcore.Level, filename string) zapcore.Core {
 	levelEnable := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
 		return lvl >= level
 	})
-	encode := zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig())
+	encodeConfig := zap.NewProductionEncoderConfig()
+	encodeConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+	encode := zapcore.NewJSONEncoder(encodeConfig)
 	return zapcore.NewCore(
 		encode,
 		zapcore.AddSync(w),
