@@ -4,14 +4,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type initCmd struct {
+type InitCmd struct {
 }
 
-func NewInitCmd() *initCmd {
-	return &initCmd{}
+func NewInitCmd() *InitCmd {
+	return &InitCmd{}
 }
 
-func (e *initCmd) Commands() []*cobra.Command {
+func (e *InitCmd) Commands() []*cobra.Command {
 	ret := &cobra.Command{
 		Use:   "init [name]",
 		Short: "初始化项目",
@@ -21,7 +21,7 @@ func (e *initCmd) Commands() []*cobra.Command {
 	return []*cobra.Command{ret}
 }
 
-func (e *initCmd) exec(cmd *cobra.Command, args []string) error {
+func (e *InitCmd) exec(cmd *cobra.Command, args []string) error {
 
 	return nil
 }

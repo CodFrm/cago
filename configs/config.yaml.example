@@ -1,4 +1,4 @@
-source: etcd
+source: file
 
 env: dev
 
@@ -14,11 +14,10 @@ http:
 
 logger:
   level: info
-  debug: false
   logfile:
     enable: true
-    path: ./runtime/logs/
-    errorpath: ./runtime/logs/
+    filename: ./runtime/logs/cago.log
+    errorfilename: ./runtime/logs/cago.err.log
   loki:
     level: info
     url: "http://127.0.0.1:3100/loki/api/v1/push"

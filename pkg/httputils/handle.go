@@ -23,10 +23,10 @@ func Handle(ctx *gin.Context, f func() interface{}) {
 		})
 		return
 	}
-	handleResp(ctx, resp)
+	HandleResp(ctx, resp)
 }
 
-func handleResp(ctx *gin.Context, resp interface{}) {
+func HandleResp(ctx *gin.Context, resp interface{}) {
 	switch resp.(type) {
 	case *JsonResponseError:
 		err := resp.(*JsonResponseError)

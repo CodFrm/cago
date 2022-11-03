@@ -1,0 +1,48 @@
+basePath: /api/v1
+definitions:
+  api.CreateUserResponse:
+    type: object
+  api.UserInfoResponse:
+    properties:
+      username:
+        type: string
+    type: object
+info:
+  title: api文档
+  version: "1.0"
+paths:
+  /user:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: 创建用户
+      parameters:
+      - in: formData
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.CreateUserResponse'
+      summary: 创建用户
+  /user/{uid}:
+    get:
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - in: path
+        name: uid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.UserInfoResponse'
+swagger: "2.0"

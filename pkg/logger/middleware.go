@@ -29,6 +29,12 @@ func Middleware(logger *zap.Logger) gin.HandlerFunc {
 						"code": -1000,
 						"msg":  "internal server error",
 					})
+				} else if err, ok := r.(string); ok {
+					Ctx(ctx).Error("internal server error", zap.String("error", err), zap.Stack("stack"))
+					ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+						"code": -1000,
+						"msg":  "internal server error",
+					})
 				} else {
 					panic(err)
 				}

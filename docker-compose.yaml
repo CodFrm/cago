@@ -10,6 +10,8 @@ services:
       ETCD_ADVERTISE_CLIENT_URLS: "http://0.0.0.0:2379"
       ETCD_LISTEN_CLIENT_URLS: "http://0.0.0.0:2379"
       ETCDCTL_API: "2"
+    volumes:
+      - ./.docker/etcd:/default.etcd
     ports:
     - 2379:2379
     networks:
@@ -33,7 +35,7 @@ services:
       - cago
 
   loki:
-    image: grafana/loki:latest
+    image: grafana/loki:2.6.1
     ports:
       - "3100:3100"
     command: -config.file=/etc/loki/local-config.yaml
@@ -41,10 +43,14 @@ services:
       - cago
 
   # 默认账号密码:admin/admin
+  # 需要自己手动添加数据源
+  # 数据源地址: http://loki:3100
   grafana:
     image: grafana/grafana:latest
     ports:
       - "3000:3000"
+    volumes:
+      - ./.docker/grafana:/var/lib/grafana
     networks:
       - cago
 

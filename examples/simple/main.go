@@ -6,16 +6,17 @@ import (
 
 	"github.com/codfrm/cago"
 	"github.com/codfrm/cago/configs"
+	"github.com/codfrm/cago/examples/simple/internal/controller"
 	"github.com/codfrm/cago/pkg/logger"
 	"github.com/codfrm/cago/pkg/trace"
 	"github.com/codfrm/cago/server/http"
-	"github.com/gin-gonic/gin"
-	"go.opentelemetry.io/otel/attribute"
 )
 
+// main
 // @title    api文档
 // @version  1.0
 // @BasePath /api/v1
+// @Body     x-www-form-urlencoded
 func main() {
 	ctx := context.Background()
 	cfg, err := configs.NewConfig("simple")
@@ -26,15 +27,10 @@ func main() {
 		Registry(cago.FuncComponent(logger.Logger)).
 		Registry(cago.FuncComponent(trace.Trace)).
 		//Registry(cago.FuncComponent(mysql.Mysql)).
-		RegistryCancel(http.Http(func(r *gin.Engine) error {
-			r.GET("/", func(c *gin.Context) {
-				trace.SpanFromContext(c).SetAttributes(attribute.String("hello", "world"))
-				_, span := trace.TracerFromContext(c).Start(c, "handle hello")
-				defer span.End()
-				_, _ = c.Writer.Write([]byte("hello world"))
-				logger.Ctx(c).Info("hello world")
-			})
-			return nil
+		RegistryCancel(http.Http(func(r *http.Router) error {
+			return r.Group("/v1").Bind(
+				&controller.User{},
+			)
 		})).
 		Registry(cago.FuncComponent(func(ctx context.Context, cfg *configs.Config) error {
 			logger.Default().Info("cago simple example start")

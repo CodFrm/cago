@@ -14,33 +14,35 @@ import (
 	"go.uber.org/zap"
 )
 
-type HttpConfig struct {
+type Config struct {
 	Address []string `yaml:"address"`
 }
 
-type http struct {
+type Callback func(r *Router) error
+
+type server struct {
 	ctx      context.Context
 	cancel   context.CancelFunc
-	callback func(r *gin.Engine) error
+	callback Callback
 }
 
 // Http http服务组件,需要先注册logger组件
-func Http(callback func(r *gin.Engine) error) cago.ComponentCancel {
-	return &http{
+func Http(callback Callback) cago.ComponentCancel {
+	return &server{
 		callback: callback,
 	}
 }
 
-func (h *http) Start(ctx context.Context, cfg *configs.Config) error {
+func (h *server) Start(ctx context.Context, cfg *configs.Config) error {
 	return h.StartCancel(ctx, nil, cfg)
 }
 
-func (h *http) StartCancel(
+func (h *server) StartCancel(
 	ctx context.Context,
 	cancel context.CancelFunc,
 	cfg *configs.Config,
 ) error {
-	config := &HttpConfig{}
+	config := &Config{}
 	if err := cfg.Scan("http", config); err != nil {
 		return err
 	}
@@ -56,8 +58,8 @@ func (h *http) StartCancel(
 		url := ginSwagger.URL("/swagger/doc.json")
 		r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
 	}
-	if err := h.callback(r); err != nil {
-		return errors.New("failed to register http")
+	if err := h.callback(&Router{IRouter: r}); err != nil {
+		return errors.New("failed to register http server")
 	}
 	// 启动http服务
 	go func() {
@@ -65,12 +67,12 @@ func (h *http) StartCancel(
 			config.Address = []string{"127.0.0.1:8080"}
 		}
 		if err := r.Run(config.Address...); err != nil {
-			l.Error("failed to start http", zap.Error(err))
+			l.Error("failed to start http server", zap.Error(err))
 			cancel()
 		}
 	}()
 	return nil
 }
 
-func (h *http) CloseHandle() {
+func (h *server) CloseHandle() {
 }

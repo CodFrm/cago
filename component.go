@@ -14,7 +14,6 @@ type Component interface {
 type ComponentCancel interface {
 	Component
 	StartCancel(ctx context.Context, cancel context.CancelFunc, cfg *configs.Config) error
-	CloseHandle()
 }
 
 type FuncComponent func(ctx context.Context, cfg *configs.Config) error

@@ -6,15 +6,15 @@ import (
 	"github.com/swaggo/swag/format"
 )
 
-type swagCmd struct {
+type SwagCmd struct {
 	dir string
 }
 
-func NewSwagCmd() *swagCmd {
-	return &swagCmd{}
+func NewSwagCmd() *SwagCmd {
+	return &SwagCmd{}
 }
 
-func (s *swagCmd) Commands() []*cobra.Command {
+func (s *SwagCmd) Commands() []*cobra.Command {
 	ret := &cobra.Command{
 		Use:   "swag",
 		Short: "生成swagger文档",
@@ -31,7 +31,7 @@ func (s *swagCmd) Commands() []*cobra.Command {
 	return []*cobra.Command{ret}
 }
 
-func (s *swagCmd) gen(cmd *cobra.Command, args []string) error {
+func (s *SwagCmd) gen(cmd *cobra.Command, args []string) error {
 	if err := s.fmt(cmd, args); err != nil {
 		return err
 	}
@@ -50,7 +50,8 @@ func (s *swagCmd) gen(cmd *cobra.Command, args []string) error {
 		ParseDepth:          100,
 	})
 }
-func (s *swagCmd) fmt(cmd *cobra.Command, args []string) error {
+
+func (s *SwagCmd) fmt(cmd *cobra.Command, args []string) error {
 	return format.New().Build(&format.Config{
 		SearchDir: s.dir,
 		Excludes:  "",

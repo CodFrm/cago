@@ -1,7 +1,7 @@
 
-check-swag:
-ifneq ($(which swag),)
-	go get -u github.com/swaggo/swag/cmd/swag
+check-cago:
+ifneq ($(which cago),)
+	go get -u github.com/codfrm/cago
 endif
 
 check-mockgen:
@@ -9,10 +9,15 @@ ifneq ($(which mockgen),)
 	go install github.com/golang/mock/mockgen
 endif
 
-swagger: check-swag
-	swag init
+check-golangci-lint:
+ifneq ($(which golangci-lint),)
+	go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
+endif
 
-lint:
+swagger: check-cago
+	cago swag
+
+lint: check-golangci-lint
 	golangci-lint run
 
 test: lint

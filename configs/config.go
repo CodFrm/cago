@@ -44,6 +44,10 @@ func NewConfig(appName string, opt ...Option) (*Config, error) {
 	if err := source.Scan("env", &env); err != nil {
 		return nil, err
 	}
+	version := ""
+	if err := source.Scan("version", &version); err != nil {
+		return nil, err
+	}
 
 	switch configSource {
 	case "etcd":
@@ -62,6 +66,7 @@ func NewConfig(appName string, opt ...Option) (*Config, error) {
 	c := &Config{
 		AppName: appName,
 		Env:     env,
+		Version: version,
 		source:  source,
 	}
 	return c, nil

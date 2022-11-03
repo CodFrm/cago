@@ -46,7 +46,7 @@ func (r *Cago) RegistryCancel(component ComponentCancel) *Cago {
 	return r
 }
 
-// Start 启动框架,在此之前组件以全部启动,此处只做停止等待
+// Start 启动框架,在此之前组件已全部启动,此处只做停止等待
 func (r *Cago) Start() error {
 	<-r.ctx.Done()
 	for _, v := range r.components {
