@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"reflect"
 
-	"github.com/codfrm/cago/pkg/httputils"
+	"github.com/codfrm/cago/pkg/utils/httputils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -71,7 +71,12 @@ func (r *Router) bindHandler(controller reflect.Value, method reflect.Method, re
 		// 绑定请求参数
 		i := req.Interface()
 		if err := c.ShouldBind(i); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			httputils.HandleResp(c, err)
+			return
+		}
+		// 获取uri参数
+		if err := c.ShouldBindUri(i); err != nil {
+			httputils.HandleResp(c, err)
 			return
 		}
 		// 调用控制器方法

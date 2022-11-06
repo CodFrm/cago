@@ -14,24 +14,28 @@ import (
 	"context"
 	"errors"
 
-	"{apiPkg}"
+	"{ApiPkg}"
 )
 
 type {ControllerName} struct {
 }
+
+func New{ControllerName}() {ControllerName} {
+	return {ControllerName}{}
+}
 `
 const controllerFuncTpl = `
 // {FuncName} {FuncDesc}
-func ({simpleName} *{ControllerName}) {FuncName}(ctx context.Context, req *api.{ApiRequest}) (*api.{ApiResponse}, error) {
+func ({SimpleName} *{ControllerName}) {FuncName}(ctx context.Context, req *{ApiPkgShort}.{ApiRequest}) (*{ApiPkgShort}.{ApiResponse}, error) {
 
 	return nil, errors.New("not implement")
 }
 `
 
 // 生成controller
-func (g *GenCmd) genController(apiFile string, decl *ast.GenDecl, specs *ast.TypeSpec) error {
+func (c *Cmd) genController(apiFile string, f *ast.File, decl *ast.GenDecl, specs *ast.TypeSpec) error {
 	// 获取controller目录
-	ctrlFile := filepath.Join(path.Dir(g.apiPath), "controller", strings.TrimPrefix(apiFile, g.apiPath))
+	ctrlFile := filepath.Join(path.Dir(c.apiPath), "controller", strings.TrimPrefix(apiFile, c.apiPath))
 	if err := os.MkdirAll(filepath.Dir(ctrlFile), 0755); err != nil {
 		return err
 	}
@@ -40,7 +44,7 @@ func (g *GenCmd) genController(apiFile string, decl *ast.GenDecl, specs *ast.Typ
 	if err != nil {
 		// 不存在重新生成
 		if os.IsNotExist(err) {
-			return g.regenController(ctrlFile, decl, apiFile, specs)
+			return c.regenController(ctrlFile, f, decl, apiFile, specs)
 		}
 		return err
 	}
@@ -53,13 +57,13 @@ func (g *GenCmd) genController(apiFile string, decl *ast.GenDecl, specs *ast.Typ
 		return nil
 	}
 	// 生成函数
-	funcTpl := g.genCtrlFunc(upperFirstChar(strings.TrimSuffix(filepath.Base(ctrlFile), ".go")), decl, specs)
+	funcTpl := c.genCtrlFunc(upperFirstChar(strings.TrimSuffix(filepath.Base(ctrlFile), ".go")), f, decl, specs)
 	data = append(data, []byte(funcTpl)...)
 	return os.WriteFile(ctrlFile, data, 0644)
 }
 
 // 重新生成controller
-func (g *GenCmd) regenController(ctrlFile string, decl *ast.GenDecl, apiFile string, specs *ast.TypeSpec) error {
+func (c *Cmd) regenController(ctrlFile string, f *ast.File, decl *ast.GenDecl, apiFile string, specs *ast.TypeSpec) error {
 	// 生成controller头部
 	data := controllerHeaderTpl
 	ctrlName := upperFirstChar(strings.TrimSuffix(filepath.Base(ctrlFile), ".go"))
@@ -68,22 +72,23 @@ func (g *GenCmd) regenController(ctrlFile string, decl *ast.GenDecl, apiFile str
 	if err != nil {
 		return err
 	}
-	data = strings.ReplaceAll(data, "{apiPkg}", g.pkgName+strings.TrimPrefix(filepath.Dir(abs), g.pkgPath))
+	data = strings.ReplaceAll(data, "{ApiPkg}", c.pkgName+strings.TrimPrefix(filepath.Dir(abs), c.pkgPath))
 
-	data += g.genCtrlFunc(ctrlName, decl, specs)
+	data += c.genCtrlFunc(ctrlName, f, decl, specs)
 
 	return os.WriteFile(ctrlFile, []byte(data), 0644)
 }
 
-func (g *GenCmd) genCtrlFunc(ctrlName string, decl *ast.GenDecl, specs *ast.TypeSpec) string {
+func (c *Cmd) genCtrlFunc(ctrlName string, f *ast.File, decl *ast.GenDecl, specs *ast.TypeSpec) string {
 	// 生成函数
 	funcTpl := controllerFuncTpl
 	funcTpl = strings.ReplaceAll(funcTpl, "{ControllerName}", ctrlName)
-	funcTpl = strings.ReplaceAll(funcTpl, "{simpleName}", strings.ToLower(ctrlName[0:1]))
+	funcTpl = strings.ReplaceAll(funcTpl, "{SimpleName}", strings.ToLower(ctrlName[0:1]))
 	funcName := strings.TrimSuffix(specs.Name.Name, "Request")
 	funcTpl = strings.ReplaceAll(funcTpl, "{FuncName}", funcName)
 	funcTpl = strings.ReplaceAll(funcTpl, "{ApiRequest}", specs.Name.Name)
 	funcTpl = strings.ReplaceAll(funcTpl, "{ApiResponse}", funcName+"Response")
+	funcTpl = strings.ReplaceAll(funcTpl, "{ApiPkgShort}", f.Name.Name)
 	desc := getComment(decl, specs)
 	if desc == "" {
 		desc = "在api中没有找到注释"

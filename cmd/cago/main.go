@@ -1,8 +1,8 @@
 package main
 
 import (
-	cmd2 "github.com/codfrm/cago/internal/cmd"
-	gen2 "github.com/codfrm/cago/internal/cmd/gen"
+	"github.com/codfrm/cago/internal/cmd"
+	"github.com/codfrm/cago/internal/cmd/gen"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -12,14 +12,14 @@ func main() {
 		Use: "cago",
 	}
 
-	init := cmd2.NewInitCmd()
+	init := cmd.NewInitCmd()
 	rootCmd.AddCommand(init.Commands()...)
 
-	swag := cmd2.NewSwagCmd()
+	swag := cmd.NewSwagCmd()
 	rootCmd.AddCommand(swag.Commands()...)
 
-	gen := gen2.NewGenCmd()
-	rootCmd.AddCommand(gen.Commands()...)
+	genCmd := gen.NewGenCmd()
+	rootCmd.AddCommand(genCmd.Commands()...)
 
 	if err := rootCmd.Execute(); err != nil {
 		logrus.Fatalln(err)

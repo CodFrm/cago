@@ -1,6 +1,7 @@
 package gen
 
 import (
+	"encoding/json"
 	"fmt"
 	"go/ast"
 	"go/parser"
@@ -24,7 +25,7 @@ const (
 	XWWWFormURLEncoded = "x-www-form-urlencoded"
 )
 
-type GenCmd struct {
+type Cmd struct {
 	apiPath     string
 	pkgName     string
 	pkgPath     string
@@ -32,58 +33,104 @@ type GenCmd struct {
 	swagger     *spec.Swagger
 }
 
-func NewGenCmd() *GenCmd {
-	return &GenCmd{}
+func NewGenCmd() *Cmd {
+	return &Cmd{}
 }
 
-func (g *GenCmd) Commands() []*cobra.Command {
+func (c *Cmd) Commands() []*cobra.Command {
 	ret := &cobra.Command{
 		Use:   "gen",
 		Short: "读取目录下的文件,生成controller和swagger文档",
-		RunE:  g.gen,
+		RunE:  c.gen,
 	}
-	ret.Flags().StringVarP(&g.apiPath, "dir", "d", "./internal/api", "api目录")
+	ret.AddCommand(&cobra.Command{
+		Use:   "db [table]",
+		Short: "输入表名,生成对应的model,需要配置好数据库连接",
+		RunE:  c.genDB,
+		Args:  cobra.ExactArgs(1),
+	})
+	ret.Flags().StringVarP(&c.apiPath, "dir", "d", "./internal/api", "api目录")
 	return []*cobra.Command{ret}
 }
 
-func (g *GenCmd) gen(cmd *cobra.Command, args []string) error {
-	g.defaultBody = XWWWFormURLEncoded
+func (c *Cmd) gen(cmd *cobra.Command, args []string) error {
+	c.defaultBody = XWWWFormURLEncoded
 	var err error
-	g.swagger, err = g.parseInfo()
+	c.swagger, err = c.parseInfo()
 	if err != nil {
 		return err
 	}
-	g.pkgName, err = g.findRootPkgName(g.apiPath)
-	if err != nil {
+	if err := c.findRootPkgName(c.apiPath); err != nil {
 		return err
 	}
-	if err := g.readDir(g.apiPath); err != nil {
+	if err := c.readDir(c.apiPath, func(path string) error {
+		return c.genFile(path)
+	}); err != nil {
 		return err
 	}
 	// 生成swagger文档
 	if err := os.MkdirAll("./docs", 0755); err != nil {
 		return err
 	}
-	b, err := yaml.Marshal(g.swagger)
+	b, err := yaml.Marshal(c.swagger)
 	if err != nil {
 		return err
 	}
-	return os.WriteFile("./docs/swagger.yaml", b, 0644)
+	if err := os.WriteFile("./docs/swagger.yaml", b, 0644); err != nil {
+		return err
+	}
+	b, err = json.Marshal(c.swagger)
+	if err != nil {
+		return err
+	}
+	if err := os.WriteFile("./docs/swagger.json", b, 0644); err != nil {
+		return err
+	}
+	f, err := os.Create("./docs/docs.go")
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	return c.writeGoDoc("docs", f, c.swagger)
 }
 
-func (g *GenCmd) parseInfo() (*spec.Swagger, error) {
+func (c *Cmd) parseInfo() (*spec.Swagger, error) {
 	// 解析main.go
 	fset := token.NewFileSet()
-	f, err := parser.ParseFile(fset, path.Join(g.pkgPath, "./main.go"), nil, parser.ParseComments)
+	f, err := parser.ParseFile(fset, path.Join(c.pkgPath, "./main.go"), nil, parser.ParseComments)
 	if err != nil {
-		return nil, err
+		f, err = parser.ParseFile(fset, path.Join(c.pkgPath, "./cmd/app/main.go"), nil, parser.ParseComments)
+		if err != nil {
+			return nil, err
+		}
 	}
 	info := &spec.Info{}
 	ret := &spec.Swagger{
 		SwaggerProps: spec.SwaggerProps{
-			Swagger:     "2.0",
-			Definitions: make(spec.Definitions),
-			Info:        info,
+			Swagger: "2.0",
+			Definitions: spec.Definitions{
+				"BadRequest": {
+					SchemaProps: spec.SchemaProps{
+						Type: []string{"object"},
+						Properties: map[string]spec.Schema{
+							"code": {
+								SchemaProps: spec.SchemaProps{
+									Type:        []string{"integer"},
+									Description: "错误码",
+									Format:      "int32",
+								},
+							},
+							"msg": {
+								SchemaProps: spec.SchemaProps{
+									Type:        []string{"string"},
+									Description: "错误信息",
+								},
+							},
+						},
+					},
+				},
+			},
+			Info: info,
 			Paths: &spec.Paths{
 				Paths: make(map[string]spec.PathItem),
 			},
@@ -121,36 +168,37 @@ func (g *GenCmd) parseInfo() (*spec.Swagger, error) {
 }
 
 // 根据go.mod搜寻根包名
-func (g *GenCmd) findRootPkgName(dir string) (string, error) {
+func (c *Cmd) findRootPkgName(dir string) error {
 	f, err := os.OpenFile(path.Join(dir, "./go.mod"), os.O_RDONLY, 0644)
 	if err != nil {
 		if os.IsNotExist(err) {
 			// 向上层继续搜索
 			absDir, err := filepath.Abs(dir)
 			if err != nil {
-				return "", err
+				return err
 			}
-			return g.findRootPkgName(path.Dir(absDir))
+			return c.findRootPkgName(path.Dir(absDir))
 		}
-		return "", err
+		return err
 	}
 	defer f.Close()
 	// 解析go.mod
 	b, err := io.ReadAll(f)
 	if err != nil {
-		return "", err
+		return err
 	}
 	// 解析出包名
 	moduleName := strings.Split(string(b), "module ")[1]
 	moduleName = strings.Split(moduleName, "\n")[0]
-	g.pkgPath, err = filepath.Abs(dir)
+	c.pkgPath, err = filepath.Abs(dir)
 	if err != nil {
-		return "", err
+		return err
 	}
-	return moduleName, nil
+	c.pkgName = moduleName
+	return nil
 }
 
-func (g *GenCmd) readDir(path string) error {
+func (c *Cmd) readDir(path string, gen func(path string) error) error {
 	dir, err := os.ReadDir(path)
 	if err != nil {
 		return err
@@ -159,7 +207,7 @@ func (g *GenCmd) readDir(path string) error {
 		path := fmt.Sprintf("%s/%s", path, v.Name())
 		if v.IsDir() {
 			// 目录继续遍历
-			if err := g.readDir(path); err != nil {
+			if err := c.readDir(path, gen); err != nil {
 				return err
 			}
 		} else {
@@ -167,7 +215,7 @@ func (g *GenCmd) readDir(path string) error {
 			if !strings.HasSuffix(v.Name(), ".go") {
 				continue
 			}
-			if err := g.genFile(path); err != nil {
+			if err := gen(path); err != nil {
 				return err
 			}
 		}
@@ -176,7 +224,7 @@ func (g *GenCmd) readDir(path string) error {
 }
 
 // 解析生成文件
-func (g *GenCmd) genFile(filepath string) error {
+func (c *Cmd) genFile(filepath string) error {
 	// ast解析并生成swagger文档
 	f, err := parser.ParseFile(token.NewFileSet(), filepath, nil, parser.ParseComments)
 	if err != nil {
@@ -206,28 +254,29 @@ func (g *GenCmd) genFile(filepath string) error {
 			}
 			flag = true
 			// 处理swagger path
-			if err := g.dealSwaggerPath(f, decl, typeSpec, structSpec, field); err != nil {
+			if err := c.dealSwaggerPath(f, decl, typeSpec, structSpec, field); err != nil {
 				return err
 			}
 			break
 		}
 		if !flag {
 			// 处理swagger definitions
-			if err := g.dealSwaggerDefinitions(f, typeSpec, structSpec); err != nil {
+			if err := c.dealSwaggerDefinitions(f, typeSpec, structSpec); err != nil {
 				return err
 			}
 			continue
 		}
 		// 生成controller
-		if err := g.genController(filepath, decl, typeSpec); err != nil {
+		if err := c.genController(filepath, f, decl, typeSpec); err != nil {
 			return err
 		}
 	}
-	return nil
+	// 读取service目录根据接口生成service
+	return c.findService()
 }
 
 // 处理swagger path
-func (g *GenCmd) dealSwaggerPath(f *ast.File, decl *ast.GenDecl, typeSpec *ast.TypeSpec, structSpec *ast.StructType, field *ast.Field) error {
+func (c *Cmd) dealSwaggerPath(f *ast.File, decl *ast.GenDecl, typeSpec *ast.TypeSpec, structSpec *ast.StructType, field *ast.Field) error {
 	// 解析tag,取出route和method等参数
 	tag := strings.TrimPrefix(field.Tag.Value, "`")
 	tag = strings.TrimSuffix(tag, "`")
@@ -253,7 +302,7 @@ func (g *GenCmd) dealSwaggerPath(f *ast.File, decl *ast.GenDecl, typeSpec *ast.T
 	// GET请求参数放在query中
 	bodyType := parseTag(tag, "body")
 	if bodyType == "" {
-		bodyType = g.defaultBody
+		bodyType = c.defaultBody
 	}
 	operation.OperationProps.Consumes = []string{"application/" + bodyType}
 	if method == http.MethodGet || bodyType == XWWWFormURLEncoded {
@@ -264,10 +313,13 @@ func (g *GenCmd) dealSwaggerPath(f *ast.File, decl *ast.GenDecl, typeSpec *ast.T
 			}
 			name := lowerFirstChar(field.Names[0].Name)
 			tag := strings.TrimPrefix(field.Tag.Value, "`")
-			in := parseTag(tag, "in")
-			if in == "" {
-				if method == http.MethodGet {
-					in = "query"
+			in := "query"
+			if method == http.MethodGet {
+				in = "query"
+			} else {
+				uri := parseTag(tag, "uri")
+				if uri != "" {
+					in = "path"
 				} else {
 					in = "formData"
 				}
@@ -281,7 +333,7 @@ func (g *GenCmd) dealSwaggerPath(f *ast.File, decl *ast.GenDecl, typeSpec *ast.T
 				required = true
 				path = strings.ReplaceAll(path, ":"+name, "{"+name+"}")
 			}
-			schema, err := g.fieldType(f, field)
+			schema, err := c.fieldType(f, field)
 			if err != nil {
 				return err
 			}
@@ -312,6 +364,15 @@ func (g *GenCmd) dealSwaggerPath(f *ast.File, decl *ast.GenDecl, typeSpec *ast.T
 				},
 			},
 		},
+	}, http.StatusBadRequest: {
+		ResponseProps: spec.ResponseProps{
+			Description: "Bad Request",
+			Schema: &spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Ref: spec.MustCreateRef("#/definitions/BadRequest"),
+				},
+			},
+		},
 	}}
 
 	switch method {
@@ -325,12 +386,12 @@ func (g *GenCmd) dealSwaggerPath(f *ast.File, decl *ast.GenDecl, typeSpec *ast.T
 		pathItem.PathItemProps.Delete = operation
 	}
 
-	g.swagger.Paths.Paths[path] = pathItem
+	c.swagger.Paths.Paths[path] = pathItem
 	return nil
 }
 
 // 解析swagger definitions
-func (g *GenCmd) dealSwaggerDefinitions(file *ast.File, specs *ast.TypeSpec, structSpec *ast.StructType) error {
+func (c *Cmd) dealSwaggerDefinitions(file *ast.File, specs *ast.TypeSpec, structSpec *ast.StructType) error {
 	swaggerSchema := spec.Schema{
 		SchemaProps: spec.SchemaProps{
 			Properties: make(spec.SchemaProperties),
@@ -345,19 +406,45 @@ func (g *GenCmd) dealSwaggerDefinitions(file *ast.File, specs *ast.TypeSpec, str
 		}
 		// 为了防止死循环,先创建站位
 		swaggerSchema.SchemaProps.Properties[lowerFirstChar(field.Names[0].Name)] = spec.Schema{}
-		swaggerSchema.SchemaProps.Properties[lowerFirstChar(field.Names[0].Name)], err = g.fieldToSwagger(file, field)
+		swaggerSchema.SchemaProps.Properties[lowerFirstChar(field.Names[0].Name)], err = c.fieldToSwagger(file, field)
 		if err != nil {
 			return err
 		}
 	}
-
-	g.swagger.Definitions[fmt.Sprintf("%s.%s", file.Name.Name, specs.Name.Name)] = swaggerSchema
+	// 如果是response,再加上code和msg层
+	if strings.HasSuffix(specs.Name.Name, "Response") {
+		c.swagger.Definitions[fmt.Sprintf("%s.%s", file.Name.Name, specs.Name.Name)] = spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Properties: spec.SchemaProperties{
+					"code": {
+						SchemaProps: spec.SchemaProps{
+							Type:        spec.StringOrArray{"integer"},
+							Default:     0,
+							Description: "业务状态码, 0表示成功, 其他表示失败",
+							Format:      "int32",
+						},
+					},
+					"msg": {
+						SchemaProps: spec.SchemaProps{
+							Type:        spec.StringOrArray{"string"},
+							Default:     "success",
+							Description: "业务错误状态码描述",
+						},
+					},
+					"data": swaggerSchema,
+				},
+				Type: spec.StringOrArray{"object"},
+			},
+		}
+	} else {
+		c.swagger.Definitions[fmt.Sprintf("%s.%s", file.Name.Name, specs.Name.Name)] = swaggerSchema
+	}
 
 	return nil
 }
 
-func (g *GenCmd) fieldToSwagger(file *ast.File, field *ast.Field) (spec.Schema, error) {
-	ret, err := g.fieldType(file, field)
+func (c *Cmd) fieldToSwagger(file *ast.File, field *ast.Field) (spec.Schema, error) {
+	ret, err := c.fieldType(file, field)
 	if err != nil {
 		return spec.Schema{}, err
 	}
@@ -375,7 +462,7 @@ func (g *GenCmd) fieldToSwagger(file *ast.File, field *ast.Field) (spec.Schema, 
 	return ret, nil
 }
 
-func (g *GenCmd) fieldType(file *ast.File, field *ast.Field) (spec.Schema, error) {
+func (c *Cmd) fieldType(file *ast.File, field *ast.Field) (spec.Schema, error) {
 	var swaggerType spec.SchemaProps
 	// 转换类型
 	var typeName string
@@ -409,7 +496,7 @@ func (g *GenCmd) fieldType(file *ast.File, field *ast.Field) (spec.Schema, error
 	case "object":
 		// 解析嵌套类型
 		var err error
-		swaggerType, err = g.parseStruct(file, selectorExpr)
+		swaggerType, err = c.parseStruct(file, selectorExpr)
 		if err != nil {
 			return spec.Schema{}, err
 		}
@@ -430,12 +517,12 @@ func (g *GenCmd) fieldType(file *ast.File, field *ast.Field) (spec.Schema, error
 }
 
 // 解析嵌套结构体
-func (g *GenCmd) parseStruct(f *ast.File, selectorExpr *ast.SelectorExpr) (spec.SchemaProps, error) {
+func (c *Cmd) parseStruct(f *ast.File, selectorExpr *ast.SelectorExpr) (spec.SchemaProps, error) {
 	// 先检查是否已有结构体
 	pkgName := selectorExpr.X.(*ast.Ident).Name
 	name := fmt.Sprintf("%s.%s", pkgName, selectorExpr.Sel.Name)
 	ref := jsonreference.MustCreateRef("#/definitions/" + name)
-	if _, ok := g.swagger.Definitions[name]; ok {
+	if _, ok := c.swagger.Definitions[name]; ok {
 		return spec.SchemaProps{
 			Ref: spec.Ref{Ref: ref},
 		}, nil
@@ -460,11 +547,11 @@ func (g *GenCmd) parseStruct(f *ast.File, selectorExpr *ast.SelectorExpr) (spec.
 		path := strings.TrimSuffix(v.Path.Value, `"`)
 		path = strings.TrimPrefix(path, `"`)
 		// 暂时不处理非本包的结构
-		if !strings.HasPrefix(path, g.pkgName) {
+		if !strings.HasPrefix(path, c.pkgName) {
 			continue
 		}
 		// 转换成绝对路径
-		path = filepath.Join(g.pkgPath, strings.TrimPrefix(path, g.pkgName))
+		path = filepath.Join(c.pkgPath, strings.TrimPrefix(path, c.pkgName))
 		// 解析文件
 		pkgs, err := parser.ParseDir(token.NewFileSet(), path, nil, parser.ParseComments)
 		if err != nil {
@@ -484,7 +571,7 @@ func (g *GenCmd) parseStruct(f *ast.File, selectorExpr *ast.SelectorExpr) (spec.
 				if !ok {
 					continue
 				}
-				if err := g.dealSwaggerDefinitions(file, typeSpec, structType); err != nil {
+				if err := c.dealSwaggerDefinitions(file, typeSpec, structType); err != nil {
 					return spec.SchemaProps{}, err
 				}
 			}

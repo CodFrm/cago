@@ -8,7 +8,9 @@ import (
 	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/pkg/logger"
 	"github.com/codfrm/cago/pkg/trace"
+	"github.com/codfrm/cago/server/http/validator"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/swaggo/gin-swagger/swaggerFiles"
 	"go.uber.org/zap"
@@ -43,11 +45,16 @@ func (h *server) StartCancel(
 	cfg *configs.Config,
 ) error {
 	config := &Config{}
-	if err := cfg.Scan("http", config); err != nil {
+	err := cfg.Scan("http", config)
+	if err != nil {
 		return err
 	}
 	l := logger.Default()
 	r := gin.New()
+	binding.Validator, err = validator.NewValidator()
+	if err != nil {
+		return err
+	}
 	// 加入日志中间件
 	r.Use(logger.Middleware(logger.Default()))
 	if tp := trace.Default(); tp != nil {

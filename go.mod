@@ -6,6 +6,7 @@ require (
 	github.com/asaskevich/EventBus v0.0.0-20200907212545-49d423059eef
 	github.com/ghodss/yaml v1.0.0
 	github.com/gin-gonic/gin v1.8.1
+	github.com/go-openapi/jsonreference v0.19.6
 	github.com/go-openapi/spec v0.20.4
 	github.com/go-playground/locales v0.14.0
 	github.com/go-playground/universal-translator v0.18.0
@@ -42,7 +43,6 @@ require (
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
-	github.com/go-openapi/jsonreference v0.19.6 // indirect
 	github.com/go-openapi/swag v0.19.15 // indirect
 	github.com/go-redis/redis/v8 v8.11.3 // indirect
 	github.com/go-sql-driver/mysql v1.6.0 // indirect

@@ -1,4 +1,4 @@
-package mysql
+package db
 
 import (
 	"context"
@@ -9,20 +9,20 @@ import (
 	"gorm.io/gorm/schema"
 )
 
-var db *mysql
+var defaultDB *db
 
-type mysql struct {
+type db struct {
 	*gorm.DB
 }
 
 type Config struct {
-	Dsn    string `yaml:"dsn" env:"MYSQL_DSN"`
-	Prefix string `yaml:"prefix,omitempty" env:"MYSQL_PREFIX"`
+	Dsn    string `yaml:"dsn"`
+	Prefix string `yaml:"prefix"`
 }
 
-func Mysql(ctx context.Context, config *configs.Config) error {
+func DB(ctx context.Context, config *configs.Config) error {
 	cfg := &Config{}
-	if err := config.Scan("mysql", cfg); err != nil {
+	if err := config.Scan("db", cfg); err != nil {
 		return err
 	}
 	orm, err := gorm.Open(mysqlDriver.New(mysqlDriver.Config{
@@ -37,12 +37,16 @@ func Mysql(ctx context.Context, config *configs.Config) error {
 	if err != nil {
 		return err
 	}
-	db = &mysql{
+	defaultDB = &db{
 		DB: orm,
 	}
 	return nil
 }
 
 func Default() *gorm.DB {
-	return db.DB
+	return defaultDB.DB
+}
+
+func Ctx(ctx context.Context) *gorm.DB {
+	return defaultDB.DB
 }

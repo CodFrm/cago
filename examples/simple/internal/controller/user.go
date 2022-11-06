@@ -10,14 +10,12 @@ import (
 type User struct {
 }
 
-// CreateUser 创建用户
-func (u *User) CreateUser(ctx context.Context, req *api.CreateUserRequest) (*api.CreateUserResponse, error) {
-
-	return nil, errors.New("not implement")
+func NewUser() User {
+	return User{}
 }
 
-// UserInfo  在api中没有找到注释
-func (u *User) UserInfo(ctx context.Context, req *api.UserInfoRequest) (*api.UserInfoResponse, error) {
+// CreateUser 创建用户
+func (u *User) CreateUser(ctx context.Context, req *api.CreateUserRequest) (*api.CreateUserResponse, error) {
 
 	return nil, errors.New("not implement")
 }

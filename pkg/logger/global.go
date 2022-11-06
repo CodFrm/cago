@@ -5,6 +5,7 @@ import (
 
 	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/pkg/logger/loki"
+	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
 
@@ -35,4 +36,15 @@ func SetLogger(l *zap.Logger) {
 
 func Default() *zap.Logger {
 	return logger
+}
+
+func Ctx(ctx context.Context) *zap.Logger {
+	log, ok := ctx.Value(loggerKey).(*zap.Logger)
+	if !ok {
+		if gctx, ok := ctx.(*gin.Context); ok {
+			return gctx.Request.Context().Value(loggerKey).(*zap.Logger)
+		}
+		return logger
+	}
+	return log
 }

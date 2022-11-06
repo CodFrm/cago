@@ -6,6 +6,7 @@ import (
 
 	"github.com/codfrm/cago"
 	"github.com/codfrm/cago/configs"
+	"github.com/codfrm/cago/database/db"
 	"github.com/codfrm/cago/examples/simple/internal/controller"
 	"github.com/codfrm/cago/pkg/logger"
 	"github.com/codfrm/cago/pkg/trace"
@@ -26,10 +27,10 @@ func main() {
 	err = cago.New(ctx, cfg).
 		Registry(cago.FuncComponent(logger.Logger)).
 		Registry(cago.FuncComponent(trace.Trace)).
-		//Registry(cago.FuncComponent(mysql.Mysql)).
+		Registry(cago.FuncComponent(db.DB)).
 		RegistryCancel(http.Http(func(r *http.Router) error {
-			return r.Group("/v1").Bind(
-				&controller.User{},
+			return r.Group("/").Bind(
+				controller.NewUser(),
 			)
 		})).
 		Registry(cago.FuncComponent(func(ctx context.Context, cfg *configs.Config) error {

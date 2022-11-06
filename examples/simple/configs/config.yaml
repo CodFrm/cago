@@ -1,0 +1,29 @@
+env: dev
+etcd:
+    endpoints:
+        - 127.0.0.1:2379
+    prefix: /config
+http:
+    address:
+        - :8080
+logger:
+    level: info
+    logfile:
+        enable: true
+        errorfilename: ./runtime/logs/cago.err.log
+        filename: ./runtime/logs/cago.log
+    loki:
+        level: info
+        url: http://127.0.0.1:3100/loki/api/v1/push
+db:
+    dsn: root:password@tcp(127.0.0.1:3306)/scriptlist?charset=utf8mb4&collation=utf8mb4_unicode_ci&parseTime=True&loc=Local&multiStatements=true
+    prefix: cm_
+
+source: file
+trace:
+    endpoint: http://localhost:14268/api/traces
+    password: ""
+    sample: 1
+    type: jaeger
+    username: ""
+version: 1.0.0

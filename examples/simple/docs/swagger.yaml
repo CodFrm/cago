@@ -1,10 +1,27 @@
 basePath: /api/v1
 definitions:
-  api.CreateUserResponse:
-    type: object
-  api.UserInfoResponse:
+  BadRequest:
     properties:
-      username:
+      code:
+        description: 错误码
+        format: int32
+        type: integer
+      msg:
+        description: 错误信息
+        type: string
+    type: object
+  api.CreateUserResponse:
+    properties:
+      code:
+        default: 0
+        description: 业务状态码, 0表示成功, 其他表示失败
+        format: int32
+        type: integer
+      data:
+        type: object
+      msg:
+        default: success
+        description: 业务错误状态码描述
         type: string
     type: object
 info:
@@ -18,8 +35,7 @@ paths:
       description: 创建用户
       parameters:
       - in: formData
-        name: username
-        required: true
+        name: name
         type: string
       produces:
       - application/json
@@ -28,21 +44,9 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/api.CreateUserResponse'
-      summary: 创建用户
-  /user/{uid}:
-    get:
-      consumes:
-      - application/x-www-form-urlencoded
-      parameters:
-      - in: path
-        name: uid
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
+        "400":
+          description: Bad Request
           schema:
-            $ref: '#/definitions/api.UserInfoResponse'
+            $ref: '#/definitions/BadRequest'
+      summary: 创建用户
 swagger: "2.0"

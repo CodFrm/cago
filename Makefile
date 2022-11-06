@@ -1,7 +1,7 @@
 
 check-cago:
 ifneq ($(which cago),)
-	go get -u github.com/codfrm/cago
+	go install github.com/codfrm/cago
 endif
 
 check-mockgen:
