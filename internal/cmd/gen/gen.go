@@ -40,11 +40,11 @@ func NewGenCmd() *Cmd {
 func (c *Cmd) Commands() []*cobra.Command {
 	ret := &cobra.Command{
 		Use:   "gen",
-		Short: "读取目录下的文件,生成controller和swagger文档",
+		Short: "读取api目录下的文件,生成controller、service和swagger文档",
 		RunE:  c.gen,
 	}
 	ret.AddCommand(&cobra.Command{
-		Use:   "db [table]",
+		Use:   "gorm [table]",
 		Short: "输入表名,生成对应的model,需要配置好数据库连接",
 		RunE:  c.genDB,
 		Args:  cobra.ExactArgs(1),
@@ -54,7 +54,7 @@ func (c *Cmd) Commands() []*cobra.Command {
 }
 
 func (c *Cmd) gen(cmd *cobra.Command, args []string) error {
-	c.defaultBody = XWWWFormURLEncoded
+	c.defaultBody = JSONBodyType
 	var err error
 	c.swagger, err = c.parseInfo()
 	if err != nil {
@@ -268,6 +268,10 @@ func (c *Cmd) genFile(filepath string) error {
 		}
 		// 生成controller
 		if err := c.genController(filepath, f, decl, typeSpec); err != nil {
+			return err
+		}
+		// 生成service接口
+		if err := c.genService(filepath, f, decl, typeSpec); err != nil {
 			return err
 		}
 	}

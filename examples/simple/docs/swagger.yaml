@@ -10,7 +10,21 @@ definitions:
         description: 错误信息
         type: string
     type: object
-  api.CreateUserResponse:
+  user.CreateUserResponse:
+    properties:
+      code:
+        default: 0
+        description: 业务状态码, 0表示成功, 其他表示失败
+        format: int32
+        type: integer
+      data:
+        type: object
+      msg:
+        default: success
+        description: 业务错误状态码描述
+        type: string
+    type: object
+  user.LoginResponse:
     properties:
       code:
         default: 0
@@ -31,22 +45,33 @@ paths:
   /user:
     post:
       consumes:
-      - application/x-www-form-urlencoded
+      - application/json
       description: 创建用户
-      parameters:
-      - in: formData
-        name: name
-        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/api.CreateUserResponse'
+            $ref: '#/definitions/user.CreateUserResponse'
         "400":
           description: Bad Request
           schema:
             $ref: '#/definitions/BadRequest'
       summary: 创建用户
+  /user/login:
+    post:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
 swagger: "2.0"

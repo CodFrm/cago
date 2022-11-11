@@ -20,7 +20,7 @@ type Config struct {
 	Prefix string `yaml:"prefix"`
 }
 
-func DB(ctx context.Context, config *configs.Config) error {
+func Database(ctx context.Context, config *configs.Config) error {
 	cfg := &Config{}
 	if err := config.Scan("db", cfg); err != nil {
 		return err

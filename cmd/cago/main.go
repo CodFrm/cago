@@ -15,9 +15,6 @@ func main() {
 	init := cmd.NewInitCmd()
 	rootCmd.AddCommand(init.Commands()...)
 
-	swag := cmd.NewSwagCmd()
-	rootCmd.AddCommand(swag.Commands()...)
-
 	genCmd := gen.NewGenCmd()
 	rootCmd.AddCommand(genCmd.Commands()...)
 

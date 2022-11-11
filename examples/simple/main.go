@@ -27,7 +27,7 @@ func main() {
 	err = cago.New(ctx, cfg).
 		Registry(cago.FuncComponent(logger.Logger)).
 		Registry(cago.FuncComponent(trace.Trace)).
-		Registry(cago.FuncComponent(db.DB)).
+		Registry(cago.FuncComponent(db.Database)).
 		RegistryCancel(http.Http(func(r *http.Router) error {
 			return r.Group("/").Bind(
 				controller.NewUser(),

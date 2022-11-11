@@ -21,6 +21,22 @@ func lowerFirstChar(str string) string {
 	return strings.ToLower(str[:1]) + str[1:]
 }
 
+// 下划线转驼峰
+func toCamel(str string) string {
+	if str == "id" {
+		return "ID"
+	}
+	var result string
+	for _, v := range strings.Split(str, "_") {
+		if v[1:] == "id" {
+			result += strings.ToUpper(v[:1]) + "ID"
+		} else {
+			result += strings.ToUpper(v[:1]) + v[1:]
+		}
+	}
+	return result
+}
+
 func getComment(decl *ast.GenDecl, typeSpec *ast.TypeSpec) string {
 	comment := ""
 	if decl.Doc != nil {

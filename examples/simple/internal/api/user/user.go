@@ -1,4 +1,4 @@
-package api
+package user
 
 import (
 	"github.com/codfrm/cago/server/http"
@@ -11,4 +11,12 @@ type CreateUserRequest struct {
 }
 
 type CreateUserResponse struct {
+}
+
+type LoginRequest struct {
+	http.Route `path:"/user/login" method:"POST"`
+	Username   string `form:"username" binding:"required"`
+}
+
+type LoginResponse struct {
 }

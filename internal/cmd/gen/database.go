@@ -111,7 +111,7 @@ func (c *Cmd) genDB(cmd *cobra.Command, args []string) error {
 	if err := c.findRootPkgName("./"); err != nil {
 		return err
 	}
-	if err := db.DB(context.Background(), cfg); err != nil {
+	if err := db.Database(context.Background(), cfg); err != nil {
 		return err
 	}
 	column := make([]Column, 0)
@@ -263,20 +263,4 @@ func convSqlType(sqlType string) string {
 		return "time.Time"
 	}
 	return "interface{}"
-}
-
-// 下划线转驼峰
-func toCamel(str string) string {
-	if str == "id" {
-		return "ID"
-	}
-	var result string
-	for _, v := range strings.Split(str, "_") {
-		if v[1:] == "id" {
-			result += strings.ToUpper(v[:1]) + "ID"
-		} else {
-			result += strings.ToUpper(v[:1]) + v[1:]
-		}
-	}
-	return result
 }

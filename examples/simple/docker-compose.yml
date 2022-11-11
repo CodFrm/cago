@@ -1,0 +1,21 @@
+version: '3'
+
+services:
+
+  redis:
+    image: redis
+    container_name: scriptlist
+    volumes:
+      - ./.docker/redis:/data
+    ports:
+      - 6379:6379
+
+  mysql:
+    image: mariadb:10.9.3
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=scriptlist
+    ports:
+      - 3306:3306
+    volumes:
+      - ./.docker/mysql:/var/lib/mysql

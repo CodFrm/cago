@@ -8,13 +8,13 @@ import (
 	"strings"
 )
 
-const controllerHeaderTpl = `package controller
+const controllerHeaderTpl = `package {PkgName}
 
 import (
 	"context"
-	"errors"
 
-	"{ApiPkg}"
+	api "{ApiPkg}"
+	service "{ServicePkg}"
 )
 
 type {ControllerName} struct {
@@ -24,11 +24,11 @@ func New{ControllerName}() {ControllerName} {
 	return {ControllerName}{}
 }
 `
+
 const controllerFuncTpl = `
 // {FuncName} {FuncDesc}
-func ({SimpleName} *{ControllerName}) {FuncName}(ctx context.Context, req *{ApiPkgShort}.{ApiRequest}) (*{ApiPkgShort}.{ApiResponse}, error) {
-
-	return nil, errors.New("not implement")
+func ({SimpleName} *{ControllerName}) {FuncName}(ctx context.Context, req *api.{ApiRequest}) (*api.{ApiResponse}, error) {
+	return service.{ControllerName}().{FuncName}(ctx, req)
 }
 `
 
@@ -68,11 +68,19 @@ func (c *Cmd) regenController(ctrlFile string, f *ast.File, decl *ast.GenDecl, a
 	data := controllerHeaderTpl
 	ctrlName := upperFirstChar(strings.TrimSuffix(filepath.Base(ctrlFile), ".go"))
 	data = strings.ReplaceAll(data, "{ControllerName}", ctrlName)
+	data = strings.ReplaceAll(data, "{PkgName}", f.Name.Name)
 	abs, err := filepath.Abs(apiFile)
 	if err != nil {
 		return err
 	}
 	data = strings.ReplaceAll(data, "{ApiPkg}", c.pkgName+strings.TrimPrefix(filepath.Dir(abs), c.pkgPath))
+	// 获取service包名
+	abs, err = filepath.Abs(c.apiPath)
+	if err != nil {
+		return err
+	}
+	servicePkg := c.pkgName + strings.TrimPrefix(filepath.Dir(abs), c.pkgPath) + "/service/" + strings.TrimPrefix(filepath.Dir(apiFile), "internal/api/")
+	data = strings.ReplaceAll(data, "{ServicePkg}", servicePkg)
 
 	data += c.genCtrlFunc(ctrlName, f, decl, specs)
 
@@ -88,10 +96,9 @@ func (c *Cmd) genCtrlFunc(ctrlName string, f *ast.File, decl *ast.GenDecl, specs
 	funcTpl = strings.ReplaceAll(funcTpl, "{FuncName}", funcName)
 	funcTpl = strings.ReplaceAll(funcTpl, "{ApiRequest}", specs.Name.Name)
 	funcTpl = strings.ReplaceAll(funcTpl, "{ApiResponse}", funcName+"Response")
-	funcTpl = strings.ReplaceAll(funcTpl, "{ApiPkgShort}", f.Name.Name)
 	desc := getComment(decl, specs)
 	if desc == "" {
-		desc = "在api中没有找到注释"
+		desc = "TODO"
 	}
 	funcTpl = strings.ReplaceAll(funcTpl, "{FuncDesc}", desc)
 	return funcTpl
