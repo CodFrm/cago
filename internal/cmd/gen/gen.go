@@ -240,9 +240,11 @@ func (c *Cmd) genFile(filepath string) error {
 			continue
 		}
 		typeSpec := decl.Specs[0].(*ast.TypeSpec)
-		structSpec := typeSpec.Type.(*ast.StructType)
+		structSpec, ok := typeSpec.Type.(*ast.StructType)
+		if !ok {
+			continue
+		}
 		// 解析http.Route
-
 		flag := false
 		for _, field := range structSpec.Fields.List {
 			expr, ok := field.Type.(*ast.SelectorExpr)
