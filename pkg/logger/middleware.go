@@ -24,13 +24,13 @@ func Middleware(logger *zap.Logger) gin.HandlerFunc {
 		defer func() {
 			if r := recover(); r != nil {
 				if err, ok := r.(error); ok {
-					Ctx(ctx).Error("internal server error", zap.Error(err), zap.Stack("stack"))
+					Ctx(ctx).Error("internal server error", zap.Error(err), zap.StackSkip("stack", 3))
 					ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 						"code": -1000,
 						"msg":  "internal server error",
 					})
 				} else {
-					Ctx(ctx).Error("internal server error", zap.Any("error", err), zap.Stack("stack"))
+					Ctx(ctx).Error("internal server error", zap.Any("error", r), zap.StackSkip("stack", 3))
 					ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 						"code": -1000,
 						"msg":  "internal server error",

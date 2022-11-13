@@ -38,7 +38,12 @@ func HandleResp(ctx *gin.Context, resp interface{}) {
 		})
 	case error:
 		err := resp.(error)
-		logger.Ctx(ctx).Error("internal server error", zap.Error(err), zap.Stack("stack"))
+		logger := logger.Ctx(ctx).With(
+			zap.String("url", ctx.Request.URL.String()),
+			zap.String("method", ctx.Request.Method),
+			zap.String("ip", ctx.ClientIP()),
+		)
+		logger.Error("internal server error", zap.Error(err), zap.StackSkip("stack", 3))
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"code": -1, "msg": "系统错误",
 		})

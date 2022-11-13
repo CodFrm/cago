@@ -17,6 +17,7 @@ type Config struct {
 	LogFile     LogFileConfig
 	Loki        LokiConfig
 	lokiOptions []loki.Option
+	debug       bool
 }
 
 type LogFileConfig struct {
@@ -36,8 +37,13 @@ func InitWithConfig(ctx context.Context, cfg *Config, opts ...Option) (*zap.Logg
 		if cfg.LogFile.ErrorFilename != "" {
 			opts = append(opts, AppendCore(NewFileCore(zap.ErrorLevel, cfg.LogFile.ErrorFilename)))
 		}
-	} else {
-		opts = append(opts, WithWriter(os.Stdout))
+	}
+	if cfg.debug {
+		opts = append(opts, AppendCore(zapcore.NewCore(
+			zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig()),
+			zapcore.Lock(os.Stdout),
+			zapcore.DebugLevel,
+		)))
 	}
 	if cfg.Loki.Enable {
 		lokiOptions := cfg.lokiOptions

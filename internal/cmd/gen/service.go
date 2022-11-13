@@ -124,8 +124,8 @@ func (c *Cmd) genService(apiFile string, f *ast.File, decl *ast.GenDecl, specs *
 func (c *Cmd) regenService(serviceFile string, f *ast.File, apiFile string) error {
 	// 生成service头部
 	data := serviceInterfaceTpl
-	ctrlName := utils.UpperFirstChar(strings.TrimSuffix(filepath.Base(serviceFile), ".go"))
-	data = strings.ReplaceAll(data, "{ServiceName}", ctrlName)
+	serviceName := utils.FileNameToCamel(serviceFile)
+	data = strings.ReplaceAll(data, "{ServiceName}", serviceName)
 	data = strings.ReplaceAll(data, "{PkgName}", f.Name.Name)
 	abs, err := filepath.Abs(apiFile)
 	if err != nil {

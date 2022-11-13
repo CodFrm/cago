@@ -137,8 +137,13 @@ func (s *Swagger) parseRoute(filename string, file *ast.File, decl *ast.GenDecl,
 			} else {
 				// 获取ref
 				schema = s.swagger.Definitions[strings.Split(schema.Ref.GetURL().Fragment, "/")[2]]
+				paramProps.Description += "\n" + schema.Description
+				paramProps.Description = strings.TrimSpace(paramProps.Description)
 				operation.Parameters = append(operation.Parameters, spec.Parameter{
 					ParamProps: paramProps,
+					CommonValidations: spec.CommonValidations{
+						Enum: schema.Enum,
+					},
 					SimpleSchema: spec.SimpleSchema{
 						Type: schema.Type[0],
 					},

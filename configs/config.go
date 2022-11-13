@@ -2,6 +2,8 @@ package configs
 
 import (
 	"path"
+	"reflect"
+	"strings"
 
 	"github.com/codfrm/cago/configs/etcd"
 	"github.com/codfrm/cago/configs/file"
@@ -20,8 +22,8 @@ type Config struct {
 	AppName string
 	Version string
 	Env     Env
+	Debug   bool
 	source  source2.Source
-	config  map[string]interface{}
 }
 
 func NewConfig(appName string, opt ...Option) (*Config, error) {
@@ -42,6 +44,10 @@ func NewConfig(appName string, opt ...Option) (*Config, error) {
 	}
 	var env Env
 	if err := source.Scan("env", &env); err != nil {
+		return nil, err
+	}
+	var debug bool
+	if err := source.Scan("debug", &debug); err != nil {
 		return nil, err
 	}
 	version := ""
@@ -65,13 +71,48 @@ func NewConfig(appName string, opt ...Option) (*Config, error) {
 
 	c := &Config{
 		AppName: appName,
+		Debug:   debug,
 		Env:     env,
 		Version: version,
 		source:  source,
 	}
+	defaultConfig = c
 	return c, nil
 }
 
 func (c *Config) Scan(key string, value interface{}) error {
 	return c.source.Scan(key, value)
+}
+
+func (c *Config) findKey(key string, value interface{}) error {
+	keys := strings.Split(key, ".")
+	if len(keys) == 1 {
+		return c.source.Scan(key, value)
+	}
+	valueMap := make(map[string]interface{})
+	if err := c.source.Scan(keys[0], &valueMap); err != nil {
+		return nil
+	}
+	for i := 1; i < len(keys); i++ {
+		if v, ok := valueMap[keys[i]]; ok {
+			if i == len(keys)-1 {
+				reflect.ValueOf(value).Elem().Set(reflect.ValueOf(v))
+				return nil
+			}
+			valueMap = v.(map[string]interface{})
+		} else {
+			return nil
+		}
+	}
+	// 使用反射复制valueMap到value
+	reflect.ValueOf(value).Elem().Set(reflect.ValueOf(valueMap))
+	return nil
+}
+
+func (c *Config) String(key string) string {
+	var str string
+	if err := c.findKey(key, &str); err != nil {
+		return ""
+	}
+	return str
 }

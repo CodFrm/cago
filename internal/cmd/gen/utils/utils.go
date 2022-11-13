@@ -56,6 +56,9 @@ func GetFieldComment(field *ast.Field) string {
 	if field.Doc != nil {
 		comment = field.Doc.Text()
 		comment = strings.TrimSpace(strings.TrimPrefix(comment, field.Names[0].Name))
+	} else if field.Comment != nil {
+		comment = field.Comment.Text()
+		comment = strings.TrimSpace(strings.TrimPrefix(comment, "//"))
 	}
 	return comment
 }
@@ -203,4 +206,8 @@ func ParseTag(tag string, key string) string {
 	value := keys[1]
 	value = strings.Split(value, "\"")[0]
 	return value
+}
+
+func FileNameToCamel(filename string) string {
+	return UpperFirstChar(ToCamel(strings.TrimSuffix(filepath.Base(filename), ".go")))
 }

@@ -164,7 +164,7 @@ func (c *Cmd) genFile(filepath string) error {
 			continue
 		}
 		// 解析http.Route
-		flag := false
+		var routeField *ast.Field
 		for _, field := range structSpec.Fields.List {
 			expr, ok := field.Type.(*ast.SelectorExpr)
 			if !ok {
@@ -173,14 +173,14 @@ func (c *Cmd) genFile(filepath string) error {
 			if expr.Sel.Name != "Route" || expr.X.(*ast.Ident).Name != "http" {
 				continue
 			}
-			flag = true
+			routeField = field
 			break
 		}
-		if !flag {
+		if routeField == nil {
 			continue
 		}
 		// 生成controller
-		if err := c.genController(filepath, f, decl, typeSpec); err != nil {
+		if err := c.genController(filepath, f, decl, typeSpec, routeField); err != nil {
 			return err
 		}
 		// 生成service接口

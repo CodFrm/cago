@@ -3,6 +3,7 @@ package gen
 import (
 	"context"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -68,13 +69,16 @@ func New{Name}() repository.I{Name} {
 func (u *{LowerName}) Find(ctx context.Context, id int64) (*entity.{Name}, error) {
 	ret := &entity.{Name}{ID: id}
 	if err := db.Ctx(ctx).First(ret).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
 		return nil, err
 	}
 	return ret, nil
 }
 
-func (u *{LowerName}) Create(ctx context.Context, {LowerName} *entity.{Name}) error {
-	return db.Ctx(ctx).Create({LowerName}).Error
+func (u *{LowerName}) Save(ctx context.Context, {LowerName} *entity.{Name}) error {
+	return db.Ctx(ctx).Save({LowerName}).Error
 }
 
 func (u *{LowerName}) Update(ctx context.Context, {LowerName} *entity.{Name}) error {
@@ -105,7 +109,9 @@ type Index struct {
 
 func (c *Cmd) genDB(cmd *cobra.Command, args []string) error {
 	table := args[0]
-	cfg, err := configs.NewConfig("cago")
+	// 读取appName
+	abs, _ := filepath.Abs(".")
+	cfg, err := configs.NewConfig(path.Base(abs))
 	if err != nil {
 		return err
 	}

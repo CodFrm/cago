@@ -8,6 +8,7 @@ import (
 	"go/token"
 	"os"
 	"path"
+	"strconv"
 	"strings"
 
 	"github.com/codfrm/cago/internal/cmd/gen/utils"
@@ -38,6 +39,57 @@ func (p *parseStruct) parseStruct(typeSpec *ast.TypeSpec) error {
 	schema, err := p.parseFieldType(typeSpec.Type)
 	if err != nil {
 		return err
+	}
+	// 基础类型,并且是type定义的,则搜索当前文件,查看是不是enum类型
+	if schema.Type[0] != "object" && typeSpec.Name.Obj.Kind == ast.Typ {
+		for _, decl := range p.f.Decls {
+			genDecl, ok := decl.(*ast.GenDecl)
+			if !ok {
+				continue
+			}
+			if genDecl.Tok != token.CONST {
+				continue
+			}
+			valueSpec, ok := genDecl.Specs[0].(*ast.ValueSpec)
+			if !ok {
+				continue
+			}
+			if valueSpec.Type.(*ast.Ident).Name != typeSpec.Name.Name {
+				continue
+			}
+			schema.Enum = make([]interface{}, 0)
+			schema.Description += "\n" + typeSpec.Name.Name + " enum type:"
+			for _, spec := range genDecl.Specs {
+				valueSpec := spec.(*ast.ValueSpec)
+				if len(valueSpec.Values) == 0 {
+					// 默认数值型,前一个数值加索引
+					index := valueSpec.Names[0].Obj.Data.(int)
+					value := schema.Enum[index-1].(int) + 1
+					schema.Enum = append(schema.Enum, value)
+					schema.Description += "\n" + fmt.Sprintf("- %s: %d", valueSpec.Names[0].Name,
+						value)
+					continue
+				}
+				if basicList, ok := valueSpec.Values[0].(*ast.BasicLit); ok {
+					value := basicList.Value
+					switch basicList.Kind {
+					case token.STRING:
+						value = strings.Trim(value, "\"")
+					}
+					schema.Enum = append(schema.Enum, value)
+					schema.Description += "\n" + fmt.Sprintf("- %s: %s", valueSpec.Names[0].Name,
+						value)
+				} else if ident, ok := valueSpec.Values[0].(*ast.Ident); ok {
+					value, _ := strconv.Atoi(strings.Trim(
+						strings.TrimSpace(strings.Trim(ident.Name, "iota")), "+"),
+					)
+					schema.Enum = append(schema.Enum, value)
+					schema.Description += "\n" + fmt.Sprintf("- %s: %d", valueSpec.Names[0].Name,
+						value)
+				}
+			}
+			schema.Description = strings.TrimSpace(schema.Description)
+		}
 	}
 	p.swagger.Definitions[name] = schema
 	return nil
