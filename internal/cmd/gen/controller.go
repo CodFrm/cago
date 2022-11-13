@@ -6,6 +6,8 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+
+	"github.com/codfrm/cago/internal/cmd/gen/utils"
 )
 
 const controllerHeaderTpl = `package {PkgName}
@@ -57,7 +59,7 @@ func (c *Cmd) genController(apiFile string, f *ast.File, decl *ast.GenDecl, spec
 		return nil
 	}
 	// 生成函数
-	funcTpl := c.genCtrlFunc(upperFirstChar(strings.TrimSuffix(filepath.Base(ctrlFile), ".go")), f, decl, specs)
+	funcTpl := c.genCtrlFunc(utils.UpperFirstChar(strings.TrimSuffix(filepath.Base(ctrlFile), ".go")), f, decl, specs)
 	data = append(data, []byte(funcTpl)...)
 	return os.WriteFile(ctrlFile, data, 0644)
 }
@@ -66,7 +68,7 @@ func (c *Cmd) genController(apiFile string, f *ast.File, decl *ast.GenDecl, spec
 func (c *Cmd) regenController(ctrlFile string, f *ast.File, decl *ast.GenDecl, apiFile string, specs *ast.TypeSpec) error {
 	// 生成controller头部
 	data := controllerHeaderTpl
-	ctrlName := upperFirstChar(strings.TrimSuffix(filepath.Base(ctrlFile), ".go"))
+	ctrlName := utils.UpperFirstChar(strings.TrimSuffix(filepath.Base(ctrlFile), ".go"))
 	data = strings.ReplaceAll(data, "{ControllerName}", ctrlName)
 	data = strings.ReplaceAll(data, "{PkgName}", f.Name.Name)
 	abs, err := filepath.Abs(apiFile)
@@ -96,7 +98,7 @@ func (c *Cmd) genCtrlFunc(ctrlName string, f *ast.File, decl *ast.GenDecl, specs
 	funcTpl = strings.ReplaceAll(funcTpl, "{FuncName}", funcName)
 	funcTpl = strings.ReplaceAll(funcTpl, "{ApiRequest}", specs.Name.Name)
 	funcTpl = strings.ReplaceAll(funcTpl, "{ApiResponse}", funcName+"Response")
-	desc := getComment(decl, specs)
+	desc := utils.GetTypeComment(decl, specs)
 	if desc == "" {
 		desc = "TODO"
 	}

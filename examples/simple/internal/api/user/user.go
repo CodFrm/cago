@@ -4,19 +4,32 @@ import (
 	"github.com/codfrm/cago/server/http"
 )
 
-// CreateUserRequest 创建用户
-type CreateUserRequest struct {
-	http.Route `path:"/user" method:"POST"`
-	Name       string `form:"name" binding:"required"`
-}
-
-type CreateUserResponse struct {
-}
-
+// LoginRequest 登录
 type LoginRequest struct {
 	http.Route `path:"/user/login" method:"POST"`
-	Username   string `form:"username" binding:"required"`
+	// 用户名
+	Username string `form:"username" binding:"required"`
 }
 
 type LoginResponse struct {
+	// 用户名
+	Username string `json:"username"`
+}
+
+// RegisterRequest 注册
+type RegisterRequest struct {
+	http.Route `path:"/user/register" method:"POST"`
+	// 用户名
+	Username string `form:"username" binding:"required"`
+}
+
+type RegisterResponse struct {
+}
+
+// LogoutRequest 登出
+type LogoutRequest struct {
+	http.Route `path:"/user/logout" method:"DELETE"`
+}
+
+type LogoutResponse struct {
 }

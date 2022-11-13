@@ -9,6 +9,8 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+
+	"github.com/codfrm/cago/internal/cmd/gen/utils"
 )
 
 const serviceInterfaceTpl = `package {PkgName}
@@ -47,7 +49,7 @@ func (c *Cmd) findService() error {
 	if err := os.MkdirAll(serviceDir, 0755); err != nil {
 		return err
 	}
-	return c.readDir(serviceDir, func(path string) error {
+	return utils.ReadDir(serviceDir, func(path string) error {
 		return c.genServiceMethod(path)
 	})
 }
@@ -104,7 +106,7 @@ func (c *Cmd) genService(apiFile string, f *ast.File, decl *ast.GenDecl, specs *
 			return nil
 		}
 		// 插入service方法
-		comment := getComment(decl, specs)
+		comment := utils.GetTypeComment(decl, specs)
 		if comment == "" {
 			comment = "TODO"
 		}
@@ -122,7 +124,7 @@ func (c *Cmd) genService(apiFile string, f *ast.File, decl *ast.GenDecl, specs *
 func (c *Cmd) regenService(serviceFile string, f *ast.File, apiFile string) error {
 	// 生成service头部
 	data := serviceInterfaceTpl
-	ctrlName := upperFirstChar(strings.TrimSuffix(filepath.Base(serviceFile), ".go"))
+	ctrlName := utils.UpperFirstChar(strings.TrimSuffix(filepath.Base(serviceFile), ".go"))
 	data = strings.ReplaceAll(data, "{ServiceName}", ctrlName)
 	data = strings.ReplaceAll(data, "{PkgName}", f.Name.Name)
 	abs, err := filepath.Abs(apiFile)
@@ -163,7 +165,7 @@ func (c *Cmd) genServiceMethod(path string) error {
 func (c *Cmd) genServiceFile(path string, f *ast.File, genDecl *ast.GenDecl, typeSpec *ast.TypeSpec) error {
 	// 判断是否已经生成struct
 	hasStruct := false
-	serviceName := lowerFirstChar(strings.TrimPrefix(typeSpec.Name.Name, "I"))
+	serviceName := utils.LowerFirstChar(strings.TrimPrefix(typeSpec.Name.Name, "I"))
 	for _, decl := range f.Decls {
 		genDecl, ok := decl.(*ast.GenDecl)
 		if !ok {
@@ -183,7 +185,7 @@ func (c *Cmd) genServiceFile(path string, f *ast.File, genDecl *ast.GenDecl, typ
 	if !hasStruct {
 		appendStr = serviceStructTpl
 		appendStr = strings.ReplaceAll(appendStr, "{ServiceName}", serviceName)
-		appendStr = strings.ReplaceAll(appendStr, "{UpperServiceName}", upperFirstChar(serviceName))
+		appendStr = strings.ReplaceAll(appendStr, "{UpperServiceName}", utils.UpperFirstChar(serviceName))
 		appendStr = strings.ReplaceAll(appendStr, "{ServiceInterface}", typeSpec.Name.Name)
 	}
 	// 生成方法
@@ -205,12 +207,12 @@ func (c *Cmd) genServiceFile(path string, f *ast.File, genDecl *ast.GenDecl, typ
 		}
 		methodStr := serviceMethodTpl
 		methodStr = strings.ReplaceAll(methodStr, "{MethodName}", method.Names[0].Name)
-		methodStr = strings.ReplaceAll(methodStr, "{Comment}", getMethodComment(method))
-		methodStr = strings.ReplaceAll(methodStr, "{FirstServiceName}", lowerFirstChar(serviceName)[0:1])
+		methodStr = strings.ReplaceAll(methodStr, "{Comment}", utils.GetFieldComment(method))
+		methodStr = strings.ReplaceAll(methodStr, "{FirstServiceName}", utils.LowerFirstChar(serviceName)[0:1])
 		methodStr = strings.ReplaceAll(methodStr, "{ServiceName}", serviceName)
-		methodStr = strings.ReplaceAll(methodStr, "{MethodParams}", getMethodParams(method.Type.(*ast.FuncType).Params.List))
-		methodStr = strings.ReplaceAll(methodStr, "{MethodResult}", getMethodResult(method.Type.(*ast.FuncType).Results.List))
-		methodStr = strings.ReplaceAll(methodStr, "{MethodResultValues}", getMethodResultValues(method.Type.(*ast.FuncType).Results.List))
+		methodStr = strings.ReplaceAll(methodStr, "{MethodParams}", utils.GetMethodParams(method.Type.(*ast.FuncType).Params.List))
+		methodStr = strings.ReplaceAll(methodStr, "{MethodResult}", utils.GetMethodResult(method.Type.(*ast.FuncType).Results.List))
+		methodStr = strings.ReplaceAll(methodStr, "{MethodResultValues}", utils.GetMethodResultValues(method.Type.(*ast.FuncType).Results.List))
 		appendStr += methodStr
 	}
 	// 写入文件

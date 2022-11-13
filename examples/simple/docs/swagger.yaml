@@ -10,59 +10,29 @@ definitions:
         description: 错误信息
         type: string
     type: object
-  user.CreateUserResponse:
-    properties:
-      code:
-        default: 0
-        description: 业务状态码, 0表示成功, 其他表示失败
-        format: int32
-        type: integer
-      data:
-        type: object
-      msg:
-        default: success
-        description: 业务错误状态码描述
-        type: string
-    type: object
   user.LoginResponse:
     properties:
-      code:
-        default: 0
-        description: 业务状态码, 0表示成功, 其他表示失败
-        format: int32
-        type: integer
-      data:
-        type: object
-      msg:
-        default: success
-        description: 业务错误状态码描述
+      username:
+        description: 用户名
         type: string
+    type: object
+  user.LogoutResponse:
+    type: object
+  user.RegisterResponse:
     type: object
 info:
   title: api文档
   version: "1.0"
 paths:
-  /user:
-    post:
-      consumes:
-      - application/json
-      description: 创建用户
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/user.CreateUserResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/BadRequest'
-      summary: 创建用户
   /user/login:
     post:
       consumes:
       - application/json
+      description: 登录
+      parameters:
+      - in: body
+        name: body
+        type: object
       produces:
       - application/json
       responses:
@@ -74,4 +44,47 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/BadRequest'
+      summary: 登录
+  /user/logout:
+    delete:
+      consumes:
+      - application/json
+      description: 登出
+      parameters:
+      - in: body
+        name: body
+        type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.LogoutResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 登出
+  /user/register:
+    post:
+      consumes:
+      - application/json
+      description: 注册
+      parameters:
+      - in: body
+        name: body
+        type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.RegisterResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 注册
 swagger: "2.0"

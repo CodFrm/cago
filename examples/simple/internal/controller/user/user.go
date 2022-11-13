@@ -14,12 +14,17 @@ func NewUser() User {
 	return User{}
 }
 
-// CreateUser 创建用户
-func (u *User) CreateUser(ctx context.Context, req *api.CreateUserRequest) (*api.CreateUserResponse, error) {
-	return service.User().CreateUser(ctx, req)
-}
-
-// Login TODO
+// Login 登录
 func (u *User) Login(ctx context.Context, req *api.LoginRequest) (*api.LoginResponse, error) {
 	return service.User().Login(ctx, req)
+}
+
+// Register 注册
+func (u *User) Register(ctx context.Context, req *api.RegisterRequest) (*api.RegisterResponse, error) {
+	return service.User().Register(ctx, req)
+}
+
+// Logout 登出
+func (u *User) Logout(ctx context.Context, req *api.LogoutRequest) (*api.LogoutResponse, error) {
+	return service.User().Logout(ctx, req)
 }

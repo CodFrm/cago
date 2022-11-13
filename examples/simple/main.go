@@ -13,10 +13,6 @@ import (
 	"github.com/codfrm/cago/server/http"
 )
 
-// main
-// @title    api文档
-// @version  1.0
-// @BasePath /api/v1
 func main() {
 	ctx := context.Background()
 	cfg, err := configs.NewConfig("simple")

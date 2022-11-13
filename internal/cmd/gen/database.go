@@ -8,6 +8,7 @@ import (
 
 	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/database/db"
+	"github.com/codfrm/cago/internal/cmd/gen/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -108,7 +109,8 @@ func (c *Cmd) genDB(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	if err := c.findRootPkgName("./"); err != nil {
+	c.pkgPath, c.pkgName, err = utils.FindRootPkgName("./")
+	if err != nil {
 		return err
 	}
 	if err := db.Database(context.Background(), cfg); err != nil {
@@ -163,8 +165,8 @@ func (c *Cmd) genRepository(table string) error {
 		return err
 	}
 	repository = strings.ReplaceAll(repository, "{PkgName}", pkgName)
-	repository = strings.ReplaceAll(repository, "{Name}", toCamel(table))
-	repository = strings.ReplaceAll(repository, "{LowerName}", lowerFirstChar(toCamel(table)))
+	repository = strings.ReplaceAll(repository, "{Name}", utils.ToCamel(table))
+	repository = strings.ReplaceAll(repository, "{LowerName}", utils.LowerFirstChar(utils.ToCamel(table)))
 	// 写文件
 	if err := os.MkdirAll("internal/repository", 0755); err != nil {
 		return err
@@ -173,7 +175,7 @@ func (c *Cmd) genRepository(table string) error {
 }
 
 func (c *Cmd) genPersistence(table string) error {
-	filepath := "internal/model/persistence/" + table + ".go"
+	filepath := "internal/repository/persistence/" + table + ".go"
 	// 存在不创建
 	if _, err := os.Stat(filepath); err == nil {
 		return nil
@@ -186,10 +188,10 @@ func (c *Cmd) genPersistence(table string) error {
 		return err
 	}
 	persistence = strings.ReplaceAll(persistence, "{PkgName}", pkgName)
-	persistence = strings.ReplaceAll(persistence, "{Name}", toCamel(table))
-	persistence = strings.ReplaceAll(persistence, "{LowerName}", lowerFirstChar(toCamel(table)))
+	persistence = strings.ReplaceAll(persistence, "{Name}", utils.ToCamel(table))
+	persistence = strings.ReplaceAll(persistence, "{LowerName}", utils.LowerFirstChar(utils.ToCamel(table)))
 	// 写文件
-	if err := os.MkdirAll("internal/model/persistence", 0755); err != nil {
+	if err := os.MkdirAll("internal/repository/persistence", 0755); err != nil {
 		return err
 	}
 	return os.WriteFile(filepath, []byte(persistence), 0644)
@@ -205,10 +207,10 @@ func (c *Cmd) genEntity(table string, column []Column, index []Index) error {
 	}
 	// 获取表的索引信息
 	entity := entityTpl
-	entity = strings.ReplaceAll(entity, "{EntityName}", toCamel(table))
+	entity = strings.ReplaceAll(entity, "{EntityName}", utils.ToCamel(table))
 	var entityField string
 	for _, v := range column {
-		entityField += "\t" + toCamel(v.Field) + " " + convSqlType(v.Type) + " `" + convSqlTag(v, index) + "`\n"
+		entityField += "\t" + utils.ToCamel(v.Field) + " " + convSqlType(v.Type) + " `" + convSqlTag(v, index) + "`\n"
 	}
 	entity = strings.ReplaceAll(entity, "{EntityField}", strings.TrimRight(entityField, "\n"))
 	// 写文件

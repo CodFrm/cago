@@ -1,1 +1,140 @@
-{"swagger":"2.0","info":{"title":"api文档","version":"1.0"},"basePath":"/api/v1","paths":{"/user":{"post":{"description":"创建用户","consumes":["application/json"],"produces":["application/json"],"summary":"创建用户","responses":{"200":{"description":"OK","schema":{"$ref":"#/definitions/user.CreateUserResponse"}},"400":{"description":"Bad Request","schema":{"$ref":"#/definitions/BadRequest"}}}}},"/user/login":{"post":{"consumes":["application/json"],"produces":["application/json"],"responses":{"200":{"description":"OK","schema":{"$ref":"#/definitions/user.LoginResponse"}},"400":{"description":"Bad Request","schema":{"$ref":"#/definitions/BadRequest"}}}}}},"definitions":{"BadRequest":{"type":"object","properties":{"code":{"description":"错误码","type":"integer","format":"int32"},"msg":{"description":"错误信息","type":"string"}}},"user.CreateUserResponse":{"type":"object","properties":{"code":{"description":"业务状态码, 0表示成功, 其他表示失败","type":"integer","format":"int32","default":0},"data":{"type":"object"},"msg":{"description":"业务错误状态码描述","type":"string","default":"success"}}},"user.LoginResponse":{"type":"object","properties":{"code":{"description":"业务状态码, 0表示成功, 其他表示失败","type":"integer","format":"int32","default":0},"data":{"type":"object"},"msg":{"description":"业务错误状态码描述","type":"string","default":"success"}}}}}
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "api文档",
+        "version": "1.0"
+    },
+    "basePath": "/api/v1",
+    "paths": {
+        "/user/login": {
+            "post": {
+                "description": "登录",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "登录",
+                "parameters": [
+                    {
+                        "type": "object",
+                        "name": "body",
+                        "in": "body"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/user.LoginResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/logout": {
+            "delete": {
+                "description": "登出",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "登出",
+                "parameters": [
+                    {
+                        "type": "object",
+                        "name": "body",
+                        "in": "body"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/user.LogoutResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/register": {
+            "post": {
+                "description": "注册",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "注册",
+                "parameters": [
+                    {
+                        "type": "object",
+                        "name": "body",
+                        "in": "body"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/user.RegisterResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "BadRequest": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "description": "错误码",
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "msg": {
+                    "description": "错误信息",
+                    "type": "string"
+                }
+            }
+        },
+        "user.LoginResponse": {
+            "type": "object",
+            "properties": {
+                "username": {
+                    "description": "用户名",
+                    "type": "string"
+                }
+            }
+        },
+        "user.LogoutResponse": {
+            "type": "object"
+        },
+        "user.RegisterResponse": {
+            "type": "object"
+        }
+    }
+}
