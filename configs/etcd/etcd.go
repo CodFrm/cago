@@ -29,7 +29,7 @@ func NewSource(cfg *Config, serialization file.Serialization) (source.Source, er
 		Endpoints:   cfg.Endpoints,
 		Username:    cfg.Username,
 		Password:    cfg.Password,
-		DialTimeout: 5 * time.Second,
+		DialTimeout: 10 * time.Second,
 	})
 	if err != nil {
 		return nil, err

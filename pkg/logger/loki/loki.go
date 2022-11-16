@@ -5,7 +5,6 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"net/url"
 	"time"
 
 	"go.uber.org/zap"
@@ -26,7 +25,7 @@ func NewLokiCore(ctx context.Context, opt ...Option) zapcore.Core {
 	for _, o := range opt {
 		o(options)
 	}
-	w := newLokiWriter(ctx, options.url)
+	w := newLokiWriter(ctx, options)
 	sync := zapcore.AddSync(w)
 	encode := NewLokiEncode(options.labels...)
 	return &lokiCore{
@@ -47,20 +46,20 @@ func (l *lokiCore) Check(ent zapcore.Entry, ce *zapcore.CheckedEntry) *zapcore.C
 }
 
 type lokiWriter struct {
-	lokiUrl *url.URL
 	ctx     context.Context
 	c       *http.Client
 	ch      chan []byte
+	options *Options
 }
 
-func newLokiWriter(ctx context.Context, url *url.URL) *lokiWriter {
+func newLokiWriter(ctx context.Context, options *Options) *lokiWriter {
 	w := &lokiWriter{
-		ctx:     ctx,
-		lokiUrl: url,
+		ctx: ctx,
 		c: &http.Client{
 			Timeout: time.Second * 2,
 		},
-		ch: make(chan []byte, 1024),
+		ch:      make(chan []byte, 1024),
+		options: options,
 	}
 	go w.loop()
 	return w
@@ -70,11 +69,16 @@ func (l *lokiWriter) loop() {
 	for {
 		select {
 		case b := <-l.ch:
-			resp, err := l.c.Post(l.lokiUrl.String(), "application/json", bytes.NewBuffer(b))
+			req, err := http.NewRequest(http.MethodPost, l.options.url.String(), bytes.NewBuffer(b))
 			if err != nil {
 				log.Printf("loki push request err: %v", err)
 				break
 			}
+			if l.options.username != "" {
+				req.SetBasicAuth(l.options.username, l.options.password)
+			}
+			req.Header.Set("Content-Type", "application/json")
+			resp, err := l.c.Do(req)
 			buf := bytes.NewBuffer([]byte{})
 			func() {
 				defer resp.Body.Close()

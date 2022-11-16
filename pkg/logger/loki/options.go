@@ -10,9 +10,18 @@ import (
 type Option func(*Options)
 
 type Options struct {
-	url    *url.URL
-	level  zap.LevelEnablerFunc
-	labels []zap.Field
+	url      *url.URL
+	level    zap.LevelEnablerFunc
+	labels   []zap.Field
+	username string
+	password string
+}
+
+func BasicAuth(username string, password string) Option {
+	return func(options *Options) {
+		options.username = username
+		options.password = password
+	}
 }
 
 func WithLevelEnable(enab zap.LevelEnablerFunc) Option {

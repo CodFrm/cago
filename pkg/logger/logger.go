@@ -57,6 +57,11 @@ func InitWithConfig(ctx context.Context, cfg *Config, opts ...Option) (*zap.Logg
 			return l >= level
 		}))
 		lokiOptions = append(lokiOptions, loki.WithEnv())
+		if cfg.Loki.Username != "" {
+			lokiOptions = append(lokiOptions, loki.BasicAuth(
+				cfg.Loki.Username, cfg.Loki.Password,
+			))
+		}
 		opts = append(opts, AppendCore(loki.NewLokiCore(ctx, lokiOptions...)))
 	}
 	return Init(opts...)

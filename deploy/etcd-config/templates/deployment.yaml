@@ -8,6 +8,8 @@ spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       {{- include "etcd-config.selectorLabels" . | nindent 6 }}
@@ -57,13 +59,25 @@ spec:
             - "etcd-config"
             - "--data-dir"
             - "/data"
+            - "--listen-client-urls"
+            - "http://0.0.0.0:2379"
+            - "--advertise-client-urls"
+            - "http://0.0.0.0:2379"
           ports:
             - name: etcd-2379
               containerPort: 2379
               protocol: TCP
+          livenessProbe:
+            tcpSocket:
+              port: etcd-2379
+          readinessProbe:
+            tcpSocket:
+              port: etcd-2379
           volumeMounts:
             - mountPath: /data
               name: etcd-data
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
       volumes:
         {{- if not .Values.persistence.enabled }}
         - name: etcd-data

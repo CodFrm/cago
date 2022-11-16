@@ -53,8 +53,10 @@ func (h *server) StartCancel(
 	var r *gin.Engine
 	if cfg.Debug {
 		r = gin.Default()
+		gin.SetMode(gin.DebugMode)
 	} else {
 		r = gin.New()
+		gin.SetMode(gin.ReleaseMode)
 	}
 	binding.Validator, err = validator.NewValidator()
 	if err != nil {
@@ -76,7 +78,7 @@ func (h *server) StartCancel(
 	// 启动http服务
 	go func() {
 		if len(config.Address) == 0 {
-			config.Address = []string{"127.0.0.1:8080"}
+			config.Address = []string{"127.0.0.1:80"}
 		}
 		if err := r.Run(config.Address...); err != nil {
 			l.Error("failed to start http server", zap.Error(err))

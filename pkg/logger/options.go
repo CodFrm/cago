@@ -15,8 +15,10 @@ type Options struct {
 }
 
 type LokiConfig struct {
-	Enable bool
-	Url    string
+	Enable   bool
+	Url      string
+	Username string
+	Password string
 }
 
 func WithWriter(w io.Writer) Option {
