@@ -15,7 +15,7 @@ ifneq ($(which golangci-lint),)
 endif
 
 swagger: check-cago
-	cago swag
+	cago gen swag
 
 lint: check-golangci-lint
 	golangci-lint run

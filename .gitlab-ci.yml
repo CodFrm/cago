@@ -2,8 +2,8 @@ variables:
   APP_NAME: cago
   APP_VERSION: 1.0.0
   NAMESPACE: app
-  IMAGE_REPOSITORY: "cago/application"
-  IMAGE_REGISTRY: "docker.io"
+  REGISTRY: "docker.io"
+  REPOSITORY: "cago/application"
   GO111MODULE: "on"
   GOPROXY: "https://goproxy.cn,direct"
   GOPATH: "$CI_PROJECT_DIR/.cache"
@@ -12,6 +12,7 @@ variables:
 stages:
   - test
   - build
+  - docker
   - deploy
 
 test-job:
@@ -35,22 +36,44 @@ lint-job:
   script:
     - golangci-lint run
 
-
-build-job:
+build:
   stage: build
+  image: golang:1.18-alpine3.16
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_BRANCH == 'dev'
+  cache:
+    key: go-cache
+    paths:
+      - .cache
+  script:
+      - CGO_ENABLE=0 GOOS=linux GOARCH=amd64 go build -o $APP_NAME ./cmd/app
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - $APP_NAME
+
+build-docker:
+  stage: docker
   image: docker:rc
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_BRANCH == 'dev'
   variables:
     DOCKER_HOST: tcp://docker-dind:2375
   before_script:
-    - docker login $IMAGE_REGISTRY --username $DOCKER_USERNAME --password $DOCKER_PASSWORD
+    - docker login $REGISTRY --username $DOCKER_USERNAME --password $DOCKER_PASSWORD
+
   script:
-    - docker build --build-arg=GOPROXY=$GOPROXY -t $IMAGE_REGISTRY/$IMAGE_REPOSITORY:$APP_VERSION -f resources/Dockerfile .
-    - docker push $IMAGE_REGISTRY/$IMAGE_REPOSITORY:$APP_VERSION
+    - docker build . --build-arg APP_NAME=$APP_NAME -f deploy/docker/Dockerfile -t $REGISTRY/$REPOSITORY:$CI_COMMIT_SHORT_SHA
+    - docker push $REGISTRY/$REPOSITORY:$CI_COMMIT_SHORT_SHA
 
 deploy-job:
   stage: deploy
   image: alpine/helm:3.9.0
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_BRANCH == 'dev'
   script:
-    - cd resources/helm-chart
-    - "helm upgrade --install --namespace $NAMESPACE $APP_NAME .
-        --set image.tag=$APP_VERSION --set image.repository=$IMAGE_REGISTRY/$IMAGE_REPOSITORY"
+    - cd deploy/helm
+    - helm upgrade --install --namespace $NAMESPACE $APP_NAME . --kubeconfig $K3S_CONFIG --set image.tag=$CI_COMMIT_SHORT_SHA --set image.repository=$REGISTRY/$REPOSITORY --set etcdConfig.password=$ETCD_CONFIG_PASSWORD

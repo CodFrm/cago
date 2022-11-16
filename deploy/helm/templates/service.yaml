@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "app.fullname" . }}
+  name: {{ include "cago.fullname" . }}
   labels:
-    {{- include "app.labels" . | nindent 4 }}
+    {{- include "cago.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
   ports:
@@ -12,4 +12,4 @@ spec:
       protocol: TCP
       name: http
   selector:
-    {{- include "app.selectorLabels" . | nindent 4 }}
+    {{- include "cago.selectorLabels" . | nindent 4 }}

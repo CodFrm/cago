@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "app.fullname" . }}
+  name: {{ include "cago.fullname" . }}
   labels:
-    {{- include "app.labels" . | nindent 4 }}
+    {{- include "cago.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "app.selectorLabels" . | nindent 6 }}
+      {{- include "cago.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -18,12 +18,13 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "app.selectorLabels" . | nindent 8 }}
+        {{- include "cago.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      serviceAccountName: {{ include "cago.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -46,37 +47,17 @@ spec:
               port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          env:
-            - name: KUBERNETES_NAMESPACE
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.namespace
-            - name: KUBERNETES_POD_NAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.name
-            - name: KUBERNETES_NODE_NAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: spec.nodeName
-            {{- if .Values.env }}
-            {{- toYaml .Values.env | nindent 12 }}
-            {{- end }}
-          {{- if .Values.config.configMap }}
           volumeMounts:
-            - mountPath: /app/config.yaml
-              name: {{ .Values.config.configMap }}
+            - mountPath: /app/configs/config.yaml
               subPath: config.yaml
-          {{- end }}
-      {{- if .Values.config.configMap }}
+              name: config-volume
       volumes:
-        - name: {{ .Values.config.configMap }}
+        - name: config-volume
           configMap:
-            name: {{ .Values.config.configMap }}
+            name: {{ include "cago.fullname" . }}
             items:
               - key: config.yaml
                 path: config.yaml
-      {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
