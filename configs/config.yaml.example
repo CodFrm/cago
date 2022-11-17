@@ -1,4 +1,7 @@
+# 配置源,当你设置为etcd时,必须指定etcd配置
 source: file
+
+debug: true
 
 env: dev
 
@@ -7,7 +10,7 @@ etcd:
   endpoints:
     - 127.0.0.1:2379
 
-# 下面是各配置项
+# 下面是各个组件的配置项,当然可能并未补全,当你执行时会自动生成相关的结构
 http:
   address:
     - "127.0.0.1:8080"
@@ -19,8 +22,10 @@ logger:
     filename: ./runtime/logs/cago.log
     errorfilename: ./runtime/logs/cago.err.log
   loki:
-    level: info
+    enable: false
     url: "http://127.0.0.1:3100/loki/api/v1/push"
+    username: loki
+    password: loki
 
 trace:
   endpoint: "http://localhost:14268/api/traces"
