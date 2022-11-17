@@ -79,6 +79,10 @@ func (l *lokiWriter) loop() {
 			}
 			req.Header.Set("Content-Type", "application/json")
 			resp, err := l.c.Do(req)
+			if err != nil {
+				log.Printf("loki push request err: %v", err)
+				break
+			}
 			buf := bytes.NewBuffer([]byte{})
 			func() {
 				defer resp.Body.Close()
