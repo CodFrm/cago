@@ -8,6 +8,7 @@ variables:
   GOPROXY: "https://goproxy.cn,direct"
   GOPATH: "$CI_PROJECT_DIR/.cache"
   GOLANGCI_LINT_CACHE: "$CI_PROJECT_DIR/.lint-cache"
+  DOMAIN: "cago.com"
 
 stages:
   - test
@@ -40,8 +41,7 @@ build:
   stage: build
   image: golang:1.18-alpine3.16
   rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    - if: $CI_COMMIT_BRANCH == 'dev'
+    - if: $CI_COMMIT_BRANCH ==  "main" || $CI_COMMIT_BRANCH =~ /^release\/.*$/
   cache:
     key: go-cache
     paths:
@@ -57,8 +57,7 @@ build-docker:
   stage: docker
   image: docker:rc
   rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    - if: $CI_COMMIT_BRANCH == 'dev'
+    - if: $CI_COMMIT_BRANCH ==  "main" || $CI_COMMIT_BRANCH =~ /^release\/.*$/
   variables:
     DOCKER_HOST: tcp://docker-dind:2375
   before_script:
@@ -68,12 +67,30 @@ build-docker:
     - docker build . --build-arg APP_NAME=$APP_NAME -f deploy/docker/Dockerfile -t $REGISTRY/$REPOSITORY:$CI_COMMIT_SHORT_SHA
     - docker push $REGISTRY/$REPOSITORY:$CI_COMMIT_SHORT_SHA
 
-deploy-job:
+deploy-prod:
   stage: deploy
   image: alpine/helm:3.9.0
   rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    - if: $CI_COMMIT_BRANCH == 'dev'
+    - if: $CI_COMMIT_BRANCH == "main"
   script:
     - cd deploy/helm
-    - helm upgrade --install --namespace $NAMESPACE $APP_NAME . --kubeconfig $K3S_CONFIG --set image.tag=$CI_COMMIT_SHORT_SHA --set image.repository=$REGISTRY/$REPOSITORY --set etcdConfig.password=$ETCD_CONFIG_PASSWORD
+    - |
+      helm upgrade --install --namespace $NAMESPACE $APP_NAME . --kubeconfig $K3S_CONFIG \
+      --set image.tag=$CI_COMMIT_SHORT_SHA --set image.repository=$REGISTRY/$REPOSITORY \
+      --set etcdConfig.password=$ETCD_CONFIG_PASSWORD
+
+deploy-pre:
+  stage: deploy
+  image: alpine/helm:3.9.0
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /^release\/.*$/
+  script:
+    - cd deploy/helm
+    - |
+      helm upgrade --install \
+      --namespace $NAMESPACE $APP_NAME-pre . -f values.yaml --kubeconfig $K3S_CONFIG \
+      --set image.tag=$CI_COMMIT_SHORT_SHA --set image.repository=$REGISTRY/$REPOSITORY \
+      --set etcdConfig.password=$ETCD_CONFIG_PASSWORD \
+      --set appConfig.env=pre \
+      --set ingress.hosts[0].host=pre.$DOMAIN \
+      --set ingress.tls[0].hosts[0]=pre.$DOMAIN

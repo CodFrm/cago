@@ -10,6 +10,10 @@ image:
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
 
+appConfig:
+  env: prod
+  debug: false
+
 etcdConfig:
   username: root
   password: root

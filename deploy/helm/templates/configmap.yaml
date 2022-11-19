@@ -5,8 +5,8 @@ metadata:
 data:
   config.yaml: |
     source: etcd
-    env: prod
-    debug: false
+    env: {{ .Values.appConfig.env }}
+    debug: {{ .Values.appConfig.debug }}
     version: 1.0.0
     etcd:
       prefix: /config
