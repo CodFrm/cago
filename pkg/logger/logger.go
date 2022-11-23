@@ -26,7 +26,7 @@ type LogFileConfig struct {
 	ErrorFilename string
 }
 
-func InitWithConfig(ctx context.Context, cfg *Config, opts ...Option) (*zap.Logger, error) {
+func NewWithConfig(ctx context.Context, cfg *Config, opts ...Option) (*zap.Logger, error) {
 	if cfg.Level != "" {
 		opts = append(opts, Level(cfg.Level))
 	}
@@ -64,10 +64,10 @@ func InitWithConfig(ctx context.Context, cfg *Config, opts ...Option) (*zap.Logg
 		}
 		opts = append(opts, AppendCore(loki.NewLokiCore(ctx, lokiOptions...)))
 	}
-	return Init(opts...)
+	return New(opts...)
 }
 
-func Init(opt ...Option) (*zap.Logger, error) {
+func New(opt ...Option) (*zap.Logger, error) {
 	options := &Options{}
 	for _, o := range opt {
 		o(options)

@@ -37,8 +37,8 @@ func Default() *redis.Client {
 	return defaultRedis
 }
 
-func Ctx(ctx context.Context) CtxRedis {
-	return &ctxRedis{
+func Ctx(ctx context.Context) *CtxRedis {
+	return &CtxRedis{
 		client: defaultRedis,
 		ctx:    ctx,
 	}

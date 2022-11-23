@@ -17,7 +17,7 @@ func Trace(ctx context.Context, config *configs.Config) error {
 	if err := config.Scan("trace", cfg); err != nil {
 		return err
 	}
-	tp, err := InitWithConfig(ctx, cfg, AppendAttributes(
+	tp, err := NewWithConfig(ctx, cfg, AppendAttributes(
 		semconv.ServiceNameKey.String(config.AppName),
 		semconv.ServiceVersionKey.String(config.Version),
 		semconv.DeploymentEnvironmentKey.String(string(config.Env)),

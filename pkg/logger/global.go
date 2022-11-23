@@ -23,7 +23,7 @@ func Logger(ctx context.Context, config *configs.Config) error {
 		loki.AppendLabels(zap.String("env", string(config.Env))),
 	)
 	cfg.debug = config.Debug
-	l, err := InitWithConfig(ctx, cfg)
+	l, err := NewWithConfig(ctx, cfg)
 	if err != nil {
 		return err
 	}

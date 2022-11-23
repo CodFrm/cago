@@ -19,7 +19,7 @@ func Broker(ctx context.Context, config *configs.Config) error {
 	if tp := trace.Default(); tp != nil {
 		options = append(options, WithTracer(tp.Tracer(config.AppName+".broker")))
 	}
-	b, err := InitWithConfig(ctx, cfg, options...)
+	b, err := NewWithConfig(ctx, cfg, options...)
 	if err != nil {
 		return err
 	}

@@ -1,47 +1,69 @@
 package cache
 
 import (
-	"time"
+	"context"
+
+	"github.com/codfrm/cago/configs"
+	"github.com/go-redis/redis/v8"
 )
 
-type Cache interface {
-	GetOrSet(key string, get interface{}, set func() (interface{}, error), opts ...Option) error
-	Set(key string, val interface{}, opts ...Option) error
-	Get(key string, get interface{}, opts ...Option) error
-	Has(key string) (bool, error)
-	Del(key string) error
+type ICache interface {
+	GetOrSet(ctx context.Context, key string, get interface{}, set func() (interface{}, error), opts ...Option) error
+	Set(ctx context.Context, key string, val interface{}, opts ...Option) error
+	Get(ctx context.Context, key string, get interface{}, opts ...Option) error
+	Has(ctx context.Context, key string) (bool, error)
+	Del(ctx context.Context, key string) error
 }
 
 type Depend interface {
-	Val() interface{}
-	Ok() error
+	Val(ctx context.Context) interface{}
+	Ok(ctx context.Context) error
 }
 
-type Option func(*Options)
+const (
+	Redis Type = "redis"
+)
 
-type Options struct {
-	TTL    time.Duration
-	Depend Depend
+type Type string
+
+type Config struct {
+	Type
+	Addr     string
+	Password string
+	DB       int
 }
 
-func NewOptions(opts ...Option) *Options {
-	options := &Options{}
-	for _, v := range opts {
-		v(options)
+var defaultCache ICache
+
+func Cache(ctx context.Context, config *configs.Config) error {
+	cfg := &Config{}
+	if err := config.Scan("cache", cfg); err != nil {
+		return err
 	}
-	return options
+	cache, err := NewWithConfig(ctx, cfg)
+	if err != nil {
+		return err
+	}
+	defaultCache = cache
+	return nil
 }
 
-func WithTTL(t time.Duration) Option {
-	return func(options *Options) {
-		options.TTL = t
+func NewWithConfig(ctx context.Context, cfg *Config, opts ...Option) (ICache, error) {
+	redis := redis.NewClient(&redis.Options{
+		Addr:     cfg.Addr,
+		Password: cfg.Password,
+		DB:       cfg.DB,
+	})
+	err := redis.Ping(context.Background()).Err()
+	if err != nil {
+		return nil, err
 	}
+	cache := newRedisCache(redis)
+	return cache, nil
 }
 
-func WithDepend(depend Depend) Option {
-	return func(options *Options) {
-		options.Depend = depend
-	}
+func Default() ICache {
+	return defaultCache
 }
 
 type data struct {

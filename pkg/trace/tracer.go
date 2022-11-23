@@ -26,7 +26,7 @@ type Config struct {
 	Sample float64
 }
 
-func InitWithConfig(ctx context.Context, cfg *Config, options ...Option) (trace.TracerProvider, error) {
+func NewWithConfig(ctx context.Context, cfg *Config, options ...Option) (trace.TracerProvider, error) {
 	var exp tracesdk.SpanExporter
 	var err error
 	switch cfg.Type {
@@ -43,10 +43,10 @@ func InitWithConfig(ctx context.Context, cfg *Config, options ...Option) (trace.
 		return nil, err
 	}
 	options = append(options, Sample(cfg.Sample), WithExporter(exp))
-	return Init(options...)
+	return New(options...)
 }
 
-func Init(opt ...Option) (trace.TracerProvider, error) {
+func New(opt ...Option) (trace.TracerProvider, error) {
 	options := &Options{}
 	for _, o := range opt {
 		o(options)

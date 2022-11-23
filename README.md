@@ -6,8 +6,7 @@ cago 一个快速开发的集成式框架.使用模块化的开发模式,每一�
 
 cago 只对社区工具进行集成,大大减少迁移难度和学习成本,我们不生产代码,我们只是方案的搬运工.
 
-使用 go 的`struct`来定义 API 和 swagger 文档,可以通过脚手架来帮助你生成相关内容,大大减轻 API 开发的困难.
-全程使用`context.Context`来共享数据,尤其是使用链路追踪时,这非常管用.
+使用 go 的`struct`来声明 API 和 swagger 文档,可以通过脚手架来帮助你生成相关内容,大大减轻 API 开发的困难.
 
 ## 核心组件包
 
@@ -29,6 +28,10 @@ cago 只对社区工具进行集成,大大减少迁移难度和学习成本,我�
 - [sql db](./database/db)
 - [redis](./database/redis)
 
+## 中间件
+
+- [session](./middleware/session)
+
 # 快速开始
 
 [简单示例](./examples/simple/main.go)
@@ -40,6 +43,10 @@ cago 只对社区工具进行集成,大大减少迁移难度和学习成本,我�
 另外使用`docker-compose up -d`可以启动框架相关服务(loki、jaeger、grafana、etcd、etcdkeeper)
 
 # 脚手架
+
+```bash
+go install github.com/codfrm/cago/cmd/cago@latest
+```
 
 在`internal/api`目录下,定义好 api 请求结构,使用下面命令和自动生成`controller`代码和`swagger`文档
 

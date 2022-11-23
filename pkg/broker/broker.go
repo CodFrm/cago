@@ -25,7 +25,7 @@ type Config struct {
 	NSQ  *NSQConfig
 }
 
-func InitWithConfig(ctx context.Context, cfg *Config, opts ...Option) (broker2.Broker, error) {
+func NewWithConfig(ctx context.Context, cfg *Config, opts ...Option) (broker2.Broker, error) {
 	var ret broker2.Broker
 	var err error
 	switch cfg.Type {
@@ -40,10 +40,10 @@ func InitWithConfig(ctx context.Context, cfg *Config, opts ...Option) (broker2.B
 		return nil, err
 	}
 	opts = append(opts, WithBroker(ret))
-	return Init(opts...)
+	return New(opts...)
 }
 
-func Init(opts ...Option) (broker2.Broker, error) {
+func New(opts ...Option) (broker2.Broker, error) {
 	options := &Options{}
 	for _, o := range opts {
 		o(options)
