@@ -14,7 +14,7 @@ cago 只对社区工具进行集成,大大减少迁移难度和学习成本,我�
 
 - [config](./configs)
 - [registry](./registry.go)
-- [http](./server/http)
+- [http](./server/mux)
 - [logger](./pkg/logger)
 
 ## 常用组件包

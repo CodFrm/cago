@@ -2,7 +2,7 @@ package testdata
 
 import (
 	"github.com/codfrm/cago/pkg/swagger/testdata/pkg"
-	"github.com/codfrm/cago/server/http"
+	"github.com/codfrm/cago/server/mux"
 )
 
 // TestInfo 测试信息
@@ -15,8 +15,8 @@ type TestInfo struct {
 
 // TestRequest test
 type TestRequest struct {
-	http.Route `path:"/test" method:"GET"`
-	Name       string `json:"name"` // 名字
+	mux.Route `path:"/test" method:"GET"`
+	Name      string `json:"name"` // 名字
 	// Age 年龄
 	Age  int       `json:"age"`
 	Enum *pkg.Enum `json:"enum"` // 嵌套类型

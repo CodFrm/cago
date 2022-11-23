@@ -1,4 +1,4 @@
-package http
+package mux
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/pkg/logger"
 	"github.com/codfrm/cago/pkg/trace"
-	"github.com/codfrm/cago/server/http/validator"
+	"github.com/codfrm/cago/server/mux/validator"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	ginSwagger "github.com/swaggo/gin-swagger"

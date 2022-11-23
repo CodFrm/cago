@@ -2,6 +2,7 @@ package gen
 
 import (
 	"go/ast"
+	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -62,7 +63,7 @@ func (c *Cmd) genController(apiFile string, f *ast.File, decl *ast.GenDecl, spec
 	if err != nil {
 		return err
 	}
-	if strings.Contains(string(data), specs.Name.Name) {
+	if strings.Contains(string(data), strings.TrimSuffix(specs.Name.Name, "Request")) {
 		return nil
 	}
 	// 生成函数
@@ -98,6 +99,8 @@ func (c *Cmd) regenController(ctrlFile string, f *ast.File, decl *ast.GenDecl,
 	servicePkg := c.pkgName + strings.TrimPrefix(filepath.Dir(abs), c.pkgPath) + "/service/" + strings.TrimPrefix(filepath.Dir(apiFile), "internal/api/")
 	data = strings.ReplaceAll(data, "{ServicePkg}", servicePkg)
 
+	log.Printf("生成controller: %s", ctrlName)
+
 	data += c.genCtrlFunc(ctrlFile, decl, specs, ginContext)
 
 	return os.WriteFile(ctrlFile, []byte(data), 0644)
@@ -125,5 +128,6 @@ func (c *Cmd) genCtrlFunc(ctrlFile string, decl *ast.GenDecl, specs *ast.TypeSpe
 		funcTpl = strings.ReplaceAll(funcTpl, "{ContextParam}", "ctx")
 	}
 	funcTpl = strings.ReplaceAll(funcTpl, "{FuncDesc}", desc)
+	log.Printf("生成controller函数: %s", funcName)
 	return funcTpl
 }
