@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/codfrm/cago/database/cache"
+	sessions2 "github.com/gin-contrib/sessions"
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
 )
@@ -125,4 +126,9 @@ func (s *Store) save(session *sessions.Session) error {
 // delete removes keys from redis if MaxAge<0
 func (s *Store) delete(session *sessions.Session) error {
 	return s.cache.Del(context.Background(), s.key(session))
+}
+
+// Options gin-contrib/sessions的选项
+func (s *Store) Options(options sessions2.Options) {
+	return
 }
