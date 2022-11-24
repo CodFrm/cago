@@ -1,8 +1,10 @@
 package cache
 
 import (
+	"bytes"
 	"context"
 	"encoding/base32"
+	"encoding/gob"
 	"fmt"
 	"net/http"
 	"strings"
@@ -26,10 +28,15 @@ func NewCacheStore(cache cache.ICache, prefix string, opts ...Option) sessions2.
 		refreshTime:   86400,
 		sessionOptions: &sessions.Options{
 			Path:     "/",
+			Domain:   "",
 			MaxAge:   86400 * 30,
 			Secure:   true,
 			HttpOnly: true,
+			SameSite: 0,
 		},
+		codecs: securecookie.CodecsFromPairs(
+			[]byte("secret-auth"),
+		),
 	}
 	for _, opt := range opts {
 		opt(options)
@@ -69,8 +76,29 @@ func (s *Store) key(session *sessions.Session) string {
 	return fmt.Sprintf("%s:%s", s.options.prefix, session.ID)
 }
 
+// Serialize to JSON. Will err if there are unmarshalable key values
+func (s *Store) Serialize(ss *sessions.Session) ([]byte, error) {
+	buf := new(bytes.Buffer)
+	enc := gob.NewEncoder(buf)
+	err := enc.Encode(ss.Values)
+	if err == nil {
+		return buf.Bytes(), nil
+	}
+	return nil, err
+}
+
+// Deserialize back to map[string]interface{}
+func (s *Store) Deserialize(d []byte, ss *sessions.Session) error {
+	dec := gob.NewDecoder(bytes.NewBuffer(d))
+	return dec.Decode(&ss.Values)
+}
+
 func (s *Store) load(session *sessions.Session) (bool, error) {
-	if err := s.cache.Get(context.Background(), s.key(session), session); err != nil {
+	str := ""
+	if err := s.cache.Get(context.Background(), s.key(session), &str); err != nil {
+		return false, err
+	}
+	if err := s.Deserialize([]byte(str), session); err != nil {
 		return false, err
 	}
 	// 检查session是否快过期
@@ -116,7 +144,11 @@ func (s *Store) save(session *sessions.Session) error {
 		age = s.options.defaultMaxAge
 	}
 	session.Values["created"] = time.Now().Unix()
-	if err := s.cache.Set(context.Background(), s.key(session), session, cache.Expiration(
+	b, err := s.Serialize(session)
+	if err != nil {
+		return err
+	}
+	if err := s.cache.Set(context.Background(), s.key(session), b, cache.Expiration(
 		time.Duration(session.Options.MaxAge)*time.Second)); err != nil {
 		return err
 	}

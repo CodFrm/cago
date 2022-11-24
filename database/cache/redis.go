@@ -34,14 +34,22 @@ func (r *redisCache) GetOrSet(ctx context.Context, key string, get interface{}, 
 	return nil
 }
 
+func (r *redisCache) Unmarshal(data []byte, v interface{}) error {
+	return json.Unmarshal(data, v)
+}
+
+func (r *redisCache) Marshal(v interface{}) ([]byte, error) {
+	return json.Marshal(v)
+}
+
 func (r *redisCache) Get(ctx context.Context, key string, get interface{}, opts ...Option) error {
 	val, err := r.redis.Get(ctx, key).Result()
 	if err != nil {
 		return err
 	}
 	options := NewOptions(opts...)
-	ret := &data{Value: get, Depend: options.depend}
-	if err := json.Unmarshal([]byte(val), ret); err != nil {
+	ret := data{Value: get, Depend: options.depend}
+	if err := r.Unmarshal([]byte(val), ret); err != nil {
 		return err
 	}
 	if options.depend != nil {
@@ -58,11 +66,11 @@ func (r *redisCache) Set(ctx context.Context, key string, val interface{}, opts 
 	if options.expiration > 0 {
 		ttl = options.expiration
 	}
-	data := &data{Value: val}
+	data := data{Value: val}
 	if options.depend != nil {
 		data.Depend = options.depend.Val(ctx)
 	}
-	b, err := json.Marshal(data)
+	b, err := r.Marshal(data)
 	if err != nil {
 		return err
 	}

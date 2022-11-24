@@ -170,7 +170,7 @@ func (c *Cmd) genFile(filepath string) error {
 			if !ok {
 				continue
 			}
-			if expr.Sel.Name != "Route" || expr.X.(*ast.Ident).Name != "http" {
+			if expr.Sel.Name != "Route" || expr.X.(*ast.Ident).Name != "mux" {
 				continue
 			}
 			routeField = field

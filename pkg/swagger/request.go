@@ -43,7 +43,7 @@ func (s *Swagger) parseFile(filename string) error {
 			if !ok {
 				continue
 			}
-			if expr.Sel.Name != "Route" || expr.X.(*ast.Ident).Name != "http" {
+			if expr.Sel.Name != "Route" || expr.X.(*ast.Ident).Name != "mux" {
 				continue
 			}
 			// 处理swagger route
