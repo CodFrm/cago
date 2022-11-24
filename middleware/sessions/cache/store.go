@@ -19,7 +19,7 @@ type Store struct {
 	options *Options
 }
 
-func NewCacheStore(cache cache.ICache, prefix string, opts ...Option) sessions.Store {
+func NewCacheStore(cache cache.ICache, prefix string, opts ...Option) sessions2.Store {
 	options := &Options{
 		prefix:        "session",
 		defaultMaxAge: 86400 * 30,
