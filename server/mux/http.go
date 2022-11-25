@@ -23,8 +23,8 @@ type Config struct {
 type Callback func(r *Router) error
 
 type server struct {
-	ctx      context.Context
-	cancel   context.CancelFunc
+	//ctx context.Context
+	//cancel   context.CancelFunc
 	callback Callback
 }
 

@@ -10,18 +10,18 @@ import (
 	"strings"
 	"time"
 
-	"github.com/codfrm/cago/database/cache"
+	cache2 "github.com/codfrm/cago/database/cache/cache"
 	sessions2 "github.com/gin-contrib/sessions"
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
 )
 
 type Store struct {
-	cache   cache.ICache
+	cache   cache2.Cache
 	options *Options
 }
 
-func NewCacheStore(cache cache.ICache, prefix string, opts ...Option) sessions2.Store {
+func NewCacheStore(cache cache2.Cache, prefix string, opts ...Option) sessions2.Store {
 	options := &Options{
 		prefix:        "session",
 		defaultMaxAge: 86400 * 30,
@@ -62,8 +62,7 @@ func (s *Store) New(r *http.Request, name string) (*sessions.Session, error) {
 	session.Options = &options
 	session.IsNew = true
 	if c, errCookie := r.Cookie(name); errCookie == nil {
-		sessionID := ""
-		err = securecookie.DecodeMulti(name, c.Value, &sessionID, s.options.codecs...)
+		err = securecookie.DecodeMulti(name, c.Value, &session.ID, s.options.codecs...)
 		if err == nil {
 			ok, err = s.load(session)
 			session.IsNew = !(err == nil && ok) // not new if no error and data available
@@ -94,11 +93,14 @@ func (s *Store) Deserialize(d []byte, ss *sessions.Session) error {
 }
 
 func (s *Store) load(session *sessions.Session) (bool, error) {
-	str := ""
-	if err := s.cache.Get(context.Background(), s.key(session), &str); err != nil {
+	data, err := s.cache.Get(context.Background(), s.key(session)).Bytes()
+	if err != nil {
+		if err == cache2.ErrNotFound {
+			return false, nil
+		}
 		return false, err
 	}
-	if err := s.Deserialize([]byte(str), session); err != nil {
+	if err := s.Deserialize(data, session); err != nil {
 		return false, err
 	}
 	// 检查session是否快过期
@@ -148,8 +150,8 @@ func (s *Store) save(session *sessions.Session) error {
 	if err != nil {
 		return err
 	}
-	if err := s.cache.Set(context.Background(), s.key(session), b, cache.Expiration(
-		time.Duration(session.Options.MaxAge)*time.Second)); err != nil {
+	if err := s.cache.Set(context.Background(), s.key(session), b, cache2.Expiration(
+		time.Duration(age)*time.Second)).Err(); err != nil {
 		return err
 	}
 	return nil
@@ -162,5 +164,4 @@ func (s *Store) delete(session *sessions.Session) error {
 
 // Options gin-contrib/sessions的选项
 func (s *Store) Options(options sessions2.Options) {
-	return
 }

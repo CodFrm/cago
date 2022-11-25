@@ -28,7 +28,9 @@ func (r *Router) Bind(controller ...interface{}) error {
 	for _, c := range controller {
 		reg, ok := c.(RegsterRouter)
 		if ok {
-			reg.Router(r)
+			if err := reg.Router(r); err != nil {
+				return err
+			}
 		}
 		el := reflect.TypeOf(c)
 		for i := 0; i < el.NumMethod(); i++ {

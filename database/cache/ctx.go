@@ -1,26 +1,30 @@
 package cache
 
-import "context"
+import (
+	"context"
+
+	"github.com/codfrm/cago/database/cache/cache"
+)
 
 type CtxCache struct {
 	ctx   context.Context
-	cache ICache
+	cache cache.Cache
 }
 
 func Ctx() *CtxCache {
 	return &CtxCache{}
 }
 
-func (c *CtxCache) GetOrSet(key string, get interface{}, set func() (interface{}, error), opts ...Option) error {
-	return c.cache.GetOrSet(c.ctx, key, get, set, opts...)
+func (c *CtxCache) GetOrSet(key string, set func() (interface{}, error), opts ...cache.Option) cache.Value {
+	return c.cache.GetOrSet(c.ctx, key, set, opts...)
 }
 
-func (c *CtxCache) Set(ctx context.Context, key string, val interface{}, opts ...Option) error {
+func (c *CtxCache) Set(ctx context.Context, key string, val interface{}, opts ...cache.Option) cache.Value {
 	return c.cache.Set(c.ctx, key, val, opts...)
 }
 
-func (c *CtxCache) Get(ctx context.Context, key string, get interface{}, opts ...Option) error {
-	return c.cache.Get(c.ctx, key, get, opts...)
+func (c *CtxCache) Get(ctx context.Context, key string, get interface{}, opts ...cache.Option) cache.Value {
+	return c.cache.Get(c.ctx, key, opts...)
 }
 
 func (c *CtxCache) Has(ctx context.Context, key string) (bool, error) {

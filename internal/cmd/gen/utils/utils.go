@@ -91,9 +91,9 @@ func GetMethodResultValues(field []*ast.Field) string {
 }
 
 func GetTypeDefaultVal(expr ast.Expr) string {
-	switch expr.(type) {
+	switch expr := expr.(type) {
 	case *ast.Ident:
-		switch expr.(*ast.Ident).Name {
+		switch expr.Name {
 		case "string":
 			return `""`
 		case "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64",
@@ -117,17 +117,17 @@ func GetTypeDefaultVal(expr ast.Expr) string {
 }
 
 func GetType(expr ast.Expr) string {
-	switch expr.(type) {
+	switch expr := expr.(type) {
 	case *ast.Ident:
-		return expr.(*ast.Ident).Name
+		return expr.Name
 	case *ast.SelectorExpr:
-		return expr.(*ast.SelectorExpr).X.(*ast.Ident).Name + "." + expr.(*ast.SelectorExpr).Sel.Name
+		return expr.X.(*ast.Ident).Name + "." + expr.Sel.Name
 	case *ast.StarExpr:
-		return "*" + GetType(expr.(*ast.StarExpr).X)
+		return "*" + GetType(expr.X)
 	case *ast.ArrayType:
-		return "[]" + GetType(expr.(*ast.ArrayType).Elt)
+		return "[]" + GetType(expr.Elt)
 	case *ast.MapType:
-		return "map[" + GetType(expr.(*ast.MapType).Key) + "]" + GetType(expr.(*ast.MapType).Value)
+		return "map[" + GetType(expr.Key) + "]" + GetType(expr.Value)
 	default:
 		return ""
 	}

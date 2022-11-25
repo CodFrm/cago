@@ -20,7 +20,7 @@ type Swagger struct {
 	apiDir             string
 	defaultContentType string
 	swagger            *spec.Swagger
-	parseStruct        *parseStruct
+	//parseStruct        *parseStruct
 
 	rootPkgPath string
 	rootPkgName string

@@ -8,7 +8,7 @@ import (
 )
 
 func Test_defaultValidator_registerValidation(t *testing.T) {
-	v := NewValidator()
+	v, _ := NewValidator()
 	err := v.validate.Var("11111111", "mobile")
 	assert.Equal(t, "手机号码格式不正确", TransError(err.(validator.ValidationErrors)))
 	err = v.validate.Var("13000000000", "mobile")

@@ -96,7 +96,7 @@ func (s *Swagger) parseRoute(filename string, file *ast.File, decl *ast.GenDecl,
 			}
 			name := utils.LowerFirstChar(field.Names[0].Name)
 			tag := strings.TrimPrefix(field.Tag.Value, "`")
-			in := "query"
+			in := ""
 			if method == http.MethodGet {
 				in = "query"
 			} else {
@@ -109,7 +109,7 @@ func (s *Swagger) parseRoute(filename string, file *ast.File, decl *ast.GenDecl,
 			}
 			validate := utils.ParseTag(tag, "validate")
 			required := false
-			if strings.Index(validate, "required") != -1 {
+			if strings.Contains(validate, "required") {
 				required = true
 			}
 			if in == "path" {

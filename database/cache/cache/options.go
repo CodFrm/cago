@@ -1,12 +1,14 @@
 package cache
 
-import "time"
+import (
+	"time"
+)
 
 type Option func(*Options)
 
 type Options struct {
-	expiration time.Duration
-	depend     Depend
+	Expiration time.Duration
+	Depend     Depend
 }
 
 func NewOptions(opts ...Option) *Options {
@@ -19,12 +21,12 @@ func NewOptions(opts ...Option) *Options {
 
 func Expiration(t time.Duration) Option {
 	return func(options *Options) {
-		options.expiration = t
+		options.Expiration = t
 	}
 }
 
 func WithDepend(depend Depend) Option {
 	return func(options *Options) {
-		options.depend = depend
+		options.Depend = depend
 	}
 }

@@ -4,12 +4,9 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
-	"path"
-	"strings"
 
 	"github.com/codfrm/cago/internal/cmd/gen/utils"
 	"github.com/codfrm/cago/pkg/swagger"
-	"github.com/go-openapi/spec"
 	"github.com/spf13/cobra"
 )
 
@@ -67,79 +64,6 @@ func (c *Cmd) gen(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	return swagger.Write()
-}
-
-func (c *Cmd) parseInfo() (*spec.Swagger, error) {
-	// 解析main.go
-	fset := token.NewFileSet()
-	f, err := parser.ParseFile(fset, path.Join(c.pkgPath, "./main.go"), nil, parser.ParseComments)
-	if err != nil {
-		f, err = parser.ParseFile(fset, path.Join(c.pkgPath, "./cmd/app/main.go"), nil, parser.ParseComments)
-		if err != nil {
-			return nil, err
-		}
-	}
-	info := &spec.Info{}
-	ret := &spec.Swagger{
-		SwaggerProps: spec.SwaggerProps{
-			Swagger: "2.0",
-			Definitions: spec.Definitions{
-				"BadRequest": {
-					SchemaProps: spec.SchemaProps{
-						Type: []string{"object"},
-						Properties: map[string]spec.Schema{
-							"code": {
-								SchemaProps: spec.SchemaProps{
-									Type:        []string{"integer"},
-									Description: "错误码",
-									Format:      "int32",
-								},
-							},
-							"msg": {
-								SchemaProps: spec.SchemaProps{
-									Type:        []string{"string"},
-									Description: "错误信息",
-								},
-							},
-						},
-					},
-				},
-			},
-			Info: info,
-			Paths: &spec.Paths{
-				Paths: make(map[string]spec.PathItem),
-			},
-		},
-	}
-	for _, comment := range f.Comments {
-		flag := false
-		for _, v := range comment.List {
-			text := strings.TrimPrefix(v.Text, "// @")
-			// 证明是swagger的注释
-			if text == v.Text {
-				continue
-			}
-			flag = true
-			// 解析注释
-			key := strings.Split(text, " ")[0]
-			value := strings.TrimPrefix(text, key+" ")
-			value = strings.TrimSpace(value)
-			switch strings.ToLower(key) {
-			case "title":
-				info.Title = value
-			case "description":
-				info.Description = value
-			case "version":
-				info.Version = value
-			case "basepath":
-				ret.BasePath = value
-			}
-		}
-		if flag {
-			break
-		}
-	}
-	return ret, err
 }
 
 // 解析生成文件

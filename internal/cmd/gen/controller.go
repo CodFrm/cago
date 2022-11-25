@@ -35,9 +35,6 @@ func ({SimpleName} *{ControllerName}) {FuncName}(ctx {Context}, req *api.{ApiReq
 }
 `
 
-type controller struct {
-}
-
 // 生成controller
 func (c *Cmd) genController(apiFile string, f *ast.File, decl *ast.GenDecl, specs *ast.TypeSpec, routeField *ast.Field) error {
 	// 获取controller目录
