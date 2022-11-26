@@ -1,4 +1,5 @@
 package mux
 
-type Route struct {
+// Meta 路由
+type Meta struct {
 }

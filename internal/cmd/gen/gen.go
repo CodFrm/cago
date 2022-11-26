@@ -74,7 +74,7 @@ func (c *Cmd) genFile(filepath string) error {
 		return err
 	}
 	for _, v := range f.Decls {
-		// 解析带有Route的struct
+		// 解析带有mux.Meta的struct
 		decl, ok := v.(*ast.GenDecl)
 		if !ok {
 			continue
@@ -87,14 +87,14 @@ func (c *Cmd) genFile(filepath string) error {
 		if !ok {
 			continue
 		}
-		// 解析http.Route
+		// 解析http.Meta
 		var routeField *ast.Field
 		for _, field := range structSpec.Fields.List {
 			expr, ok := field.Type.(*ast.SelectorExpr)
 			if !ok {
 				continue
 			}
-			if expr.Sel.Name != "Route" || expr.X.(*ast.Ident).Name != "mux" {
+			if expr.Sel.Name != "Meta" || expr.X.(*ast.Ident).Name != "mux" {
 				continue
 			}
 			routeField = field
@@ -104,8 +104,13 @@ func (c *Cmd) genFile(filepath string) error {
 			continue
 		}
 		// 生成controller
-		if err := c.genController(filepath, f, decl, typeSpec, routeField); err != nil {
+		exist, err := c.genController(filepath, f, decl, typeSpec, routeField)
+		if err != nil {
 			return err
+		}
+		// 存在controller,跳过service生成
+		if exist {
+			continue
 		}
 		// 生成service接口
 		if err := c.genService(filepath, f, decl, typeSpec); err != nil {

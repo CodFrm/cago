@@ -11,8 +11,8 @@ type CtxCache struct {
 	cache cache.Cache
 }
 
-func Ctx() *CtxCache {
-	return &CtxCache{}
+func Ctx(ctx context.Context) *CtxCache {
+	return &CtxCache{ctx: ctx, cache: Default()}
 }
 
 func (c *CtxCache) GetOrSet(key string, set func() (interface{}, error), opts ...cache.Option) cache.Value {

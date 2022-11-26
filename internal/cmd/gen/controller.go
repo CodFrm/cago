@@ -36,11 +36,11 @@ func ({SimpleName} *{ControllerName}) {FuncName}(ctx {Context}, req *api.{ApiReq
 `
 
 // 生成controller
-func (c *Cmd) genController(apiFile string, f *ast.File, decl *ast.GenDecl, specs *ast.TypeSpec, routeField *ast.Field) error {
+func (c *Cmd) genController(apiFile string, f *ast.File, decl *ast.GenDecl, specs *ast.TypeSpec, routeField *ast.Field) (bool, error) {
 	// 获取controller目录
 	ctrlFile := filepath.Join(path.Dir(c.apiPath), "controller", strings.TrimPrefix(apiFile, c.apiPath))
 	if err := os.MkdirAll(filepath.Dir(ctrlFile), 0755); err != nil {
-		return err
+		return false, err
 	}
 	ginContext := false
 	if utils.ParseTag(routeField.Tag.Value, "context") == "gin" {
@@ -51,23 +51,23 @@ func (c *Cmd) genController(apiFile string, f *ast.File, decl *ast.GenDecl, spec
 	if err != nil {
 		// 不存在重新生成
 		if os.IsNotExist(err) {
-			return c.regenController(ctrlFile, f, decl, apiFile, specs, ginContext)
+			return false, c.regenController(ctrlFile, f, decl, apiFile, specs, ginContext)
 		}
-		return err
+		return false, err
 	}
 	// 存在则判断是否需要添加新方法
 	data, err := os.ReadFile(ctrlFile)
 	if err != nil {
-		return err
+		return false, err
 	}
 	if strings.Contains(string(data), strings.TrimSuffix(specs.Name.Name, "Request")) {
-		return nil
+		return true, nil
 	}
 	// 生成函数
 	funcTpl := c.genCtrlFunc(ctrlFile,
 		decl, specs, ginContext)
 	data = append(data, []byte(funcTpl)...)
-	return os.WriteFile(ctrlFile, data, 0644)
+	return false, os.WriteFile(ctrlFile, data, 0644)
 }
 
 // 重新生成controller

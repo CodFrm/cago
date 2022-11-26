@@ -15,8 +15,8 @@ type TestInfo struct {
 
 // TestRequest test
 type TestRequest struct {
-	mux.Route `path:"/test" method:"GET"`
-	Name      string `json:"name"` // 名字
+	mux.Meta `path:"/test" method:"GET"`
+	Name     string `json:"name"` // 名字
 	// Age 年龄
 	Age  int       `json:"age"`
 	Enum *pkg.Enum `json:"enum"` // 嵌套类型

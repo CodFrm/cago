@@ -2,8 +2,9 @@ package logger
 
 import (
 	"context"
-	"net/http"
+	"fmt"
 
+	"github.com/codfrm/cago/pkg/utils/httputils"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
@@ -25,16 +26,10 @@ func Middleware(logger *zap.Logger) gin.HandlerFunc {
 			if r := recover(); r != nil {
 				if err, ok := r.(error); ok {
 					Ctx(ctx).Error("internal server error", zap.Error(err), zap.StackSkip("stack", 3))
-					ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-						"code": -1000,
-						"msg":  "internal server error",
-					})
+					httputils.HandleResp(ctx, err)
 				} else {
 					Ctx(ctx).Error("internal server error", zap.Any("error", r), zap.StackSkip("stack", 3))
-					ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-						"code": -1000,
-						"msg":  "internal server error",
-					})
+					httputils.HandleResp(ctx, fmt.Errorf("%v", err))
 				}
 			}
 		}()

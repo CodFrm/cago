@@ -6,7 +6,7 @@ import (
 
 // LoginRequest 登录
 type LoginRequest struct {
-	mux.Route `path:"/user/login" method:"POST"`
+	mux.Meta `path:"/user/login" method:"POST"`
 	// 用户名
 	Username string `form:"username" binding:"required"`
 }
@@ -18,7 +18,7 @@ type LoginResponse struct {
 
 // RegisterRequest 注册
 type RegisterRequest struct {
-	mux.Route `path:"/user/register" method:"POST"`
+	mux.Meta `path:"/user/register" method:"POST"`
 	// 用户名
 	Username string `form:"username" binding:"required"`
 }
@@ -28,7 +28,7 @@ type RegisterResponse struct {
 
 // LogoutRequest 登出
 type LogoutRequest struct {
-	mux.Route `path:"/user/logout" method:"DELETE"`
+	mux.Meta `path:"/user/logout" method:"DELETE"`
 }
 
 type LogoutResponse struct {

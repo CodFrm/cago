@@ -37,13 +37,13 @@ func (s *Swagger) parseFile(filename string) error {
 			}
 			continue
 		}
-		// 解析http.Route
+		// 解析http.Meta
 		for _, field := range structSpec.Fields.List {
 			expr, ok := field.Type.(*ast.SelectorExpr)
 			if !ok {
 				continue
 			}
-			if expr.Sel.Name != "Route" || expr.X.(*ast.Ident).Name != "mux" {
+			if expr.Sel.Name != "Meta" || expr.X.(*ast.Ident).Name != "mux" {
 				continue
 			}
 			// 处理swagger route
