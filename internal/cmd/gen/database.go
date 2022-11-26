@@ -69,7 +69,7 @@ func New{Name}() repository.I{Name} {
 func (u *{LowerName}) Find(ctx context.Context, id int64) (*entity.{Name}, error) {
 	ret := &entity.{Name}{ID: id}
 	if err := db.Ctx(ctx).First(ret).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
+		if db.RecordNotFound(err) {
 			return nil, nil
 		}
 		return nil, err

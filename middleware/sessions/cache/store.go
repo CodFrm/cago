@@ -10,18 +10,19 @@ import (
 	"strings"
 	"time"
 
-	cache2 "github.com/codfrm/cago/database/cache/cache"
-	sessions2 "github.com/gin-contrib/sessions"
+	"github.com/codfrm/cago/database/cache/cache"
+	cagoSession "github.com/codfrm/cago/middleware/sessions"
+	ginSession "github.com/gin-contrib/sessions"
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
 )
 
-type Store struct {
-	cache   cache2.Cache
+type store struct {
+	cache   cache.Cache
 	options *Options
 }
 
-func NewCacheStore(cache cache2.Cache, prefix string, opts ...Option) sessions2.Store {
+func NewCacheStore(cache cache.Cache, prefix string, opts ...Option) cagoSession.Store {
 	options := &Options{
 		prefix:        "session",
 		defaultMaxAge: 86400 * 30,
@@ -41,17 +42,17 @@ func NewCacheStore(cache cache2.Cache, prefix string, opts ...Option) sessions2.
 	for _, opt := range opts {
 		opt(options)
 	}
-	return &Store{
+	return &store{
 		cache:   cache,
 		options: options,
 	}
 }
 
-func (s *Store) Get(r *http.Request, name string) (*sessions.Session, error) {
+func (s *store) Get(r *http.Request, name string) (*sessions.Session, error) {
 	return sessions.GetRegistry(r).Get(s, name)
 }
 
-func (s *Store) New(r *http.Request, name string) (*sessions.Session, error) {
+func (s *store) New(r *http.Request, name string) (*sessions.Session, error) {
 	var (
 		err error
 		ok  bool
@@ -71,12 +72,12 @@ func (s *Store) New(r *http.Request, name string) (*sessions.Session, error) {
 	return session, err
 }
 
-func (s *Store) key(session *sessions.Session) string {
+func (s *store) key(session *sessions.Session) string {
 	return fmt.Sprintf("%s:%s", s.options.prefix, session.ID)
 }
 
 // Serialize to JSON. Will err if there are unmarshalable key values
-func (s *Store) Serialize(ss *sessions.Session) ([]byte, error) {
+func (s *store) Serialize(ss *sessions.Session) ([]byte, error) {
 	buf := new(bytes.Buffer)
 	enc := gob.NewEncoder(buf)
 	err := enc.Encode(ss.Values)
@@ -87,15 +88,15 @@ func (s *Store) Serialize(ss *sessions.Session) ([]byte, error) {
 }
 
 // Deserialize back to map[string]interface{}
-func (s *Store) Deserialize(d []byte, ss *sessions.Session) error {
+func (s *store) Deserialize(d []byte, ss *sessions.Session) error {
 	dec := gob.NewDecoder(bytes.NewBuffer(d))
 	return dec.Decode(&ss.Values)
 }
 
-func (s *Store) load(session *sessions.Session) (bool, error) {
+func (s *store) load(session *sessions.Session) (bool, error) {
 	data, err := s.cache.Get(context.Background(), s.key(session)).Bytes()
 	if err != nil {
-		if err == cache2.ErrNotFound {
+		if err == cache.ErrNotFound {
 			return false, nil
 		}
 		return false, err
@@ -106,7 +107,7 @@ func (s *Store) load(session *sessions.Session) (bool, error) {
 	return true, nil
 }
 
-func (s *Store) Save(r *http.Request, w http.ResponseWriter, session *sessions.Session) error {
+func (s *store) Save(r *http.Request, w http.ResponseWriter, session *sessions.Session) error {
 	// Marked for deletion.
 	if session.Options.MaxAge <= 0 {
 		if err := s.delete(session); err != nil {
@@ -130,7 +131,7 @@ func (s *Store) Save(r *http.Request, w http.ResponseWriter, session *sessions.S
 	return nil
 }
 
-func (s *Store) save(session *sessions.Session) error {
+func (s *store) save(session *sessions.Session) error {
 	age := session.Options.MaxAge
 	if age == 0 {
 		age = s.options.defaultMaxAge
@@ -139,7 +140,7 @@ func (s *Store) save(session *sessions.Session) error {
 	if err != nil {
 		return err
 	}
-	if err := s.cache.Set(context.Background(), s.key(session), b, cache2.Expiration(
+	if err := s.cache.Set(context.Background(), s.key(session), b, cache.Expiration(
 		time.Duration(age)*time.Second)).Err(); err != nil {
 		return err
 	}
@@ -147,15 +148,15 @@ func (s *Store) save(session *sessions.Session) error {
 }
 
 // delete removes keys from redis if MaxAge<0
-func (s *Store) delete(session *sessions.Session) error {
+func (s *store) delete(session *sessions.Session) error {
 	return s.cache.Del(context.Background(), s.key(session))
 }
 
 // Options gin-contrib/sessions的选项
-func (s *Store) Options(options sessions2.Options) {
+func (s *store) Options(options ginSession.Options) {
 }
 
-func (s *Store) Refresh(r *http.Request, name string, session *sessions.Session) error {
+func (s *store) Refresh(r *http.Request, name string, session *sessions.Session) error {
 	// 删除原来的
 	if err := s.delete(session); err != nil {
 		return err
