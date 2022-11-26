@@ -103,16 +103,6 @@ func (s *Store) load(session *sessions.Session) (bool, error) {
 	if err := s.Deserialize(data, session); err != nil {
 		return false, err
 	}
-	// 检查session是否快过期
-	if session.Values["created"] == nil ||
-		time.Now().Unix()-session.Values["created"].(int64) > int64(s.options.refreshTime) {
-		// 这里可能会存在并发问题,但是不影响使用
-		// 删除原来的session并重新生成一个新的session
-		if err := s.delete(session); err != nil {
-			return false, err
-		}
-		session.ID = strings.TrimRight(base32.StdEncoding.EncodeToString(securecookie.GenerateRandomKey(32)), "=")
-	}
 	return true, nil
 }
 
@@ -145,7 +135,6 @@ func (s *Store) save(session *sessions.Session) error {
 	if age == 0 {
 		age = s.options.defaultMaxAge
 	}
-	session.Values["created"] = time.Now().Unix()
 	b, err := s.Serialize(session)
 	if err != nil {
 		return err
@@ -164,4 +153,14 @@ func (s *Store) delete(session *sessions.Session) error {
 
 // Options gin-contrib/sessions的选项
 func (s *Store) Options(options sessions2.Options) {
+}
+
+func (s *Store) Refresh(r *http.Request, name string, session *sessions.Session) error {
+	// 删除原来的
+	if err := s.delete(session); err != nil {
+		return err
+	}
+	// 重新生成id
+	session.ID = strings.TrimRight(base32.StdEncoding.EncodeToString(securecookie.GenerateRandomKey(32)), "=")
+	return nil
 }
