@@ -10,34 +10,6 @@ import (
 	"go.uber.org/zap"
 )
 
-type Page struct {
-	Page  int `form:"page" binding:"required"`
-	Limit int `form:"limit" binding:"required"`
-}
-
-func (p *Page) GetPage() int {
-	if p.Page == 0 {
-		return 1
-	}
-	return p.Page
-}
-
-func (p *Page) GetOffset() int {
-	return (p.GetPage() - 1) * p.Limit
-}
-
-func (p *Page) GetLimit() int {
-	if p.Limit == 0 {
-		return 20
-	}
-	return p.Limit
-}
-
-type List[T any] struct {
-	List  []T   `json:"list"`
-	Total int64 `json:"total"`
-}
-
 func Handle(ctx *gin.Context, f func() interface{}) {
 	resp := f()
 	if resp == nil {
@@ -70,10 +42,13 @@ func HandleResp(ctx *gin.Context, resp interface{}) {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"code": -1, "msg": "系统错误",
 		})
-	case *List:
-		list := resp
+	case IPageDataResponse:
 		ctx.JSON(http.StatusOK, gin.H{
-			"code": 0, "msg": "success", "list": list.List, "total": list.Total,
+			"code": 0, "msg": "success", "data": resp.GetData(), "list": resp.GetList(), "total": resp.GetTotal(),
+		})
+	case IPageResponse:
+		ctx.JSON(http.StatusOK, gin.H{
+			"code": 0, "msg": "success", "list": resp.GetList(), "total": resp.GetTotal(),
 		})
 	default:
 		ctx.JSON(http.StatusOK, JsonResponse{
