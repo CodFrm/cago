@@ -26,6 +26,16 @@ func LowerFirstChar(str string) string {
 	return strings.ToLower(str[:1]) + str[1:]
 }
 
+// SwaggerName 获取swagger name
+func SwaggerName(field *ast.Field) string {
+	tag := field.Tag.Value
+	name := ParseTag(tag, "json")
+	if name == "" {
+		name = field.Names[0].Name
+	}
+	return name
+}
+
 // ToCamel 下划线转驼峰
 func ToCamel(str string) string {
 	if str == "id" {

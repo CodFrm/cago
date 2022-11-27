@@ -6,5 +6,6 @@ type PkgStruct struct {
 
 // Nested 嵌套
 type Nested struct {
-	Data string `json:"data"`
+	PkgStruct `json:",inline"`
+	Data      string `json:"data"`
 }

@@ -150,6 +150,16 @@ func (p *parseStruct) parseFieldType(fieldType ast.Expr) (spec.Schema, error) {
 			swaggerType.Properties = make(map[string]spec.Schema)
 			for _, field := range structType.Fields.List {
 				if field.Names == nil {
+					if strings.Contains(field.Tag.Value, ",inline") {
+						schema, err := p.parseFieldSwagger(field)
+						schema = p.swagger.Definitions[schema.Ref.Ref.GetPointer().DecodedTokens()[1]]
+						if err != nil {
+							return spec.Schema{}, err
+						}
+						for k, v := range schema.Properties {
+							swaggerType.Properties[k] = v
+						}
+					}
 					continue
 				}
 				// 解析字段
@@ -157,7 +167,7 @@ func (p *parseStruct) parseFieldType(fieldType ast.Expr) (spec.Schema, error) {
 				if err != nil {
 					return spec.Schema{}, err
 				}
-				swaggerType.Properties[utils.LowerFirstChar(field.Names[0].Name)] = schema
+				swaggerType.Properties[utils.SwaggerName(field)] = schema
 			}
 			swaggerType.Type = []string{"object"}
 			return spec.Schema{

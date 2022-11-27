@@ -185,8 +185,24 @@ func (s *Swagger) parseRoute(filename string, file *ast.File, decl *ast.GenDecl,
 			Description: "OK",
 			Schema: &spec.Schema{
 				SchemaProps: spec.SchemaProps{
-					Ref: spec.MustCreateRef("#/definitions/" + file.Name.Name + "." +
-						strings.Replace(typeSpec.Name.Name, "Request", "Response", 1)),
+					Properties: map[string]spec.Schema{
+						"code": {
+							SchemaProps: spec.SchemaProps{
+								Type: spec.StringOrArray{"integer"},
+							},
+						},
+						"msg": {
+							SchemaProps: spec.SchemaProps{
+								Type: spec.StringOrArray{"string"},
+							},
+						},
+						"data": {
+							SchemaProps: spec.SchemaProps{
+								Ref: spec.MustCreateRef("#/definitions/" + file.Name.Name + "." +
+									strings.Replace(typeSpec.Name.Name, "Request", "Response", 1)),
+							},
+						},
+					},
 				},
 			},
 		},
