@@ -225,7 +225,9 @@ func (p *parseStruct) parseExpr(expr ast.Expr) (spec.Schema, error) {
 			return spec.Schema{}, err
 		}
 		// 组合以泛型为基础类型
-		schema1 = p.swagger.Definitions[schema1.Ref.Ref.GetPointer().DecodedTokens()[1]]
+		key := schema1.Ref.Ref.GetPointer().DecodedTokens()[1]
+		ref := schema1.Ref.String()
+		schema1 = p.swagger.Definitions[key]
 		// 找到any类型
 		for k, v := range schema1.Properties {
 			// 数组类型进去找
@@ -234,10 +236,12 @@ func (p *parseStruct) parseExpr(expr ast.Expr) (spec.Schema, error) {
 					// copy泛型类型
 					schema1.Properties[k].Items.Schema.SchemaProps.Type = []string{"object"}
 					schema1.Properties[k].Items.Schema.SchemaProps.Ref = schema2.Ref
-					p.swagger.Definitions[schema2.Ref.Ref.GetPointer().DecodedTokens()[1]] = schema1
+					p.swagger.Definitions[key] = schema1
 					return spec.Schema{
 						SchemaProps: spec.SchemaProps{
-							Ref: schema2.Ref,
+							Ref: spec.Ref{
+								Ref: jsonreference.MustCreateRef(ref),
+							},
 						},
 					}, nil
 				}
@@ -245,17 +249,18 @@ func (p *parseStruct) parseExpr(expr ast.Expr) (spec.Schema, error) {
 			if v.Type.Contains("any") {
 				// copy泛型类型
 				schema1.Properties[k] = schema2
-				p.swagger.Definitions[schema2.Ref.Ref.GetPointer().DecodedTokens()[1]] = schema1
+				p.swagger.Definitions[key] = schema1
 				return spec.Schema{
 					SchemaProps: spec.SchemaProps{
-						Ref: schema2.Ref,
+						Ref: spec.Ref{
+							Ref: jsonreference.MustCreateRef(ref),
+						},
 					},
 				}, nil
 			}
 		}
 		return spec.Schema{}, fmt.Errorf("泛型类型错误")
 	} else {
-		fmt.Println(expr)
 		return spec.Schema{}, fmt.Errorf("未知类型")
 	}
 	ref := fmt.Sprintf("#/definitions/%s.%s", pkgName, structName)

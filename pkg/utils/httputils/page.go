@@ -30,25 +30,7 @@ func (p *PageRequest[T]) Response(list []T, total int64) (*PageResponse[T], erro
 	}, nil
 }
 
-type IPageResponse interface {
-	GetList() interface{}
-	GetTotal() int64
-}
-
-type IPageDataResponse interface {
-	IPageResponse
-	GetData() interface{}
-}
-
 type PageResponse[T any] struct {
 	List  []T   `json:"list"`
 	Total int64 `json:"total"`
-}
-
-func (p *PageResponse[T]) GetList() interface{} {
-	return p.List
-}
-
-func (p *PageResponse[T]) GetTotal() int64 {
-	return p.Total
 }

@@ -42,14 +42,6 @@ func HandleResp(ctx *gin.Context, resp interface{}) {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"code": -1, "msg": "系统错误",
 		})
-	case IPageDataResponse:
-		ctx.JSON(http.StatusOK, gin.H{
-			"code": 0, "msg": "success", "data": resp.GetData(), "list": resp.GetList(), "total": resp.GetTotal(),
-		})
-	case IPageResponse:
-		ctx.JSON(http.StatusOK, gin.H{
-			"code": 0, "msg": "success", "list": resp.GetList(), "total": resp.GetTotal(),
-		})
 	default:
 		ctx.JSON(http.StatusOK, JsonResponse{
 			Code: 0,
