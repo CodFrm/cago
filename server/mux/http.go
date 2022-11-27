@@ -63,7 +63,7 @@ func (h *server) StartCancel(
 		return err
 	}
 	// 加入日志中间件
-	r.Use(logger.Middleware(logger.Default()), GinKVContext())
+	r.Use(Recover(), logger.Middleware(logger.Default()), GinKVContext())
 	if tp := trace.Default(); tp != nil {
 		// 加入链路追踪中间件
 		r.Use(trace.Middleware(cfg.AppName, tp))
@@ -72,7 +72,7 @@ func (h *server) StartCancel(
 		url := ginSwagger.URL("/swagger/doc.json")
 		r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
 	}
-	if err := h.callback(&Router{IRouter: r}); err != nil {
+	if err := h.callback(&Router{IRouter: r, unique: make(map[string]struct{})}); err != nil {
 		return errors.New("failed to register http server: " + err.Error())
 	}
 	// 启动http服务

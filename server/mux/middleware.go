@@ -1,33 +1,19 @@
 package mux
 
 import (
-	"context"
+	"errors"
 
+	"github.com/codfrm/cago/pkg/utils/httputils"
 	"github.com/gin-gonic/gin"
 )
 
-type ginKVContext struct {
-	context.Context
-	ginCtx *gin.Context
-}
-
-func (g *ginKVContext) Value(key interface{}) interface{} {
-	s, ok := key.(string)
-	if !ok {
-		return g.Context.Value(key)
-	}
-	value, exist := g.ginCtx.Get(s)
-	if exist {
-		return value
-	}
-	return g.Context.Value(key)
-}
-
-func GinKVContext() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Request = c.Request.WithContext(&ginKVContext{
-			ginCtx:  c,
-			Context: c.Request.Context(),
-		})
-	}
+func Recover() gin.HandlerFunc {
+	return gin.CustomRecovery(func(c *gin.Context, err any) {
+		switch err := err.(type) {
+		case error:
+			httputils.HandleResp(c, err)
+		case string:
+			httputils.HandleResp(c, errors.New(err))
+		}
+	})
 }

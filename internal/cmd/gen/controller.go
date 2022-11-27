@@ -42,16 +42,12 @@ func (c *Cmd) genController(apiFile string, f *ast.File, decl *ast.GenDecl, spec
 	if err := os.MkdirAll(filepath.Dir(ctrlFile), 0755); err != nil {
 		return false, err
 	}
-	ginContext := false
-	if utils.ParseTag(routeField.Tag.Value, "context") == "gin" {
-		ginContext = true
-	}
 	// 生成controller
 	_, err := os.Stat(ctrlFile)
 	if err != nil {
 		// 不存在重新生成
 		if os.IsNotExist(err) {
-			return false, c.regenController(ctrlFile, f, decl, apiFile, specs, ginContext)
+			return false, c.regenController(ctrlFile, f, decl, apiFile, specs)
 		}
 		return false, err
 	}
@@ -64,15 +60,14 @@ func (c *Cmd) genController(apiFile string, f *ast.File, decl *ast.GenDecl, spec
 		return true, nil
 	}
 	// 生成函数
-	funcTpl := c.genCtrlFunc(ctrlFile,
-		decl, specs, ginContext)
+	funcTpl := c.genCtrlFunc(ctrlFile, decl, specs)
 	data = append(data, []byte(funcTpl)...)
 	return false, os.WriteFile(ctrlFile, data, 0644)
 }
 
 // 重新生成controller
 func (c *Cmd) regenController(ctrlFile string, f *ast.File, decl *ast.GenDecl,
-	apiFile string, specs *ast.TypeSpec, ginContext bool) error {
+	apiFile string, specs *ast.TypeSpec) error {
 	// 生成controller头部
 	data := controllerHeaderTpl
 	ctrlName := utils.FileNameToCamel(ctrlFile)
@@ -82,11 +77,7 @@ func (c *Cmd) regenController(ctrlFile string, f *ast.File, decl *ast.GenDecl,
 	if err != nil {
 		return err
 	}
-	if ginContext {
-		data = strings.ReplaceAll(data, "{ContextPkg}", `"github.com/gin-gonic/gin"`)
-	} else {
-		data = strings.ReplaceAll(data, "{ContextPkg}", `"context"`)
-	}
+	data = strings.ReplaceAll(data, "{ContextPkg}", `"context"`)
 	data = strings.ReplaceAll(data, "{ApiPkg}", c.pkgName+strings.TrimPrefix(filepath.Dir(abs), c.pkgPath))
 	// 获取service包名
 	abs, err = filepath.Abs(c.apiPath)
@@ -98,12 +89,12 @@ func (c *Cmd) regenController(ctrlFile string, f *ast.File, decl *ast.GenDecl,
 
 	log.Printf("生成controller: %s", ctrlName)
 
-	data += c.genCtrlFunc(ctrlFile, decl, specs, ginContext)
+	data += c.genCtrlFunc(ctrlFile, decl, specs)
 
 	return os.WriteFile(ctrlFile, []byte(data), 0644)
 }
 
-func (c *Cmd) genCtrlFunc(ctrlFile string, decl *ast.GenDecl, specs *ast.TypeSpec, ginContext bool) string {
+func (c *Cmd) genCtrlFunc(ctrlFile string, decl *ast.GenDecl, specs *ast.TypeSpec) string {
 	// 生成函数
 	funcTpl := controllerFuncTpl
 	ctrlName := utils.FileNameToCamel(ctrlFile)
@@ -117,13 +108,8 @@ func (c *Cmd) genCtrlFunc(ctrlFile string, decl *ast.GenDecl, specs *ast.TypeSpe
 	if desc == "" {
 		desc = "TODO"
 	}
-	if ginContext {
-		funcTpl = strings.ReplaceAll(funcTpl, "{Context}", "*gin.Context")
-		funcTpl = strings.ReplaceAll(funcTpl, "{ContextParam}", "ctx.Request.Context()")
-	} else {
-		funcTpl = strings.ReplaceAll(funcTpl, "{Context}", "context.Context")
-		funcTpl = strings.ReplaceAll(funcTpl, "{ContextParam}", "ctx")
-	}
+	funcTpl = strings.ReplaceAll(funcTpl, "{Context}", "context.Context")
+	funcTpl = strings.ReplaceAll(funcTpl, "{ContextParam}", "ctx")
 	funcTpl = strings.ReplaceAll(funcTpl, "{FuncDesc}", desc)
 	log.Printf("生成controller函数: %s", funcName)
 	return funcTpl
