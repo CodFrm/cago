@@ -10,9 +10,32 @@ import (
 	"go.uber.org/zap"
 )
 
-type List struct {
-	List  interface{} `json:"list"`
-	Total int64       `json:"total"`
+type Page struct {
+	Page  int `form:"page" binding:"required"`
+	Limit int `form:"limit" binding:"required"`
+}
+
+func (p *Page) GetPage() int {
+	if p.Page == 0 {
+		return 1
+	}
+	return p.Page
+}
+
+func (p *Page) GetOffset() int {
+	return (p.GetPage() - 1) * p.Limit
+}
+
+func (p *Page) GetLimit() int {
+	if p.Limit == 0 {
+		return 20
+	}
+	return p.Limit
+}
+
+type List[T any] struct {
+	List  []T   `json:"list"`
+	Total int64 `json:"total"`
 }
 
 func Handle(ctx *gin.Context, f func() interface{}) {

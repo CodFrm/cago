@@ -94,15 +94,14 @@ func (s *Swagger) parseRoute(filename string, file *ast.File, decl *ast.GenDecl,
 			if field.Names == nil {
 				continue
 			}
-			name := utils.LowerFirstChar(field.Names[0].Name)
 			tag := strings.TrimPrefix(field.Tag.Value, "`")
 			in := ""
-			if method == http.MethodGet {
-				in = "query"
+			uri := utils.ParseTag(tag, "uri")
+			if uri != "" {
+				in = "path"
 			} else {
-				uri := utils.ParseTag(tag, "uri")
-				if uri != "" {
-					in = "path"
+				if method == http.MethodGet {
+					in = "query"
 				} else {
 					in = "formData"
 				}
@@ -114,7 +113,7 @@ func (s *Swagger) parseRoute(filename string, file *ast.File, decl *ast.GenDecl,
 			}
 			if in == "path" {
 				required = true
-				path = strings.ReplaceAll(path, ":"+name, "{"+name+"}")
+				path = strings.ReplaceAll(path, ":"+uri, "{"+uri+"}")
 			}
 			schema, err := newParseStruct(filename, s, file).parseFieldSwagger(field)
 			if err != nil {
@@ -122,7 +121,7 @@ func (s *Swagger) parseRoute(filename string, file *ast.File, decl *ast.GenDecl,
 			}
 			paramProps := spec.ParamProps{
 				Description:     schema.Description,
-				Name:            utils.LowerFirstChar(name),
+				Name:            utils.SwaggerName(field),
 				In:              in,
 				Required:        required,
 				AllowEmptyValue: false,

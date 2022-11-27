@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"errors"
 	"fmt"
 	"go/ast"
 	"io"
@@ -8,6 +9,7 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"unicode"
 )
 
 // UpperFirstChar 首字母大写
@@ -28,12 +30,22 @@ func LowerFirstChar(str string) string {
 
 // SwaggerName 获取swagger name
 func SwaggerName(field *ast.Field) string {
-	tag := field.Tag.Value
-	name := ParseTag(tag, "json")
-	if name == "" {
-		name = field.Names[0].Name
+	if field.Tag != nil {
+		tag := field.Tag.Value
+		name := ParseTag(tag, "json")
+		if name != "" {
+			return name
+		}
+		name = ParseTag(tag, "form")
+		if name != "" {
+			return name
+		}
+		name = ParseTag(tag, "uri")
+		if name != "" {
+			return name
+		}
 	}
-	return name
+	return field.Names[0].Name
 }
 
 // ToCamel 下划线转驼峰
@@ -201,11 +213,53 @@ func FindRootPkgName(dir string) (string, string, error) {
 func PkgToPath(rootPkg, rootPkgName, pkgName string) (string, error) {
 	// 去掉根包名
 	pkgPath := strings.TrimPrefix(pkgName, rootPkgName)
-	if pkgPath == pkgName {
-		return "", fmt.Errorf("rootPkg must be prefix with rootPkgName")
+	if pkgPath != pkgName {
+		// 拼接路径
+		return path.Join(rootPkg, pkgPath), nil
 	}
-	// 拼接路径
-	return path.Join(rootPkg, pkgPath), nil
+	// 读取go.mod然后去GOPATH中寻找
+	f, err := os.OpenFile(path.Join(rootPkg, "./go.mod"), os.O_RDONLY, 0644)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+	// 解析go.mod
+	b, err := io.ReadAll(f)
+	if err != nil {
+		return "", err
+	}
+	s := string(b)
+	// 解析出包名
+	findRootPkgName := pkgName
+	pkgDir := ""
+	for {
+		index := strings.Index(s, findRootPkgName)
+		if index == -1 {
+			splits := strings.Split(findRootPkgName, "/")
+			if len(splits) == 1 {
+				return "", errors.New("找不到包名")
+			}
+			findRootPkgName = strings.Join(splits[:len(splits)-1], "/")
+			pkgDir = splits[len(splits)-1] + "/" + pkgDir
+		} else {
+			// 获取包版本
+			pkgVersion := s[index+len(findRootPkgName)+1:]
+			pkgVersion = strings.Split(pkgVersion, "\n")[0]
+			// 获取GOPATH
+			gopath := os.Getenv("GOPATH")
+			if gopath == "" {
+				return "", errors.New("GOPATH为空")
+			}
+			// 大写转!小写
+			for i, v := range findRootPkgName {
+				if unicode.IsUpper(v) {
+					findRootPkgName = findRootPkgName[:i] + "!" + string(v) + findRootPkgName[i+1:]
+				}
+			}
+			// 拼接路径
+			return path.Join(gopath, "pkg/mod", findRootPkgName+"@"+pkgVersion+"/", pkgDir), nil
+		}
+	}
 }
 
 func ParseTag(tag string, key string) string {

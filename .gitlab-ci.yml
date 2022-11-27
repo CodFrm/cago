@@ -30,9 +30,8 @@ lint-job:
   stage: test
   image: golangci/golangci-lint:v1.46
   cache:
-    key: go-cache
+    key: lint-cache
     paths:
-      - .cache
       - .lint-cache
   script:
     - golangci-lint run

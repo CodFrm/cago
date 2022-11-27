@@ -117,12 +117,12 @@ func (r *Router) bindHandler(request reflect.Type, call func(a reflect.Value, b 
 		req := reflect.New(request)
 		// 绑定请求参数
 		i := req.Interface()
-		if err := c.ShouldBind(i); err != nil {
+		// 获取uri参数
+		if err := c.ShouldBindUri(i); err != nil {
 			httputils.HandleResp(c, err)
 			return
 		}
-		// 获取uri参数
-		if err := c.ShouldBindUri(i); err != nil {
+		if err := c.ShouldBind(i); err != nil {
 			httputils.HandleResp(c, err)
 			return
 		}

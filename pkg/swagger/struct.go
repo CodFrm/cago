@@ -19,7 +19,8 @@ import (
 type parseStruct struct {
 	filename string
 	*Swagger
-	f *ast.File
+	f       *ast.File
+	generic *spec.Ref
 }
 
 func newParseStruct(filename string, s *Swagger, f *ast.File) *parseStruct {
@@ -150,12 +151,12 @@ func (p *parseStruct) parseFieldType(fieldType ast.Expr) (spec.Schema, error) {
 			swaggerType.Properties = make(map[string]spec.Schema)
 			for _, field := range structType.Fields.List {
 				if field.Names == nil {
-					if strings.Contains(field.Tag.Value, ",inline") {
+					if field.Tag != nil && strings.Contains(field.Tag.Value, ",inline") {
 						schema, err := p.parseFieldSwagger(field)
-						schema = p.swagger.Definitions[schema.Ref.Ref.GetPointer().DecodedTokens()[1]]
 						if err != nil {
 							return spec.Schema{}, err
 						}
+						schema = p.swagger.Definitions[schema.Ref.Ref.GetPointer().DecodedTokens()[1]]
 						for k, v := range schema.Properties {
 							swaggerType.Properties[k] = v
 						}
@@ -177,6 +178,13 @@ func (p *parseStruct) parseFieldType(fieldType ast.Expr) (spec.Schema, error) {
 		return p.parseExpr(fieldType)
 	}
 	typeName := t.Name
+	// 泛型
+	if typeName == "T" {
+		swaggerType.Type = []string{"any"}
+		return spec.Schema{
+			SchemaProps: swaggerType,
+		}, nil
+	}
 	switch typeName {
 	case "string":
 		swaggerType.Type = spec.StringOrArray{"string"}
@@ -205,6 +213,50 @@ func (p *parseStruct) parseExpr(expr ast.Expr) (spec.Schema, error) {
 	} else if ident, ok := expr.(*ast.Ident); ok {
 		pkgName = p.f.Name.Name
 		structName = ident.Name
+	} else if ident, ok := expr.(*ast.IndexExpr); ok {
+		// 泛型
+		schema1, err := p.parseExpr(ident.X)
+		if err != nil {
+			return spec.Schema{}, err
+		}
+		// 类型
+		schema2, err := p.parseExpr(ident.Index)
+		if err != nil {
+			return spec.Schema{}, err
+		}
+		// 组合以泛型为基础类型
+		schema1 = p.swagger.Definitions[schema1.Ref.Ref.GetPointer().DecodedTokens()[1]]
+		// 找到any类型
+		for k, v := range schema1.Properties {
+			// 数组类型进去找
+			if v.Type.Contains("array") {
+				if v.Items.Schema.SchemaProps.Type.Contains("any") {
+					// copy泛型类型
+					schema1.Properties[k].Items.Schema.SchemaProps.Type = []string{"object"}
+					schema1.Properties[k].Items.Schema.SchemaProps.Ref = schema2.Ref
+					p.swagger.Definitions[schema2.Ref.Ref.GetPointer().DecodedTokens()[1]] = schema1
+					return spec.Schema{
+						SchemaProps: spec.SchemaProps{
+							Ref: schema2.Ref,
+						},
+					}, nil
+				}
+			}
+			if v.Type.Contains("any") {
+				// copy泛型类型
+				schema1.Properties[k] = schema2
+				p.swagger.Definitions[schema2.Ref.Ref.GetPointer().DecodedTokens()[1]] = schema1
+				return spec.Schema{
+					SchemaProps: spec.SchemaProps{
+						Ref: schema2.Ref,
+					},
+				}, nil
+			}
+		}
+		return spec.Schema{}, fmt.Errorf("泛型类型错误")
+	} else {
+		fmt.Println(expr)
+		return spec.Schema{}, fmt.Errorf("未知类型")
 	}
 	ref := fmt.Sprintf("#/definitions/%s.%s", pkgName, structName)
 	return spec.Schema{
@@ -221,10 +273,7 @@ func (p *parseStruct) findStruct(pkgName string, structName string) error {
 	// 查找包文件
 	for _, f := range p.f.Imports {
 		dir := strings.Trim(f.Path.Value, "\"")
-		if f.Name != nil && f.Name.Name == pkgName {
-			return p.parseFile(dir)
-		}
-		if path.Base(dir) == pkgName {
+		if (f.Name != nil && f.Name.Name == pkgName) || (path.Base(dir) == pkgName) {
 			// 解析包文件,转化为文件路径
 			dir, err := utils.PkgToPath(p.rootPkgPath, p.rootPkgName, dir)
 			if err != nil {
@@ -238,7 +287,7 @@ func (p *parseStruct) findStruct(pkgName string, structName string) error {
 		// 同目录
 		return p.parseDir(path.Dir(p.filename), structName)
 	}
-	return errors.New("not found")
+	return errors.New("not found struct")
 }
 
 // 解析指定目录下的指定类型
@@ -266,5 +315,5 @@ func (p *parseStruct) parseDir(dir string, structName string) error {
 			}
 		}
 	}
-	return errors.New("not found")
+	return fmt.Errorf("从%s中找不到类型: %s", dir, structName)
 }
