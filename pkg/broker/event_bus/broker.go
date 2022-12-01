@@ -24,6 +24,10 @@ func (e *eventBusBroker) Publish(ctx context.Context, topic string, data *broker
 }
 
 func (e *eventBusBroker) Subscribe(ctx context.Context, topic string, h broker.Handler, opts ...broker.SubscribeOption) (broker.Subscriber, error) {
+	options := broker.NewSubscribeOptions(opts...)
+	if options.Group != "" {
+		panic("event_bus not support group")
+	}
 	return newSubscriber(e, topic, h)
 }
 

@@ -25,6 +25,9 @@ func (t *traceBroker) Publish(ctx context.Context, topic string, data *broker2.M
 	if err != nil {
 		return err
 	}
+	if data.Header == nil {
+		data.Header = make(map[string]string)
+	}
 	data.Header["spanConfig"] = string(bt)
 	return t.wrap.Publish(ctx, topic, data, opts...)
 }

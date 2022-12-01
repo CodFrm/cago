@@ -15,6 +15,8 @@ func Broker(ctx context.Context, config *configs.Config) error {
 	if err := config.Scan("broker", cfg); err != nil {
 		return err
 	}
+	cfg.defaultGroup = config.AppName
+	cfg.topicPrefix = string(config.Env)
 	options := make([]Option, 0)
 	if tp := trace.Default(); tp != nil {
 		options = append(options, WithTracer(tp.Tracer(config.AppName+".broker")))

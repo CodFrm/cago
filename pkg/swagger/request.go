@@ -216,6 +216,9 @@ func (s *Swagger) parseRoute(filename string, file *ast.File, decl *ast.GenDecl,
 		},
 	}}
 
+	// 添加tag
+	operation.Tags = []string{file.Name.Name}
+
 	switch method {
 	case http.MethodGet:
 		pathItem.PathItemProps.Get = operation
@@ -226,7 +229,6 @@ func (s *Swagger) parseRoute(filename string, file *ast.File, decl *ast.GenDecl,
 	case http.MethodDelete:
 		pathItem.PathItemProps.Delete = operation
 	}
-
 	s.swagger.Paths.Paths[path] = pathItem
 	return nil
 }

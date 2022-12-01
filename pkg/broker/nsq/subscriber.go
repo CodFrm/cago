@@ -13,15 +13,18 @@ import (
 type subscribe struct {
 	consumer *nsq.Consumer
 	handler  broker.Handler
+	topic    string
+	config   *Config
 }
 
 func newSubscribe(b *nsqBroker, topic string, handler broker.Handler, options broker.SubscribeOptions) (broker.Subscriber, error) {
-	consumer, err := nsq.NewConsumer(topic, options.Group, b.config)
+	consumer, err := nsq.NewConsumer(topic, options.Group, b.nsqConfig)
 	if err != nil {
 		return nil, err
 	}
 	ret := &subscribe{
 		consumer: consumer, handler: handler,
+		topic: topic, config: b.config,
 	}
 	logger := logger.Default().With(zap.String("topic", topic))
 	ret.consumer.AddHandler(nsq.HandlerFunc(func(message *nsq.Message) (err error) {
@@ -47,16 +50,29 @@ func newSubscribe(b *nsqBroker, topic string, handler broker.Handler, options br
 		})
 		return err
 	}))
-	if err := ret.consumer.ConnectToNSQD(b.address); err != nil {
+	if b.config.NSQLookupAddr != nil {
+		err = ret.consumer.ConnectToNSQLookupds(b.config.NSQLookupAddr)
+	} else {
+		err = ret.consumer.ConnectToNSQD(b.config.Addr)
+	}
+	if err != nil {
 		return nil, err
 	}
 	return ret, nil
 }
 
 func (s *subscribe) Topic() string {
-	return ""
+	return s.topic
 }
 
 func (s *subscribe) Unsubscribe() error {
-	return nil
+	if s.config.NSQLookupAddr != nil {
+		for _, addr := range s.config.NSQLookupAddr {
+			if err := s.consumer.DisconnectFromNSQLookupd(addr); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	return s.consumer.DisconnectFromNSQD(s.config.Addr)
 }

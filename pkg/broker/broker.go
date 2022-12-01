@@ -9,29 +9,36 @@ import (
 	"github.com/codfrm/cago/pkg/broker/nsq"
 )
 
-type BrokerType string
+type Type string
 
 const (
-	NSQ       BrokerType = "nsq"
-	EVENT_BUS BrokerType = "event_bus"
+	NSQ      Type = "nsq"
+	EventBus Type = "event_bus"
 )
 
-type NSQConfig struct {
-	Addr string
-}
-
 type Config struct {
-	Type BrokerType
-	NSQ  *NSQConfig
+	Type         Type
+	NSQ          nsq.Config
+	defaultGroup string
+	topicPrefix  string
 }
 
 func NewWithConfig(ctx context.Context, cfg *Config, opts ...Option) (broker2.Broker, error) {
 	var ret broker2.Broker
 	var err error
+	brokerOpts := make([]broker2.Option, 0)
+	brokerOpts = append(brokerOpts, func(options *broker2.Options) {
+		if cfg.defaultGroup != "" {
+			options.DefaultGroup = cfg.defaultGroup
+		}
+		if cfg.topicPrefix != "" {
+			options.TopicPrefix = cfg.topicPrefix
+		}
+	})
 	switch cfg.Type {
 	case NSQ:
-		ret, err = nsq.NewBroker(cfg.NSQ.Addr)
-	case EVENT_BUS:
+		ret, err = nsq.NewBroker(cfg.NSQ, brokerOpts...)
+	case EventBus:
 		ret = event_bus.NewEvBusBroker()
 	default:
 		return nil, errors.New("type not found")

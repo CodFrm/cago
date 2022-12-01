@@ -2,8 +2,12 @@ package cago
 
 import (
 	"context"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/codfrm/cago/configs"
+	"github.com/codfrm/cago/pkg/logger"
 )
 
 type Cago struct {
@@ -48,9 +52,21 @@ func (r *Cago) RegistryCancel(component ComponentCancel) *Cago {
 
 // Start 启动框架,在此之前组件已全部启动,此处只做停止等待
 func (r *Cago) Start() error {
-	<-r.ctx.Done()
+	quitSignal := make(chan os.Signal)
+	// 优雅启停
+	signal.Notify(
+		quitSignal,
+		syscall.SIGINT, syscall.SIGTERM,
+	)
+	select {
+	case <-quitSignal:
+		r.cancel()
+	case <-r.ctx.Done():
+	}
+	logger.Default().Info("cago is stopping...")
 	for _, v := range r.components {
 		v.CloseHandle()
 	}
+	logger.Default().Info("cago is stopped")
 	return nil
 }

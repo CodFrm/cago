@@ -9,6 +9,8 @@ type PublishOption func(options *PublishOptions)
 type SubscribeOption func(options *SubscribeOptions)
 
 type Options struct {
+	DefaultGroup string
+	TopicPrefix  string
 }
 
 type PublishOptions struct {

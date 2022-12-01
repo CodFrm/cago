@@ -8,22 +8,33 @@ import (
 	"github.com/nsqio/go-nsq"
 )
 
-type nsqBroker struct {
-	address  string
-	config   *nsq.Config
-	producer *nsq.Producer
+type Config struct {
+	Addr          string
+	NSQLookupAddr []string
 }
 
-func NewBroker(address string) (broker.Broker, error) {
-	config := nsq.NewConfig()
-	producer, err := nsq.NewProducer(address, config)
+type nsqBroker struct {
+	config    *Config
+	nsqConfig *nsq.Config
+	producer  *nsq.Producer
+	options   *broker.Options
+}
+
+func NewBroker(config Config, options ...broker.Option) (broker.Broker, error) {
+	opts := &broker.Options{}
+	for _, o := range options {
+		o(opts)
+	}
+	nsqConfig := nsq.NewConfig()
+	producer, err := nsq.NewProducer(config.Addr, nsqConfig)
 	if err != nil {
 		return nil, err
 	}
 	return &nsqBroker{
-		address:  address,
-		config:   config,
-		producer: producer,
+		config:    &config,
+		nsqConfig: nsqConfig,
+		producer:  producer,
+		options:   opts,
 	}, nil
 }
 
@@ -32,11 +43,20 @@ func (b *nsqBroker) Publish(ctx context.Context, topic string, data *broker.Mess
 	if err != nil {
 		return err
 	}
+	if b.options.TopicPrefix != "" {
+		topic = b.options.TopicPrefix + "." + topic
+	}
 	return b.producer.Publish(topic, bt)
 }
 
 func (b *nsqBroker) Subscribe(ctx context.Context, topic string, h broker.Handler, opts ...broker.SubscribeOption) (broker.Subscriber, error) {
 	options := broker.NewSubscribeOptions(opts...)
+	if options.Group == "" {
+		options.Group = b.options.DefaultGroup
+	}
+	if b.options.TopicPrefix != "" {
+		topic = b.options.TopicPrefix + "." + topic
+	}
 	return newSubscribe(b, topic, h, options)
 }
 
