@@ -4,7 +4,9 @@ import (
 	"context"
 
 	"github.com/codfrm/cago/configs"
-	"github.com/go-redis/redis/v8"
+	"github.com/codfrm/cago/pkg/trace"
+	"github.com/go-redis/redis/extra/redisotel/v9"
+	"github.com/go-redis/redis/v9"
 )
 
 var defaultRedis *redis.Client
@@ -28,6 +30,11 @@ func Redis(ctx context.Context, config *configs.Config) error {
 	err := ret.Ping(context.Background()).Err()
 	if err != nil {
 		return err
+	}
+	if tp := trace.Default(); tp != nil {
+		if err := redisotel.InstrumentTracing(ret, redisotel.WithTracerProvider(tp)); err != nil {
+			return err
+		}
 	}
 	defaultRedis = ret
 	return nil

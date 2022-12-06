@@ -6,7 +6,9 @@ import (
 	"time"
 
 	"github.com/codfrm/cago/database/cache/cache"
-	"github.com/go-redis/redis/v8"
+	"github.com/codfrm/cago/pkg/trace"
+	"github.com/go-redis/redis/extra/redisotel/v9"
+	"github.com/go-redis/redis/v9"
 )
 
 type redisCache struct {
@@ -18,6 +20,14 @@ func NewRedisCache(config *redis.Options) (cache.Cache, error) {
 	err := client.Ping(context.Background()).Err()
 	if err != nil {
 		return nil, err
+	}
+	if tp := trace.Default(); tp != nil {
+		if err := redisotel.InstrumentTracing(client,
+			redisotel.WithTracerProvider(tp),
+			redisotel.WithDBSystem("cache"),
+		); err != nil {
+			return nil, err
+		}
 	}
 	return &redisCache{
 		redis: client,

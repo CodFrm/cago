@@ -4,9 +4,11 @@ import (
 	"context"
 
 	"github.com/codfrm/cago/configs"
+	"github.com/codfrm/cago/pkg/trace"
 	mysqlDriver "gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
+	"gorm.io/plugin/opentelemetry/tracing"
 )
 
 var defaultDB *db
@@ -36,6 +38,14 @@ func Database(ctx context.Context, config *configs.Config) error {
 	})
 	if err != nil {
 		return err
+	}
+	if tp := trace.Default(); tp != nil {
+		if err := orm.Use(tracing.NewPlugin(
+			tracing.WithTracerProvider(tp),
+			tracing.WithoutMetrics(),
+		)); err != nil {
+			return err
+		}
 	}
 	defaultDB = &db{
 		DB: orm,

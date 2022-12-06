@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"regexp"
 
+	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/locales"
 	"github.com/go-playground/locales/zh"
 	ut "github.com/go-playground/universal-translator"
@@ -17,13 +18,13 @@ var uni *ut.UniversalTranslator
 
 var Validate *validator.Validate
 
-type defaultValidator struct {
+type DefaultValidator struct {
 	validate *validator.Validate
 }
 
-func NewValidator() *defaultValidator {
+func NewValidator() binding.StructValidator {
 	Validate = validator.New()
-	ret := &defaultValidator{
+	ret := &DefaultValidator{
 		validate: Validate,
 	}
 	ret.validate.SetTagName("binding")
@@ -42,7 +43,7 @@ func NewValidator() *defaultValidator {
 	return ret
 }
 
-func (v *defaultValidator) registerValidation() {
+func (v *DefaultValidator) registerValidation() {
 	_ = v.validate.RegisterValidation("mobile", func(fl validator.FieldLevel) bool {
 		if val, ok := fl.Field().Interface().(string); ok {
 			reg := regexp.MustCompile("^1[0-9]{10}$")
@@ -95,7 +96,7 @@ func (v *defaultValidator) registerValidation() {
 
 }
 
-func (v *defaultValidator) ValidateStruct(obj interface{}) error {
+func (v *DefaultValidator) ValidateStruct(obj interface{}) error {
 	if kindOfData(obj) == reflect.Struct {
 		if err := v.validate.Struct(obj); err != nil {
 			return err
@@ -104,7 +105,7 @@ func (v *defaultValidator) ValidateStruct(obj interface{}) error {
 	return nil
 }
 
-func (v *defaultValidator) Engine() interface{} {
+func (v *DefaultValidator) Engine() interface{} {
 	return v.validate
 }
 

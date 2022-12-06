@@ -11,7 +11,7 @@ import (
 
 var logger *zap.Logger
 
-// Logger 日志组件,核心组件,必须注册
+// Logger 日志组件,核心组件,必须提前注册
 func Logger(ctx context.Context, config *configs.Config) error {
 	cfg := &Config{}
 	if err := config.Scan("logger", cfg); err != nil {

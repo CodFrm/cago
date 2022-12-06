@@ -8,7 +8,7 @@ import (
 	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/pkg/logger"
 	"github.com/codfrm/cago/pkg/trace"
-	"github.com/codfrm/cago/server/mux/validator"
+	"github.com/codfrm/cago/pkg/utils/validator"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -58,10 +58,7 @@ func (h *server) StartCancel(
 		r = gin.New()
 		gin.SetMode(gin.ReleaseMode)
 	}
-	binding.Validator, err = validator.NewValidator()
-	if err != nil {
-		return err
-	}
+	binding.Validator = validator.NewValidator()
 	// 加入日志中间件
 	r.Use(Recover(), logger.Middleware(logger.Default()), GinKVContext())
 	if tp := trace.Default(); tp != nil {

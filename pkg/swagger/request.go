@@ -155,15 +155,22 @@ func (s *Swagger) parseRoute(filename string, file *ast.File, decl *ast.GenDecl,
 		if err != nil {
 			return err
 		}
+		ref := spec.MustCreateRef("#/definitions/" + file.Name.Name + "." + typeSpec.Name.Name)
+		s.swagger.Definitions[file.Name.Name+"."+typeSpec.Name.Name] = schema
 		operation.Parameters = append(operation.Parameters, spec.Parameter{
 			ParamProps: spec.ParamProps{
 				Description: schema.Description,
 				Name:        "body",
 				In:          "body",
+				Schema: &spec.Schema{
+					SchemaProps: spec.SchemaProps{
+						Ref: ref,
+					},
+				},
 			},
-			SimpleSchema: spec.SimpleSchema{
-				Type: schema.Type[0],
-			},
+			//SimpleSchema: spec.SimpleSchema{
+			//	Type: schema.Type[0],
+			//},
 		})
 		//operation.Parameters = append(operation.Parameters, spec.Parameter{
 		//	ParamProps: spec.ParamProps{
