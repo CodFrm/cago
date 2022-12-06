@@ -14,7 +14,8 @@ import (
 type ExporterType string
 
 const (
-	Jaeger ExporterType = "jaeger"
+	Jaeger  ExporterType = "jaeger"
+	UpTrace              = "uptrace"
 )
 
 type Config struct {
@@ -22,6 +23,7 @@ type Config struct {
 	Type     ExporterType
 	Username string
 	Password string
+	Dsn      string
 	// Sample 采样率 0-1 其它数字为跟随父配置
 	Sample float64
 }
@@ -35,6 +37,10 @@ func NewWithConfig(ctx context.Context, cfg *Config, options ...Option) (trace.T
 			Endpoint: cfg.Endpoint,
 			Username: cfg.Username,
 			Password: cfg.Password,
+		})
+	case UpTrace:
+		exp, err = exporter.UpTraceExporter(&exporter.UpTraceConfig{
+			Dsn: cfg.Dsn,
 		})
 	default:
 		return nil, errors.New("type not found")

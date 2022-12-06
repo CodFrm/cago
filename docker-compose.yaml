@@ -26,13 +26,54 @@ services:
     networks:
       - cago
 
-  jaeger:
-    image: jaegertracing/all-in-one:latest
+#  jaeger:
+#    image: jaegertracing/all-in-one:latest
+#    ports:
+#      - "14268:14268"
+#      - "16686:16686"
+#    networks:
+#      - cago
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:head-alpine
+    restart: on-failure
+    environment:
+      CLICKHOUSE_DB: uptrace
     ports:
-      - "14268:14268"
-      - "16686:16686"
+      - "8123:8123"
+      - "9000:9000"
+    volumes:
+      - ./.docker/clickhouse:/var/lib/clickhouse
     networks:
       - cago
+
+  uptrace:
+    image: 'uptrace/uptrace:1.2.4'
+    restart: on-failure
+    volumes:
+      - ./.docker/uptrace_data:/var/lib/uptrace
+      - ./.docker/uptrace.yml:/etc/uptrace/uptrace.yml
+    ports:
+      - '14317:14317'
+      - '14318:14318'
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+    networks:
+      - cago
+
+#  otel-collector:
+#    image: otel/opentelemetry-collector-contrib:0.58.0
+#    user: '0:0' # required for logs
+#    volumes:
+#      - ./.docker/otel-collector.yaml:/etc/otelcol-contrib/config.yaml
+#      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+#      - /var/log:/var/log:ro
+#    ports:
+#      - '4317:4317'
+#      - '4318:4318'
+#    networks:
+#      - cago
 
   loki:
     image: grafana/loki:2.6.1
