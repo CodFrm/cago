@@ -25,22 +25,28 @@ func (b *bind) Bind(req *http.Request, ptr any) error {
 	ptrVal := reflect.ValueOf(ptr)
 	ptrElem := ptrVal.Elem()
 	ptrType := ptrElem.Type()
-	flag := true
-	switch b.ctx.ContentType() {
-	case binding.MIMEJSON:
-		if req == nil || req.Body == nil {
-			return errors.New("invalid request")
+	var form func(key string) string
+	if req.Method == http.MethodGet ||
+		req.Method == http.MethodDelete {
+		form = b.ctx.Query
+	} else {
+		switch b.ctx.ContentType() {
+		case binding.MIMEJSON:
+			if req == nil || req.Body == nil {
+				return errors.New("invalid request")
+			}
+			decoder := json.NewDecoder(req.Body)
+			if err := decoder.Decode(ptr); err != nil {
+				return err
+			}
+		case binding.MIMEMultipartPOSTForm, binding.MIMEPOSTForm:
+			form = b.ctx.PostForm
 		}
-		decoder := json.NewDecoder(req.Body)
-		if err := decoder.Decode(ptr); err != nil {
-			return err
-		}
-		flag = false
 	}
 	for i := 0; i < ptrElem.NumField(); i++ {
 		tag := ptrType.Field(i).Tag
-		if form := tag.Get("form"); form != "" && flag {
-			setValue(ptrElem.Field(i), b.ctx.PostForm(form))
+		if key := tag.Get("form"); key != "" && form != nil {
+			setValue(ptrElem.Field(i), form(key))
 		} else if uri := tag.Get("uri"); uri != "" {
 			setValue(ptrElem.Field(i), b.ctx.Param(uri))
 		}

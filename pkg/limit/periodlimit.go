@@ -47,7 +47,7 @@ func (p *PeriodLimit) Take(ctx context.Context, key string) (func() error, error
 		return nil, err
 	}
 	if cnt < p.quota {
-		flag := utils.RandString(2, 8)
+		flag := utils.RandString(8, utils.Mix)
 		err = p.limitStore.ZAdd(ctx, key, redis.Z{
 			Score:  float64(now),
 			Member: flag,
