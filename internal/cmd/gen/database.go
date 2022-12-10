@@ -77,8 +77,8 @@ func (u *{LowerName}) Find(ctx context.Context, id int64) (*entity.{Name}, error
 	return ret, nil
 }
 
-func (u *{LowerName}) Save(ctx context.Context, {LowerName} *entity.{Name}) error {
-	return db.Ctx(ctx).Save({LowerName}).Error
+func (u *{LowerName}) Create(ctx context.Context, {LowerName} *entity.{Name}) error {
+	return db.Ctx(ctx).Create({LowerName}).Error
 }
 
 func (u *{LowerName}) Update(ctx context.Context, {LowerName} *entity.{Name}) error {

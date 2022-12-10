@@ -73,14 +73,24 @@ func New(opt ...Option) (trace.TracerProvider, error) {
 		sample = tracesdk.ParentBased(tracesdk.NeverSample())
 	}
 
+	res, err := resource.New(context.Background(),
+		resource.WithSchemaURL(semconv.SchemaURL),
+		resource.WithHost(),
+		//resource.WithContainer(),
+		//resource.WithOS(),
+		//resource.WithProcess(),
+		resource.WithAttributes(
+			options.attrs...,
+		))
+	if err != nil {
+		return nil, err
+	}
+
 	tp := tracesdk.NewTracerProvider(
 		// Always be sure to batch in production.
 		tracesdk.WithBatcher(options.exp),
 		// Record information about this application in a Resource.
-		tracesdk.WithResource(resource.NewWithAttributes(
-			semconv.SchemaURL,
-			options.attrs...,
-		)),
+		tracesdk.WithResource(res),
 		tracesdk.WithSampler(sample),
 	)
 	return tp, nil

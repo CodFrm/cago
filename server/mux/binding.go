@@ -1,6 +1,7 @@
 package mux
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -19,8 +20,18 @@ func (b *bind) Name() string {
 	return "cago"
 }
 
+// Validate 数据校验
+type Validate interface {
+	Validate(ctx context.Context) error
+}
+
 func (b *bind) Bind(req *http.Request, ptr any) error {
 	// 根据tag绑定数据
+	if v, ok := ptr.(Validate); ok {
+		if err := v.Validate(b.ctx); err != nil {
+			return err
+		}
+	}
 	// Check if ptr is a map
 	ptrVal := reflect.ValueOf(ptr)
 	ptrElem := ptrVal.Elem()

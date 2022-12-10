@@ -23,11 +23,14 @@ func Register(lang string, code map[int]string) {
 	}
 }
 
+// NewError 参数校验错误
 func NewError(ctx context.Context, code int, v ...interface{}) error {
-	if _, ok := langs[DefaultLang]; !ok {
-		return fmt.Errorf("code %d not found", code)
-	}
 	return httputils.NewError(http.StatusBadRequest, code, Printf(ctx, code, v...))
+}
+
+// NewInternalError 构造内部错误
+func NewInternalError(ctx context.Context, code int, v ...interface{}) error {
+	return httputils.NewError(http.StatusInternalServerError, code, Printf(ctx, code, v...))
 }
 
 func NewErrorWithStatus(ctx context.Context, status int, code int, v ...interface{}) error {

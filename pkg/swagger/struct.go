@@ -6,6 +6,7 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"log"
 	"os"
 	"path"
 	"strconv"
@@ -86,6 +87,24 @@ func (p *parseStruct) parseStruct(typeSpec *ast.TypeSpec) error {
 					)
 					schema.Enum = append(schema.Enum, value)
 					schema.Description += "\n" + fmt.Sprintf("- %s: %d", valueSpec.Names[0].Name,
+						value)
+				} else if binaryExpr, ok := valueSpec.Values[0].(*ast.BinaryExpr); ok {
+					// 二元表达式
+					var basicList *ast.BasicLit
+					if _, ok := binaryExpr.X.(*ast.BasicLit); ok {
+						basicList = binaryExpr.X.(*ast.BasicLit)
+					} else {
+						basicList = binaryExpr.Y.(*ast.BasicLit)
+					}
+					value := basicList.Value
+					var num int
+					switch basicList.Kind {
+					case token.INT:
+						n, _ := strconv.ParseInt(value, 10, 64)
+						num = int(n)
+					}
+					schema.Enum = append(schema.Enum, num)
+					schema.Description += "\n" + fmt.Sprintf("- %s: %s", valueSpec.Names[0].Name,
 						value)
 				}
 			}
@@ -177,6 +196,7 @@ func (p *parseStruct) parseFieldType(fieldType ast.Expr) (spec.Schema, error) {
 		}
 		return p.parseExpr(fieldType)
 	}
+	log.Printf("parseFieldType ident %+v", t)
 	typeName := t.Name
 	// 泛型
 	if typeName == "T" {
@@ -206,12 +226,14 @@ func (p *parseStruct) parseFieldType(fieldType ast.Expr) (spec.Schema, error) {
 func (p *parseStruct) parseExpr(expr ast.Expr) (spec.Schema, error) {
 	var pkgName, structName string
 	if selectorExpr, ok := expr.(*ast.SelectorExpr); ok {
+		log.Printf("selectorExpr: %+v", selectorExpr)
 		pkgName = selectorExpr.X.(*ast.Ident).Name
 		structName = selectorExpr.Sel.Name
 	} else if startExpr, ok := expr.(*ast.StarExpr); ok {
 		return p.parseExpr(startExpr.X)
 	} else if ident, ok := expr.(*ast.Ident); ok {
-		pkgName = p.f.Name.Name
+		log.Printf("ident: %+v", ident)
+		pkgName = ""
 		structName = ident.Name
 	} else if ident, ok := expr.(*ast.IndexExpr); ok {
 		// 泛型
@@ -263,6 +285,13 @@ func (p *parseStruct) parseExpr(expr ast.Expr) (spec.Schema, error) {
 	} else {
 		return spec.Schema{}, fmt.Errorf("未知类型")
 	}
+	log.Printf("parseExpr pkgName: %s, structName: %s", pkgName, structName)
+	if err := p.findStruct(pkgName, structName); err != nil {
+		return spec.Schema{}, err
+	}
+	if pkgName == "" {
+		pkgName = p.f.Name.Name
+	}
 	ref := fmt.Sprintf("#/definitions/%s.%s", pkgName, structName)
 	return spec.Schema{
 		SchemaProps: spec.SchemaProps{
@@ -270,11 +299,15 @@ func (p *parseStruct) parseExpr(expr ast.Expr) (spec.Schema, error) {
 				Ref: jsonreference.MustCreateRef(ref),
 			},
 		},
-	}, p.findStruct(pkgName, structName)
+	}, nil
 }
 
 // 查找包文件并解析
 func (p *parseStruct) findStruct(pkgName string, structName string) error {
+	// 当前包
+	if pkgName == "" {
+		return p.parseDir(path.Dir(p.filename), structName)
+	}
 	// 查找包文件
 	for _, f := range p.f.Imports {
 		dir := strings.Trim(f.Path.Value, "\"")
@@ -286,11 +319,6 @@ func (p *parseStruct) findStruct(pkgName string, structName string) error {
 			}
 			return p.parseDir(dir, structName)
 		}
-	}
-	// 未找到,并且包名相等
-	if pkgName == p.f.Name.Name {
-		// 同目录
-		return p.parseDir(path.Dir(p.filename), structName)
 	}
 	return errors.New("not found struct")
 }

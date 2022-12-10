@@ -24,21 +24,18 @@ func Handle(ctx *gin.Context, f func() interface{}) {
 func HandleResp(ctx *gin.Context, resp interface{}) {
 	switch resp := resp.(type) {
 	case *JsonResponseError:
-		err := resp
-		ctx.AbortWithStatusJSON(err.Status, err)
+		ctx.AbortWithStatusJSON(resp.Status, resp)
 	case validator.ValidationErrors:
-		err := resp
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"code": -1, "msg": pkgValidator.TransError(err),
+			"code": -1, "msg": pkgValidator.TransError(resp),
 		})
 	case error:
-		err := resp
 		logger := logger.Ctx(ctx).With(
 			zap.String("url", ctx.Request.URL.String()),
 			zap.String("method", ctx.Request.Method),
 			zap.String("ip", ctx.ClientIP()),
 		)
-		logger.Error("internal server error", zap.Error(err), zap.StackSkip("stack", 3))
+		logger.Error("internal server error", zap.Error(resp), zap.StackSkip("stack", 3))
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"code": -1, "msg": "系统错误",
 		})
