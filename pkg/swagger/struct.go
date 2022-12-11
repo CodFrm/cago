@@ -281,7 +281,7 @@ func (p *parseStruct) parseExpr(expr ast.Expr) (spec.Schema, error) {
 				}, nil
 			}
 		}
-		return spec.Schema{}, fmt.Errorf("泛型类型错误")
+		return schema1, nil
 	} else {
 		return spec.Schema{}, fmt.Errorf("未知类型")
 	}

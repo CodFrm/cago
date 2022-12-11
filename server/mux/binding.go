@@ -57,16 +57,16 @@ func (b *bind) Bind(req *http.Request, ptr any) error {
 	for i := 0; i < ptrElem.NumField(); i++ {
 		tag := ptrType.Field(i).Tag
 		if key := tag.Get("form"); key != "" && form != nil {
-			setValue(ptrElem.Field(i), form(key))
+			setValue(ptrElem.Field(i), tag, form(key))
 		} else if uri := tag.Get("uri"); uri != "" {
-			setValue(ptrElem.Field(i), b.ctx.Param(uri))
+			setValue(ptrElem.Field(i), tag, b.ctx.Param(uri))
 		}
 	}
 	return binding.Validator.ValidateStruct(ptr)
 }
 
 // 设置值,暂时只支持基础类型
-func setValue(field reflect.Value, value string) {
+func setValue(field reflect.Value, tag reflect.StructTag, value string) {
 	switch field.Kind() {
 	case reflect.String:
 		field.SetString(value)
@@ -82,5 +82,7 @@ func setValue(field reflect.Value, value string) {
 	case reflect.Bool:
 		i, _ := strconv.ParseBool(value)
 		field.SetBool(i)
+	}
+	if tag.Get("form") == "" {
 	}
 }

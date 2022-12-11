@@ -2,6 +2,7 @@ package broker
 
 import (
 	"context"
+	"time"
 )
 
 type Message struct {
@@ -13,6 +14,7 @@ type Event interface {
 	Topic() string
 	Message() *Message
 	Ack() error
+	Requeue(delay time.Duration) error
 	Error() error
 }
 

@@ -1,6 +1,8 @@
 package event_bus
 
 import (
+	"time"
+
 	"github.com/codfrm/cago/pkg/broker/broker"
 )
 
@@ -22,5 +24,9 @@ func (e *event) Ack() error {
 }
 
 func (e *event) Error() error {
+	return nil
+}
+
+func (e *event) Requeue(delay time.Duration) error {
 	return nil
 }

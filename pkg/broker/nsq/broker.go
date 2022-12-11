@@ -43,21 +43,11 @@ func (b *nsqBroker) Publish(ctx context.Context, topic string, data *broker.Mess
 	if err != nil {
 		return err
 	}
-	if b.options.TopicPrefix != "" {
-		topic = b.options.TopicPrefix + "." + topic
-	}
 	return b.producer.Publish(topic, bt)
 }
 
 func (b *nsqBroker) Subscribe(ctx context.Context, topic string, h broker.Handler, opts ...broker.SubscribeOption) (broker.Subscriber, error) {
-	options := broker.NewSubscribeOptions(opts...)
-	if options.Group == "" {
-		options.Group = b.options.DefaultGroup
-	}
-	if b.options.TopicPrefix != "" {
-		topic = b.options.TopicPrefix + "." + topic
-	}
-	return newSubscribe(b, topic, h, options)
+	return newSubscribe(b, topic, h, broker.NewSubscribeOptions(opts...))
 }
 
 func (b *nsqBroker) Close() error {

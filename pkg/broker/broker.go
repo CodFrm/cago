@@ -17,27 +17,16 @@ const (
 )
 
 type Config struct {
-	Type         Type
-	NSQ          nsq.Config
-	defaultGroup string
-	topicPrefix  string
+	Type Type
+	NSQ  nsq.Config
 }
 
 func NewWithConfig(ctx context.Context, cfg *Config, opts ...Option) (broker2.Broker, error) {
 	var ret broker2.Broker
 	var err error
-	brokerOpts := make([]broker2.Option, 0)
-	brokerOpts = append(brokerOpts, func(options *broker2.Options) {
-		if cfg.defaultGroup != "" {
-			options.DefaultGroup = cfg.defaultGroup
-		}
-		if cfg.topicPrefix != "" {
-			options.TopicPrefix = cfg.topicPrefix
-		}
-	})
 	switch cfg.Type {
 	case NSQ:
-		ret, err = nsq.NewBroker(cfg.NSQ, brokerOpts...)
+		ret, err = nsq.NewBroker(cfg.NSQ)
 	case EventBus:
 		ret = event_bus.NewEvBusBroker()
 	default:
@@ -59,5 +48,5 @@ func New(opts ...Option) (broker2.Broker, error) {
 	if options.tracer != nil {
 		ret = wrapTrace(ret, options.tracer)
 	}
-	return ret, nil
+	return newWrap(ret, options), nil
 }

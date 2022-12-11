@@ -9,8 +9,6 @@ type PublishOption func(options *PublishOptions)
 type SubscribeOption func(options *SubscribeOptions)
 
 type Options struct {
-	DefaultGroup string
-	TopicPrefix  string
 }
 
 type PublishOptions struct {
@@ -47,6 +45,18 @@ func NewSubscribeOptions(opts ...SubscribeOption) SubscribeOptions {
 		o(&opt)
 	}
 	return opt
+}
+
+func Group(group string) SubscribeOption {
+	return func(options *SubscribeOptions) {
+		options.Group = group
+	}
+}
+
+func NotAutoAck() SubscribeOption {
+	return func(options *SubscribeOptions) {
+		options.AutoAck = false
+	}
 }
 
 func WithPublishContext(ctx context.Context) PublishOption {

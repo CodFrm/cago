@@ -4,6 +4,7 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"log"
 	"net/http"
 	"strings"
 
@@ -66,8 +67,11 @@ func (s *Swagger) parseRoute(filename string, file *ast.File, decl *ast.GenDecl,
 	path := utils.ParseTag(tag, "path")
 	// 取出method值
 	method := utils.ParseTag(tag, "method")
-	pathItem := spec.PathItem{
-		PathItemProps: spec.PathItemProps{},
+	pathItem, ok := s.swagger.Paths.Paths[path]
+	if !ok {
+		pathItem = spec.PathItem{
+			PathItemProps: spec.PathItemProps{},
+		}
 	}
 	operation := &spec.Operation{
 		OperationProps: spec.OperationProps{
@@ -91,10 +95,32 @@ func (s *Swagger) parseRoute(filename string, file *ast.File, decl *ast.GenDecl,
 	if method == http.MethodGet || contentType != JSONBodyType {
 		for _, field := range structSpec.Fields.List {
 			// 解析参数
+			tag := strings.TrimPrefix(field.Tag.Value, "`")
 			if field.Names == nil {
+				//inline类型
+				if utils.ParseTag(tag, "form") == ",inline" {
+					schema, err := newParseStruct(filename, s, file).parseFieldSwagger(field)
+					if err != nil {
+						log.Printf("%v,%v", tag, err)
+						return err
+					}
+					if schema.Type != nil {
+						for k, v := range schema.SchemaProps.Properties {
+							paramProps := spec.ParamProps{
+								Description: v.Description,
+								Name:        k,
+								In:          "query",
+								Schema:      &v,
+							}
+							paramProps.Name = k
+							operation.Parameters = append(operation.Parameters, spec.Parameter{
+								ParamProps: paramProps,
+							})
+						}
+					}
+				}
 				continue
 			}
-			tag := strings.TrimPrefix(field.Tag.Value, "`")
 			in := ""
 			uri := utils.ParseTag(tag, "uri")
 			if uri != "" {
@@ -150,6 +176,39 @@ func (s *Swagger) parseRoute(filename string, file *ast.File, decl *ast.GenDecl,
 			}
 		}
 	} else {
+		// 解析uri参数
+		for _, field := range structSpec.Fields.List {
+			// 解析参数
+			if field.Names == nil {
+				continue
+			}
+			tag := strings.TrimPrefix(field.Tag.Value, "`")
+			in := ""
+			uri := utils.ParseTag(tag, "uri")
+			if uri == "" {
+				continue
+			}
+			path = strings.ReplaceAll(path, ":"+uri, "{"+uri+"}")
+			schema, err := newParseStruct(filename, s, file).parseFieldSwagger(field)
+			if err != nil {
+				return err
+			}
+			paramProps := spec.ParamProps{
+				Description:     schema.Description,
+				Name:            utils.SwaggerName(field),
+				In:              in,
+				Required:        true,
+				AllowEmptyValue: false,
+			}
+			if schema.Type != nil {
+				operation.Parameters = append(operation.Parameters, spec.Parameter{
+					ParamProps: paramProps,
+					SimpleSchema: spec.SimpleSchema{
+						Type: schema.Type[0],
+					},
+				})
+			}
+		}
 		// json请求,将参数放在body中
 		schema, err := newParseStruct(filename, s, file).parseFieldType(typeSpec.Type)
 		if err != nil {

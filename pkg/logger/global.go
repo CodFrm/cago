@@ -35,6 +35,7 @@ func SetLogger(l *zap.Logger) {
 	logger = l
 }
 
+// Default 默认日志,尽量不要使用,会丢失上下文信息
 func Default() *zap.Logger {
 	return logger
 }

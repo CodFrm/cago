@@ -1,14 +1,17 @@
 package nsq
 
 import (
+	"time"
+
 	"github.com/codfrm/cago/pkg/broker/broker"
 	"github.com/nsqio/go-nsq"
 )
 
 type event struct {
-	topic   string
-	data    *broker.Message
-	message *nsq.Message
+	topic     string
+	data      *broker.Message
+	message   *nsq.Message
+	isRequeue bool
 }
 
 func (e *event) Topic() string {
@@ -25,5 +28,11 @@ func (e *event) Ack() error {
 }
 
 func (e *event) Error() error {
+	return nil
+}
+
+func (e *event) Requeue(delay time.Duration) error {
+	e.message.Requeue(delay)
+	e.isRequeue = true
 	return nil
 }

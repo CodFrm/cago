@@ -98,11 +98,11 @@ func SpanFromContext(ctx context.Context) trace.Span {
 	return trace.SpanFromContext(ctx)
 }
 
-type warpTracer struct {
+type wrapTracer struct {
 	trace.Tracer
 }
 
-func (w *warpTracer) Start(ctx context.Context, spanName string, opts ...trace.SpanStartOption) (context.Context, trace.Span) {
+func (w *wrapTracer) Start(ctx context.Context, spanName string, opts ...trace.SpanStartOption) (context.Context, trace.Span) {
 	if gctx, ok := ctx.(*gin.Context); ok {
 		return w.Tracer.Start(gctx.Request.Context(), spanName, opts...)
 	}
@@ -111,7 +111,7 @@ func (w *warpTracer) Start(ctx context.Context, spanName string, opts ...trace.S
 
 func TracerFromContext(ctx context.Context) trace.Tracer {
 	if gctx, ok := ctx.(*gin.Context); ok {
-		return &warpTracer{gctx.Request.Context().Value(tracerKey).(trace.Tracer)}
+		return &wrapTracer{gctx.Request.Context().Value(tracerKey).(trace.Tracer)}
 	}
 	return ctx.Value(tracerKey).(trace.Tracer)
 }

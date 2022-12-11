@@ -26,16 +26,20 @@ func newSubscribe(b *nsqBroker, topic string, handler broker.Handler, options br
 		consumer: consumer, handler: handler,
 		topic: topic, config: b.config,
 	}
-	logger := logger.Default().With(zap.String("topic", topic))
+	logger := logger.Default().With(zap.String("topic", topic), zap.String("group", options.Group))
 	ret.consumer.AddHandler(nsq.HandlerFunc(func(message *nsq.Message) (err error) {
 		data := &broker.Message{}
+		ev := &event{
+			topic:   topic,
+			data:    data,
+			message: message,
+		}
 		defer func() {
-			if err == nil {
-				if options.AutoAck {
-					message.Finish()
-				}
-			} else {
-				message.Requeue(-1)
+			if options.AutoAck && !ev.isRequeue {
+				message.Finish()
+			}
+			if err != nil {
+				//message.Requeue(-1)
 				logger.Error("nsq subscriber handle error", zap.Error(err))
 			}
 		}()
@@ -43,11 +47,7 @@ func newSubscribe(b *nsqBroker, topic string, handler broker.Handler, options br
 			logger.Error("nsq subscriber unmarshal error", zap.Error(err))
 			return err
 		}
-		err = handler(context.Background(), &event{
-			topic:   topic,
-			data:    data,
-			message: message,
-		})
+		err = handler(context.Background(), ev)
 		return err
 	}))
 	if b.config.NSQLookupAddr != nil {

@@ -55,8 +55,8 @@ func ToCamel(str string) string {
 	}
 	var result string
 	for _, v := range strings.Split(str, "_") {
-		if v[1:] == "id" {
-			result += strings.ToUpper(v[:1]) + "ID"
+		if v == "id" {
+			result += "ID"
 		} else {
 			result += strings.ToUpper(v[:1]) + v[1:]
 		}
