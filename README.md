@@ -27,6 +27,7 @@ cago 只对社区工具进行集成,大大减少迁移难度和学习成本,我�
 
 - [sql db](./database/db)
 - [redis](./database/redis)
+- [elasticsearch](./database/elasticsearch)
 
 ## 中间件
 

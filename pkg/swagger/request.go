@@ -110,11 +110,11 @@ func (s *Swagger) parseRoute(filename string, file *ast.File, decl *ast.GenDecl,
 								Description: v.Description,
 								Name:        k,
 								In:          "query",
-								Schema:      &v,
 							}
 							paramProps.Name = k
 							operation.Parameters = append(operation.Parameters, spec.Parameter{
-								ParamProps: paramProps,
+								ParamProps:   paramProps,
+								SimpleSchema: spec.SimpleSchema{Type: v.Type[0]},
 							})
 						}
 					}
