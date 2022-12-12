@@ -131,7 +131,10 @@ func (c *Cmd) regenService(serviceFile string, f *ast.File, apiFile string) erro
 	if err != nil {
 		return err
 	}
-	data = strings.ReplaceAll(data, "{ApiPkg}", c.pkgName+strings.TrimPrefix(filepath.Dir(abs), c.pkgPath))
+	prefix := strings.TrimPrefix(filepath.Dir(abs), c.pkgPath)
+
+	s := c.pkgName + prefix
+	data = strings.ReplaceAll(data, "{ApiPkg}", strings.ReplaceAll(s, "\\", "/"))
 	return os.WriteFile(serviceFile, []byte(data), 0644)
 }
 
