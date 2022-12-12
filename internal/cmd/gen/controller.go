@@ -78,14 +78,15 @@ func (c *Cmd) regenController(ctrlFile string, f *ast.File, decl *ast.GenDecl,
 		return err
 	}
 	data = strings.ReplaceAll(data, "{ContextPkg}", `"context"`)
-	data = strings.ReplaceAll(data, "{ApiPkg}", c.pkgName+strings.TrimPrefix(filepath.Dir(abs), c.pkgPath))
+	data = strings.ReplaceAll(data, "{ApiPkg}", strings.ReplaceAll(c.pkgName+strings.TrimPrefix(filepath.Dir(abs), c.pkgPath), "\\", "/"))
 	// 获取service包名
 	abs, err = filepath.Abs(c.apiPath)
 	if err != nil {
 		return err
 	}
-	servicePkg := c.pkgName + strings.TrimPrefix(filepath.Dir(abs), c.pkgPath) + "/service/" + strings.TrimPrefix(filepath.Dir(apiFile), "internal/api/")
-	data = strings.ReplaceAll(data, "{ServicePkg}", servicePkg)
+	separator := string(os.PathSeparator)
+	servicePkg := c.pkgName + strings.TrimPrefix(filepath.Dir(abs), c.pkgPath) + "/service/" + strings.Split(filepath.Dir(apiFile), "internal"+separator+"api"+separator)[1]
+	data = strings.ReplaceAll(data, "{ServicePkg}", strings.ReplaceAll(servicePkg, "\\", "/"))
 
 	log.Printf("生成controller: %s", ctrlName)
 
