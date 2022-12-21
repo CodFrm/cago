@@ -58,5 +58,5 @@ func Default() *gorm.DB {
 }
 
 func Ctx(ctx context.Context) *gorm.DB {
-	return defaultDB.DB
+	return defaultDB.DB.WithContext(ctx)
 }
