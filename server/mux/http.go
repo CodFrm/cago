@@ -69,7 +69,7 @@ func (h *server) StartCancel(
 		url := ginSwagger.URL("/swagger/doc.json")
 		r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
 	}
-	if err := h.callback(&Router{IRouter: r, unique: make(map[string]struct{})}); err != nil {
+	if err := h.callback(&Router{IRouter: r}); err != nil {
 		return errors.New("failed to register http server: " + err.Error())
 	}
 	// 启动http服务
