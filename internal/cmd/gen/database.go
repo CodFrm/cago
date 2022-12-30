@@ -30,7 +30,7 @@ import (
 	"{PkgName}"
 )
 
-type I{Name} interface {
+type {Name}Repo interface {
 	Find(ctx context.Context, id int64) (*entity.{Name}, error)
 	Create(ctx context.Context, {LowerName} *entity.{Name}) error
 	Update(ctx context.Context, {LowerName} *entity.{Name}) error
@@ -39,11 +39,11 @@ type I{Name} interface {
 
 var default{Name} I{Name}
 
-func {Name}() I{Name} {
+func {Name}() {Name}Repo {
 	return default{Name}
 }
 
-func Register{Name}(i I{Name}) {
+func Register{Name}(i {Name}Repo) {
 	default{Name} = i
 }
 `
@@ -59,14 +59,14 @@ import (
 	"{PkgName}/internal/repository"
 )
 
-type {LowerName} struct {
+type {LowerName}Repo struct {
 }
 
-func New{Name}() repository.I{Name} {
+func New{Name}() repository.{Name}Repo {
 	return &{LowerName}{}
 }
 
-func (u *{LowerName}) Find(ctx context.Context, id int64) (*entity.{Name}, error) {
+func (u *{LowerName}Repo) Find(ctx context.Context, id int64) (*entity.{Name}, error) {
 	ret := &entity.{Name}{ID: id}
 	if err := db.Ctx(ctx).First(ret).Error; err != nil {
 		if db.RecordNotFound(err) {
@@ -77,15 +77,15 @@ func (u *{LowerName}) Find(ctx context.Context, id int64) (*entity.{Name}, error
 	return ret, nil
 }
 
-func (u *{LowerName}) Create(ctx context.Context, {LowerName} *entity.{Name}) error {
+func (u *{LowerName}Repo) Create(ctx context.Context, {LowerName} *entity.{Name}) error {
 	return db.Ctx(ctx).Create({LowerName}).Error
 }
 
-func (u *{LowerName}) Update(ctx context.Context, {LowerName} *entity.{Name}) error {
+func (u *{LowerName}Repo) Update(ctx context.Context, {LowerName} *entity.{Name}) error {
 	return db.Ctx(ctx).Updates({LowerName}).Error
 }
 
-func (u *{LowerName}) Delete(ctx context.Context, id int64) error {
+func (u *{LowerName}Repo) Delete(ctx context.Context, id int64) error {
 	return db.Ctx(ctx).Delete(&entity.{Name}{ID: id}).Error
 }
 `

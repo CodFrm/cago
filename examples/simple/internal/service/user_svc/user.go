@@ -1,4 +1,4 @@
-package user
+package user_svc
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	api "github.com/codfrm/cago/examples/simple/internal/api/user"
 )
 
-type IUser interface {
+type UserSvc interface {
 	// Login 登录
 	Login(ctx context.Context, req *api.LoginRequest) (*api.LoginResponse, error)
 	// Register 注册
@@ -15,26 +15,26 @@ type IUser interface {
 	Logout(ctx context.Context, req *api.LogoutRequest) (*api.LogoutResponse, error)
 }
 
-type user struct {
+type userSvc struct {
 }
 
-var defaultUser = &user{}
+var defaultUser = &userSvc{}
 
-func User() IUser {
+func User() UserSvc {
 	return defaultUser
 }
 
 // Login 登录
-func (u *user) Login(ctx context.Context, req *api.LoginRequest) (*api.LoginResponse, error) {
+func (u *userSvc) Login(ctx context.Context, req *api.LoginRequest) (*api.LoginResponse, error) {
 	return nil, nil
 }
 
 // Register 注册
-func (u *user) Register(ctx context.Context, req *api.RegisterRequest) (*api.RegisterResponse, error) {
+func (u *userSvc) Register(ctx context.Context, req *api.RegisterRequest) (*api.RegisterResponse, error) {
 	return nil, nil
 }
 
 // Logout 登出
-func (u *user) Logout(ctx context.Context, req *api.LogoutRequest) (*api.LogoutResponse, error) {
+func (u *userSvc) Logout(ctx context.Context, req *api.LogoutRequest) (*api.LogoutResponse, error) {
 	return nil, nil
 }

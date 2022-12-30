@@ -1,7 +1,9 @@
 package api
 
 import (
-	"github.com/codfrm/cago/examples/simple/internal/controller/user"
+	"github.com/codfrm/cago/examples/simple/internal/controller/user_ctr"
+	"github.com/codfrm/cago/examples/simple/internal/repository"
+	"github.com/codfrm/cago/examples/simple/internal/repository/persistence"
 	"github.com/codfrm/cago/server/mux"
 )
 
@@ -10,7 +12,13 @@ import (
 // @version  1.0
 // @BasePath /api/v1
 func Router(r *mux.Router) error {
-	return r.Group("/").Bind(
-		user.NewUser(),
+	repository.RegisterUser(persistence.NewUser())
+
+	user := user_ctr.NewUser()
+	r.Group("/").Bind(
+		user.Register,
+		user.Login,
+		user.Logout,
 	)
+	return nil
 }

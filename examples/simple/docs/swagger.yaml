@@ -10,13 +10,27 @@ definitions:
         description: 错误信息
         type: string
     type: object
+  user.LoginRequest:
+    properties:
+      username:
+        description: 用户名
+        type: string
+    type: object
   user.LoginResponse:
     properties:
       username:
         description: 用户名
         type: string
     type: object
+  user.LogoutRequest:
+    type: object
   user.LogoutResponse:
+    type: object
+  user.RegisterRequest:
+    properties:
+      username:
+        description: 用户名
+        type: string
     type: object
   user.RegisterResponse:
     type: object
@@ -32,19 +46,28 @@ paths:
       parameters:
       - in: body
         name: body
-        type: object
+        schema:
+          $ref: '#/definitions/user.LoginRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/user.LoginResponse'
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/user.LoginResponse'
+              msg:
+                type: string
         "400":
           description: Bad Request
           schema:
             $ref: '#/definitions/BadRequest'
       summary: 登录
+      tags:
+      - user
   /user/logout:
     delete:
       consumes:
@@ -53,19 +76,28 @@ paths:
       parameters:
       - in: body
         name: body
-        type: object
+        schema:
+          $ref: '#/definitions/user.LogoutRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/user.LogoutResponse'
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/user.LogoutResponse'
+              msg:
+                type: string
         "400":
           description: Bad Request
           schema:
             $ref: '#/definitions/BadRequest'
       summary: 登出
+      tags:
+      - user
   /user/register:
     post:
       consumes:
@@ -74,17 +106,26 @@ paths:
       parameters:
       - in: body
         name: body
-        type: object
+        schema:
+          $ref: '#/definitions/user.RegisterRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/user.RegisterResponse'
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/user.RegisterResponse'
+              msg:
+                type: string
         "400":
           description: Bad Request
           schema:
             $ref: '#/definitions/BadRequest'
       summary: 注册
+      tags:
+      - user
 swagger: "2.0"

@@ -1,10 +1,10 @@
-package user
+package user_ctr
 
 import (
 	"context"
 
 	api "github.com/codfrm/cago/examples/simple/internal/api/user"
-	service "github.com/codfrm/cago/examples/simple/internal/service/user"
+	service "github.com/codfrm/cago/examples/simple/internal/service/user_svc"
 )
 
 type User struct {

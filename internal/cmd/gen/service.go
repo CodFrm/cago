@@ -21,7 +21,7 @@ import (
 	api "{ApiPkg}"
 )
 
-type I{ServiceName} interface {
+type {ServiceName} interface {
 }
 `
 
@@ -56,7 +56,10 @@ func (c *Cmd) findService() error {
 
 func (c *Cmd) genService(apiFile string, f *ast.File, decl *ast.GenDecl, specs *ast.TypeSpec) error {
 	// 生成service文件
-	serviceFile := filepath.Join(path.Dir(c.apiPath), "service", strings.TrimPrefix(apiFile, c.apiPath))
+	filename := strings.TrimPrefix(apiFile, c.apiPath)
+	dir := path.Dir(filename)
+	base := path.Base(filename)
+	serviceFile := filepath.Join(path.Dir(c.apiPath), "service", dir+"_svc", base)
 	if err := os.MkdirAll(filepath.Dir(serviceFile), 0755); err != nil {
 		return err
 	}
@@ -90,7 +93,7 @@ func (c *Cmd) genService(apiFile string, f *ast.File, decl *ast.GenDecl, specs *
 		if !ok {
 			continue
 		}
-		if !strings.HasPrefix(typeSpec.Name.Name, "I") {
+		if typeSpec.Name.Name != utils.FileNameToCamel(serviceFile)+"Svc" {
 			continue
 		}
 		// 判断有没有service方法
@@ -125,8 +128,8 @@ func (c *Cmd) regenService(serviceFile string, f *ast.File, apiFile string) erro
 	// 生成service头部
 	data := serviceInterfaceTpl
 	serviceName := utils.FileNameToCamel(serviceFile)
-	data = strings.ReplaceAll(data, "{ServiceName}", serviceName)
-	data = strings.ReplaceAll(data, "{PkgName}", f.Name.Name)
+	data = strings.ReplaceAll(data, "{ServiceName}", serviceName+"Svc")
+	data = strings.ReplaceAll(data, "{PkgName}", f.Name.Name+"_svc")
 	abs, err := filepath.Abs(apiFile)
 	if err != nil {
 		return err
@@ -153,7 +156,7 @@ func (c *Cmd) genServiceMethod(path string) error {
 		if !ok {
 			continue
 		}
-		if !strings.HasPrefix(typeSpec.Name.Name, "I") {
+		if typeSpec.Name.Name != utils.FileNameToCamel(path)+"Svc" {
 			continue
 		}
 		// 生成service
@@ -168,7 +171,7 @@ func (c *Cmd) genServiceMethod(path string) error {
 func (c *Cmd) genServiceFile(path string, f *ast.File, genDecl *ast.GenDecl, typeSpec *ast.TypeSpec) error {
 	// 判断是否已经生成struct
 	hasStruct := false
-	serviceName := utils.LowerFirstChar(strings.TrimPrefix(typeSpec.Name.Name, "I"))
+	serviceName := utils.LowerFirstChar(typeSpec.Name.Name)
 	for _, decl := range f.Decls {
 		genDecl, ok := decl.(*ast.GenDecl)
 		if !ok {
@@ -188,7 +191,7 @@ func (c *Cmd) genServiceFile(path string, f *ast.File, genDecl *ast.GenDecl, typ
 	if !hasStruct {
 		appendStr = serviceStructTpl
 		appendStr = strings.ReplaceAll(appendStr, "{ServiceName}", serviceName)
-		appendStr = strings.ReplaceAll(appendStr, "{UpperServiceName}", utils.UpperFirstChar(serviceName))
+		appendStr = strings.ReplaceAll(appendStr, "{UpperServiceName}", strings.TrimSuffix(utils.UpperFirstChar(serviceName), "Svc"))
 		appendStr = strings.ReplaceAll(appendStr, "{ServiceInterface}", typeSpec.Name.Name)
 	}
 	// 生成方法
