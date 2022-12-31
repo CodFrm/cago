@@ -1,8 +1,8 @@
 package httputils
 
 type PageRequest struct {
-	Page  int `form:"page" binding:"default=1"`
-	Limit int `form:"limit" binding:"default=20"`
+	Page  int `form:"page,default=1"`
+	Limit int `form:"limit,default=20"`
 }
 
 func (p *PageRequest) GetPage() int {

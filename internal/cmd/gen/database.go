@@ -37,7 +37,7 @@ type {Name}Repo interface {
 	Delete(ctx context.Context, id int64) error
 }
 
-var default{Name} I{Name}
+var default{Name} {Name}Repo
 
 func {Name}() {Name}Repo {
 	return default{Name}
@@ -63,7 +63,7 @@ type {LowerName}Repo struct {
 }
 
 func New{Name}() repository.{Name}Repo {
-	return &{LowerName}{}
+	return &{LowerName}Repo{}
 }
 
 func (u *{LowerName}Repo) Find(ctx context.Context, id int64) (*entity.{Name}, error) {
