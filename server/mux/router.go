@@ -51,13 +51,17 @@ func (r *Router) bindFunc(controller reflect.Value, method reflect.Value, isFunc
 	if !ok || route.Type != reflect.TypeOf(Meta{}) {
 		return errors.New("invalid method, second parameter must have Meta field")
 	}
+	ginContext := false
 	// 判断方法的第一个参数是否是context.Context
 	parame1 := methodType.In(1 + pos)
 	if methodType.NumIn() != 3+pos {
 		return errors.New("invalid method, first parameter must be context.Context or *gin.Context")
 	}
 	if parame1 != reflect.TypeOf((*context.Context)(nil)).Elem() {
-		return errors.New("invalid method, first parameter must be context.Context")
+		if parame1 != reflect.TypeOf((*gin.Context)(nil)) {
+			return errors.New("invalid method, first parameter must be context.Context or *gin.Context")
+		}
+		ginContext = true
 	}
 	var call func(a reflect.Value, b interface{}) []reflect.Value
 	if !isFunc {
@@ -72,18 +76,18 @@ func (r *Router) bindFunc(controller reflect.Value, method reflect.Value, isFunc
 
 	switch route.Tag.Get("method") {
 	case http.MethodPost:
-		r.POST(route.Tag.Get("path"), r.bindHandler(request, call))
+		r.POST(route.Tag.Get("path"), r.bindHandler(request, call, ginContext))
 	case http.MethodPut:
-		r.PUT(route.Tag.Get("path"), r.bindHandler(request, call))
+		r.PUT(route.Tag.Get("path"), r.bindHandler(request, call, ginContext))
 	case http.MethodDelete:
-		r.DELETE(route.Tag.Get("path"), r.bindHandler(request, call))
+		r.DELETE(route.Tag.Get("path"), r.bindHandler(request, call, ginContext))
 	default:
-		r.GET(route.Tag.Get("path"), r.bindHandler(request, call))
+		r.GET(route.Tag.Get("path"), r.bindHandler(request, call, ginContext))
 	}
 	return nil
 }
 
-func (r *Router) bindHandler(request reflect.Type, call func(a reflect.Value, b interface{}) []reflect.Value) gin.HandlerFunc {
+func (r *Router) bindHandler(request reflect.Type, call func(a reflect.Value, b interface{}) []reflect.Value, ginContext bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// 创建请求参数
 		req := reflect.New(request)
@@ -96,7 +100,12 @@ func (r *Router) bindHandler(request reflect.Type, call func(a reflect.Value, b 
 			return
 		}
 		// 调用控制器方法
-		ctx := reflect.ValueOf(c.Request.Context())
+		var ctx reflect.Value
+		if ginContext {
+			ctx = reflect.ValueOf(c)
+		} else {
+			ctx = reflect.ValueOf(c.Request.Context())
+		}
 		resp := call(ctx, req.Interface())
 		if resp[1].IsNil() {
 			httputils.HandleResp(c, resp[0].Interface())
