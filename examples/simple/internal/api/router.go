@@ -11,10 +11,13 @@ import (
 // @title    api文档
 // @version  1.0
 // @BasePath /api/v1
-func Router(r *mux.Router) error {
+func Router(root *mux.Router) error {
+	// 注册储存实例
 	repository.RegisterUser(persistence.NewUser())
+	r := root.Group("/api/v1")
 
 	user := user_ctr.NewUser()
+	// 绑定路由
 	r.Group("/").Bind(
 		user.Register,
 		user.Login,

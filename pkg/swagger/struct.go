@@ -281,7 +281,13 @@ func (p *parseStruct) parseExpr(expr ast.Expr) (spec.Schema, error) {
 				}, nil
 			}
 		}
-		return schema1, nil
+		return spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Ref: spec.Ref{
+					Ref: jsonreference.MustCreateRef(ref),
+				},
+			},
+		}, nil
 	} else {
 		return spec.Schema{}, fmt.Errorf("未知类型")
 	}

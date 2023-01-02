@@ -67,12 +67,6 @@ func (s *Swagger) parseRoute(filename string, file *ast.File, decl *ast.GenDecl,
 	path := utils.ParseTag(tag, "path")
 	// 取出method值
 	method := utils.ParseTag(tag, "method")
-	pathItem, ok := s.swagger.Paths.Paths[path]
-	if !ok {
-		pathItem = spec.PathItem{
-			PathItemProps: spec.PathItemProps{},
-		}
-	}
 	operation := &spec.Operation{
 		OperationProps: spec.OperationProps{
 			Produces:  []string{"application/json"},
@@ -183,7 +177,7 @@ func (s *Swagger) parseRoute(filename string, file *ast.File, decl *ast.GenDecl,
 				continue
 			}
 			tag := strings.TrimPrefix(field.Tag.Value, "`")
-			in := ""
+			in := "path"
 			uri := utils.ParseTag(tag, "uri")
 			if uri == "" {
 				continue
@@ -285,6 +279,12 @@ func (s *Swagger) parseRoute(filename string, file *ast.File, decl *ast.GenDecl,
 	// 添加tag
 	operation.Tags = []string{file.Name.Name}
 
+	pathItem, ok := s.swagger.Paths.Paths[path]
+	if !ok {
+		pathItem = spec.PathItem{
+			PathItemProps: spec.PathItemProps{},
+		}
+	}
 	switch method {
 	case http.MethodGet:
 		pathItem.PathItemProps.Get = operation

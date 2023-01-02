@@ -36,3 +36,7 @@ func (c *CtxRedis) HSet(key string, value ...interface{}) *redis.IntCmd {
 func (c *CtxRedis) HDel(key string, fields ...string) *redis.IntCmd {
 	return c.client.HDel(c.ctx, key, fields...)
 }
+
+func (c *CtxRedis) HGetAll(key string) *redis.MapStringStringCmd {
+	return c.client.HGetAll(c.ctx, key)
+}

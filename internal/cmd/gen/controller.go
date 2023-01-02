@@ -59,7 +59,7 @@ func (c *Cmd) genController(apiFile string, f *ast.File, decl *ast.GenDecl, spec
 	if err != nil {
 		return false, err
 	}
-	if strings.Contains(string(data), strings.TrimSuffix(specs.Name.Name, "Request")) {
+	if strings.Contains(string(data), " "+strings.TrimSuffix(specs.Name.Name, "Request")+"(") {
 		return true, nil
 	}
 	// 生成函数
