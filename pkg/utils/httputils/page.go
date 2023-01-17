@@ -1,26 +1,33 @@
 package httputils
 
+// PageRequest 使用UnmarshalJSON的方法来反序列化,避免使用用户传递的page和limit
 type PageRequest struct {
-	Page  int `form:"page,default=1"`
-	Limit int `form:"limit,default=20"`
+	// Deprecated 请使用方法GetPage
+	Page int `form:"page" json:"page"`
+	// Deprecated 请使用方法GetSize
+	Size int `form:"size" json:"size"`
 }
 
 func (p *PageRequest) GetPage() int {
-	if p.Page == 0 {
+	if p.Page <= 0 {
 		return 1
 	}
 	return p.Page
 }
 
+func (p *PageRequest) GetSize() int {
+	if p.Size <= 0 || p.Size > 100 {
+		return 20
+	}
+	return p.Size
+}
+
 func (p *PageRequest) GetOffset() int {
-	return (p.GetPage() - 1) * p.Limit
+	return (p.GetPage() - 1) * p.GetLimit()
 }
 
 func (p *PageRequest) GetLimit() int {
-	if p.Limit == 0 {
-		return 20
-	}
-	return p.Limit
+	return p.GetSize()
 }
 
 type PageResponse[T any] struct {

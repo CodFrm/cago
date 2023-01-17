@@ -59,8 +59,8 @@ func (c *Cmd) genService(apiFile string, f *ast.File, decl *ast.GenDecl, specs *
 	filename := strings.TrimPrefix(apiFile, c.apiPath)
 	dir := path.Dir(filename)
 	base := path.Base(filename)
-	serviceFile := filepath.Join(path.Dir(c.apiPath), "service", dir+"_svc", base)
-	if err := os.MkdirAll(filepath.Dir(serviceFile), 0755); err != nil {
+	serviceFile := path.Join(path.Dir(c.apiPath), "service", dir+"_svc", base)
+	if err := os.MkdirAll(path.Dir(serviceFile), 0755); err != nil {
 		return err
 	}
 	_, err := os.Stat(serviceFile)
@@ -134,7 +134,7 @@ func (c *Cmd) regenService(serviceFile string, f *ast.File, apiFile string) erro
 	if err != nil {
 		return err
 	}
-	prefix := strings.TrimPrefix(filepath.Dir(abs), c.pkgPath)
+	prefix := strings.TrimPrefix(path.Dir(abs), c.pkgPath)
 
 	s := c.pkgName + prefix
 	data = strings.ReplaceAll(data, "{ApiPkg}", strings.ReplaceAll(s, "\\", "/"))

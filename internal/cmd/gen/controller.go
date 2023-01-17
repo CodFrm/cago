@@ -41,8 +41,8 @@ func (c *Cmd) genController(apiFile string, f *ast.File, decl *ast.GenDecl, spec
 	filename := strings.TrimPrefix(apiFile, c.apiPath)
 	dir := path.Dir(filename)
 	base := path.Base(filename)
-	ctrlFile := filepath.Join(path.Dir(c.apiPath), "controller", dir+"_ctr", base)
-	if err := os.MkdirAll(filepath.Dir(ctrlFile), 0755); err != nil {
+	ctrlFile := path.Join(path.Dir(c.apiPath), "controller", dir+"_ctr", base)
+	if err := os.MkdirAll(path.Dir(ctrlFile), 0755); err != nil {
 		return false, err
 	}
 	// 生成controller
@@ -81,14 +81,14 @@ func (c *Cmd) regenController(ctrlFile string, f *ast.File, decl *ast.GenDecl,
 		return err
 	}
 	data = strings.ReplaceAll(data, "{ContextPkg}", `"context"`)
-	data = strings.ReplaceAll(data, "{ApiPkg}", strings.ReplaceAll(c.pkgName+strings.TrimPrefix(filepath.Dir(abs), c.pkgPath), "\\", "/"))
+	data = strings.ReplaceAll(data, "{ApiPkg}", strings.ReplaceAll(c.pkgName+strings.TrimPrefix(path.Dir(abs), c.pkgPath), "\\", "/"))
 	// 获取service包名
 	abs, err = filepath.Abs(c.apiPath)
 	if err != nil {
 		return err
 	}
 	separator := string(os.PathSeparator)
-	servicePkg := c.pkgName + strings.TrimPrefix(filepath.Dir(abs), c.pkgPath) + "/service/" + strings.Split(filepath.Dir(apiFile), "internal"+separator+"api"+separator)[1] + "_svc"
+	servicePkg := c.pkgName + strings.TrimPrefix(path.Dir(abs), c.pkgPath) + "/service/" + strings.Split(path.Dir(apiFile), "internal"+separator+"api"+separator)[1] + "_svc"
 	data = strings.ReplaceAll(data, "{ServicePkg}", strings.ReplaceAll(servicePkg, "\\", "/"))
 
 	log.Printf("生成controller: %s", ctrlName)

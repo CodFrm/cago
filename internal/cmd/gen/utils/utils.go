@@ -273,5 +273,5 @@ func ParseTag(tag string, key string) string {
 }
 
 func FileNameToCamel(filename string) string {
-	return UpperFirstChar(ToCamel(strings.TrimSuffix(filepath.Base(filename), ".go")))
+	return UpperFirstChar(ToCamel(strings.TrimSuffix(path.Base(filename), ".go")))
 }

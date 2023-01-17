@@ -28,10 +28,12 @@ import (
 	"context"
 
 	"{PkgName}"
+	"github.com/codfrm/cago/pkg/utils/httputils"
 )
 
 type {Name}Repo interface {
 	Find(ctx context.Context, id int64) (*entity.{Name}, error)
+	FindPage(ctx context.Context, page httputils.PageRequest) ([]*entity.{Name}, int64, error)
 	Create(ctx context.Context, {LowerName} *entity.{Name}) error
 	Update(ctx context.Context, {LowerName} *entity.{Name}) error
 	Delete(ctx context.Context, id int64) error
@@ -57,6 +59,7 @@ import (
 	"github.com/codfrm/cago/database/db"
 	"{PkgName}/internal/model/entity"
 	"{PkgName}/internal/repository"
+	"github.com/codfrm/cago/pkg/utils/httputils"
 )
 
 type {LowerName}Repo struct {
@@ -88,6 +91,19 @@ func (u *{LowerName}Repo) Update(ctx context.Context, {LowerName} *entity.{Name}
 func (u *{LowerName}Repo) Delete(ctx context.Context, id int64) error {
 	return db.Ctx(ctx).Delete(&entity.{Name}{ID: id}).Error
 }
+
+func (u *{LowerName}Repo) FindPage(ctx context.Context, page httputils.PageRequest) ([]*entity.{Name}, int64, error) {
+	var list []*entity.{Name}
+	var count int64
+	if err := db.Ctx(ctx).Model(&entity.{Name}{}).Count(&count).Error; err != nil {
+		return nil, 0, err
+	}
+	if err := db.Ctx(ctx).Offset(page.GetOffset()).Limit(page.GetLimit()).Find(&list).Error; err != nil {
+		return nil, 0, err
+	}
+	return list, count, nil
+}
+
 `
 
 type Column struct {
