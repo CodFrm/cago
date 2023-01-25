@@ -17,7 +17,7 @@ import (
 	{ContextPkg}
 
 	api "{ApiPkg}"
-	service "{ServicePkg}"
+	"{ServicePkg}"
 )
 
 type {ControllerName} struct {
@@ -31,7 +31,7 @@ func New{ControllerName}() *{ControllerName} {
 const controllerFuncTpl = `
 // {FuncName} {FuncDesc}
 func ({SimpleName} *{ControllerName}) {FuncName}(ctx {Context}, req *api.{ApiRequest}) (*api.{ApiResponse}, error) {
-	return service.{ControllerName}().{FuncName}({ContextParam}, req)
+	return {ServiceName}.{ControllerName}().{FuncName}({ContextParam}, req)
 }
 `
 
@@ -108,6 +108,7 @@ func (c *Cmd) genCtrlFunc(ctrlFile string, decl *ast.GenDecl, specs *ast.TypeSpe
 	funcTpl = strings.ReplaceAll(funcTpl, "{FuncName}", funcName)
 	funcTpl = strings.ReplaceAll(funcTpl, "{ApiRequest}", specs.Name.Name)
 	funcTpl = strings.ReplaceAll(funcTpl, "{ApiResponse}", funcName+"Response")
+	funcTpl = strings.ReplaceAll(funcTpl, "{ServiceName}", utils.LowerFirstChar(utils.ToCamel(ctrlName))+"_svc")
 	desc := utils.GetTypeComment(decl, specs)
 	if desc == "" {
 		desc = "TODO"

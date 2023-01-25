@@ -1,37 +1,42 @@
 package validator
 
 import (
+	"errors"
 	"reflect"
 	"regexp"
 
 	"github.com/gin-gonic/gin/binding"
-	"github.com/go-playground/locales"
+	"github.com/go-playground/locales/en"
 	"github.com/go-playground/locales/zh"
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
-	zh_translations "github.com/go-playground/validator/v10/translations/zh"
+	zhTranslations "github.com/go-playground/validator/v10/translations/zh"
 )
 
 var trans ut.Translator
-var zhTran locales.Translator
 var uni *ut.UniversalTranslator
-
-var Validate *validator.Validate
 
 type DefaultValidator struct {
 	validate *validator.Validate
 }
 
-func NewValidator() binding.StructValidator {
-	Validate = validator.New()
+func NewValidator() (binding.StructValidator, error) {
 	ret := &DefaultValidator{
-		validate: Validate,
+		validate: validator.New(),
 	}
 	ret.validate.SetTagName("binding")
-	zhTran = zh.New()
-	uni = ut.New(zhTran, zhTran)
-	trans, _ = uni.GetTranslator("zh")
-	_ = zh_translations.RegisterDefaultTranslations(ret.validate, trans)
+	zhTran := zh.New()
+	enTran := en.New()
+	uni = ut.New(enTran, zhTran, enTran)
+	var ok bool
+	trans, ok = uni.GetTranslator("zh")
+	if !ok {
+		return nil, errors.New("uni.GetTranslator(\"zh\") failed")
+	}
+	err := zhTranslations.RegisterDefaultTranslations(ret.validate, trans)
+	if err != nil {
+		return nil, err
+	}
 	ret.registerValidation()
 	ret.validate.RegisterTagNameFunc(func(fld reflect.StructField) string {
 		name := fld.Tag.Get("label")
@@ -40,7 +45,7 @@ func NewValidator() binding.StructValidator {
 		}
 		return name
 	})
-	return ret
+	return ret, nil
 }
 
 func (v *DefaultValidator) registerValidation() {

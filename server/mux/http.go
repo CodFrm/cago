@@ -58,7 +58,10 @@ func (h *server) StartCancel(
 		r = gin.New()
 		gin.SetMode(gin.ReleaseMode)
 	}
-	binding.Validator = validator.NewValidator()
+	binding.Validator, err = validator.NewValidator()
+	if err != nil {
+		return err
+	}
 	// 加入日志中间件
 	r.Use(Recover(), logger.Middleware(logger.Default()), GinKVContext())
 	if tp := trace.Default(); tp != nil {

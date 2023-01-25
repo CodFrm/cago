@@ -4,9 +4,9 @@ import (
 	"net/http"
 
 	"github.com/codfrm/cago/pkg/logger"
+	pkgValidator "github.com/codfrm/cago/pkg/utils/validator"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	pkgValidator "github.com/scriptscat/cloudcat/pkg/utils/validator"
 	"go.uber.org/zap"
 )
 
