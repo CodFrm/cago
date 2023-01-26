@@ -4,6 +4,8 @@ import (
 	"context"
 
 	broker2 "github.com/codfrm/cago/pkg/broker/broker"
+	"github.com/codfrm/cago/pkg/logger"
+	"go.uber.org/zap"
 )
 
 type wrap struct {
@@ -31,5 +33,14 @@ func (t *wrap) Subscribe(ctx context.Context, topic string, h broker2.Handler, o
 	if t.options.defaultGroup != "" && options.Group == "" {
 		opts = append(opts, broker2.Group(t.options.defaultGroup))
 	}
-	return t.Broker.Subscribe(ctx, topic, h, opts...)
+	return t.Broker.Subscribe(ctx, topic, func(ctx context.Context, event broker2.Event) error {
+		defer func() {
+			if r := recover(); r != nil {
+				logger.Ctx(ctx).Error("broker subscribe panic",
+					zap.String("topic", topic), zap.String("group", options.Group),
+					zap.Any("recover", r), zap.StackSkip("stack", 3))
+			}
+		}()
+		return h(ctx, event)
+	}, opts...)
 }

@@ -57,6 +57,7 @@ import (
 	"context"
 
 	"github.com/codfrm/cago/database/db"
+	"github.com/codfrm/cago/pkg/consts"
 	"{PkgName}/internal/model/entity"
 	"{PkgName}/internal/repository"
 	"github.com/codfrm/cago/pkg/utils/httputils"
@@ -71,7 +72,7 @@ func New{Name}() repository.{Name}Repo {
 
 func (u *{LowerName}Repo) Find(ctx context.Context, id int64) (*entity.{Name}, error) {
 	ret := &entity.{Name}{ID: id}
-	if err := db.Ctx(ctx).First(ret).Error; err != nil {
+	if err := db.Ctx(ctx).Where("status=?", consts.ACTIVE).First(ret).Error; err != nil {
 		if db.RecordNotFound(err) {
 			return nil, nil
 		}
@@ -89,16 +90,16 @@ func (u *{LowerName}Repo) Update(ctx context.Context, {LowerName} *entity.{Name}
 }
 
 func (u *{LowerName}Repo) Delete(ctx context.Context, id int64) error {
-	return db.Ctx(ctx).Delete(&entity.{Name}{ID: id}).Error
+	return db.Ctx(ctx).Model(&entity.{Name}{ID: id}).Update("status", consts.DELETE).Error
 }
 
 func (u *{LowerName}Repo) FindPage(ctx context.Context, page httputils.PageRequest) ([]*entity.{Name}, int64, error) {
 	var list []*entity.{Name}
 	var count int64
-	if err := db.Ctx(ctx).Model(&entity.{Name}{}).Count(&count).Error; err != nil {
+	if err := db.Ctx(ctx).Model(&entity.{Name}{}).Where("status=?", consts.ACTIVE).Count(&count).Error; err != nil {
 		return nil, 0, err
 	}
-	if err := db.Ctx(ctx).Offset(page.GetOffset()).Limit(page.GetLimit()).Find(&list).Error; err != nil {
+	if err := db.Ctx(ctx).Where("status=?", consts.ACTIVE).Offset(page.GetOffset()).Limit(page.GetLimit()).Find(&list).Error; err != nil {
 		return nil, 0, err
 	}
 	return list, count, nil

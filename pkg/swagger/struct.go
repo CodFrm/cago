@@ -230,7 +230,7 @@ func (p *parseStruct) parseExpr(expr ast.Expr) (spec.Schema, error) {
 		pkgName = selectorExpr.X.(*ast.Ident).Name
 		structName = selectorExpr.Sel.Name
 	} else if startExpr, ok := expr.(*ast.StarExpr); ok {
-		return p.parseExpr(startExpr.X)
+		return p.parseFieldType(startExpr.X)
 	} else if ident, ok := expr.(*ast.Ident); ok {
 		log.Printf("ident: %+v", ident)
 		pkgName = ""

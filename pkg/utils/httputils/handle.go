@@ -35,7 +35,7 @@ func HandleResp(ctx *gin.Context, resp interface{}) {
 			zap.String("method", ctx.Request.Method),
 			zap.String("ip", ctx.ClientIP()),
 		)
-		logger.Error("internal server error", zap.Error(resp), zap.StackSkip("stack", 3))
+		logger.Error("internal server error", zap.Error(resp), zap.Stack("stack"))
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"code": -1, "msg": "系统错误",
 		})

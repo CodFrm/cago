@@ -67,3 +67,18 @@ func (p *PeriodLimit) Take(ctx context.Context, key string) (func() error, error
 	logger.Ctx(ctx).Warn(log, zap.String("key", key))
 	return nil, httputils.NewError(http.StatusTooManyRequests, -1, log)
 }
+
+func (p *PeriodLimit) FuncTake(ctx context.Context, key string, f func() (interface{}, error)) (interface{}, error) {
+	cancel, err := p.Take(ctx, key)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := f()
+	if err != nil {
+		if err := cancel(); err != nil {
+			return nil, err
+		}
+		return nil, err
+	}
+	return resp, nil
+}
