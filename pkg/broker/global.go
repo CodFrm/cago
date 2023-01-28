@@ -35,16 +35,6 @@ func Broker(ctx context.Context, config *configs.Config) error {
 	return nil
 }
 
-func WithCallback(callback func(ctx context.Context, broker broker2.Broker) error) cago.FuncComponent {
-	return func(ctx context.Context, cfg *configs.Config) error {
-		err := Broker(ctx, cfg)
-		if err != nil {
-			return err
-		}
-		return callback(ctx, broker)
-	}
-}
-
 func SetBroker(b broker2.Broker) {
 	broker = b
 }

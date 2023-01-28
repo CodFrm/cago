@@ -166,7 +166,7 @@ func (c *CtxRedis) HScan(key string, cursor uint64, match string, count int64) *
 }
 
 func (c *CtxRedis) PFCount(keys ...string) *redis.IntCmd {
-	return c.client.PFCount(c.ctx)
+	return c.client.PFCount(c.ctx, keys...)
 }
 
 func (c *CtxRedis) PFAdd(key string, els ...interface{}) *redis.IntCmd {
