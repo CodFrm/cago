@@ -99,7 +99,7 @@ func (u *{LowerName}Repo) FindPage(ctx context.Context, page httputils.PageReque
 	if err := db.Ctx(ctx).Model(&entity.{Name}{}).Where("status=?", consts.ACTIVE).Count(&count).Error; err != nil {
 		return nil, 0, err
 	}
-	if err := db.Ctx(ctx).Where("status=?", consts.ACTIVE).Offset(page.GetOffset()).Limit(page.GetLimit()).Find(&list).Error; err != nil {
+	if err := db.Ctx(ctx).Where("status=?", consts.ACTIVE).Order("createtime desc").Offset(page.GetOffset()).Limit(page.GetLimit()).Find(&list).Error; err != nil {
 		return nil, 0, err
 	}
 	return list, count, nil
