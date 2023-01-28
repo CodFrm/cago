@@ -36,8 +36,10 @@ func Elasticsearch(ctx context.Context, cfg *configs.Config) error {
 		if ok := certs.AppendCertsFromPEM(ca); !ok {
 			return err
 		}
-		tlsConfig.RootCAs = certs
-		tlsConfig.InsecureSkipVerify = true
+		tlsConfig = &tls.Config{
+			RootCAs:            certs,
+			InsecureSkipVerify: true,
+		}
 	}
 	client, err := elasticsearch.NewClient(elasticsearch.Config{
 		Addresses: config.Address,
