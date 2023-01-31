@@ -88,10 +88,10 @@ func Unmarshal(ctx context.Context, data []byte, v interface{}, options *cache.O
 	}
 }
 
-func Marshal(data interface{}, options *cache.Options) ([]byte, error) {
+func Marshal(ctx context.Context, data interface{}, options *cache.Options) ([]byte, error) {
 	if options.Depend != nil {
 		dependStore := &dependStore{
-			Depend: options.Depend,
+			Depend: options.Depend.Val(ctx),
 			Data:   data,
 		}
 		return json.Marshal(dependStore)

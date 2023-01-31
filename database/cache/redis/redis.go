@@ -34,6 +34,22 @@ func NewRedisCache(config *redis.Options) (cache.Cache, error) {
 	}, nil
 }
 
+type getOrSetValue struct {
+	cache.Value
+	set func() cache.Value
+}
+
+func (g *getOrSetValue) Scan(v interface{}) error {
+	err := g.Value.Scan(v)
+	if err != nil {
+		if err == cache.ErrDependNotValid {
+			return g.set().Scan(v)
+		}
+		return err
+	}
+	return nil
+}
+
 func (r *redisCache) GetOrSet(ctx context.Context, key string, set func() (interface{}, error), opts ...cache.Option) cache.Value {
 	ret := r.Get(ctx, key, opts...)
 	if ret.Err() != nil {
@@ -43,7 +59,13 @@ func (r *redisCache) GetOrSet(ctx context.Context, key string, set func() (inter
 		}
 		return r.Set(ctx, key, val, opts...)
 	}
-	return ret
+	return &getOrSetValue{Value: ret, set: func() cache.Value {
+		val, err := set()
+		if err != nil {
+			return newValue(ctx, "", cache.NewOptions(opts...), err)
+		}
+		return r.Set(ctx, key, val, opts...)
+	}}
 }
 
 func (r *redisCache) Unmarshal(data []byte, v interface{}) error {
@@ -63,19 +85,32 @@ func (r *redisCache) Get(ctx context.Context, key string, opts ...cache.Option) 
 	return newValue(ctx, data, options, err)
 }
 
+// 用于set的时候反序列化,减少一次dep判断
+type nilDep struct {
+	cache.Depend
+}
+
+func (n *nilDep) Valid(ctx context.Context) error {
+	return nil
+}
+
 func (r *redisCache) Set(ctx context.Context, key string, val interface{}, opts ...cache.Option) cache.Value {
 	options := cache.NewOptions(opts...)
 	ttl := time.Duration(0)
 	if options.Expiration > 0 {
 		ttl = options.Expiration
 	}
-	data, err := Marshal(val, options)
+	data, err := Marshal(ctx, val, options)
 	if err != nil {
 		return newValue(ctx, "", options, err)
 	}
 	s := string(data)
 	if err := r.redis.Set(ctx, key, s, ttl).Err(); err != nil {
 		return newValue(ctx, "", options, err)
+	}
+	if options.Depend != nil {
+		// 移除掉依赖
+		options.Depend = &nilDep{}
 	}
 	return newValue(ctx, s, options, err)
 }

@@ -6,6 +6,8 @@ import (
 	"time"
 )
 
+var ErrDependNotValid = errors.New("depend not valid")
+
 // KeyDepend key依赖
 type KeyDepend struct {
 	store Cache
@@ -34,7 +36,7 @@ func (v *KeyDepend) InvalidKey(ctx context.Context) error {
 // Val 获取依赖的值
 func (v *KeyDepend) Val(ctx context.Context) interface{} {
 	ret := &KeyDepend{}
-	if err := v.store.Get(ctx, v.Key); err != nil {
+	if err := v.store.Get(ctx, v.Key).Scan(ret); err != nil {
 		if err := v.InvalidKey(ctx); err != nil {
 			return err
 		}
@@ -49,5 +51,5 @@ func (v *KeyDepend) Valid(ctx context.Context) error {
 	if v.Value == val.Value {
 		return nil
 	}
-	return errors.New("val not equal")
+	return ErrDependNotValid
 }
