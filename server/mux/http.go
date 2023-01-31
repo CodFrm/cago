@@ -62,8 +62,10 @@ func (h *server) StartCancel(
 	if err != nil {
 		return err
 	}
+	// ginContext支持fallback
+	r.ContextWithFallback = true
 	// 加入日志中间件
-	r.Use(Recover(), logger.Middleware(logger.Default()), GinKVContext())
+	r.Use(Recover(), logger.Middleware(logger.Default()))
 	if tp := trace.Default(); tp != nil {
 		// 加入链路追踪中间件
 		r.Use(trace.Middleware(cfg.AppName, tp))

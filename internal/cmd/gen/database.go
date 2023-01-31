@@ -96,10 +96,11 @@ func (u *{LowerName}Repo) Delete(ctx context.Context, id int64) error {
 func (u *{LowerName}Repo) FindPage(ctx context.Context, page httputils.PageRequest) ([]*entity.{Name}, int64, error) {
 	var list []*entity.{Name}
 	var count int64
-	if err := db.Ctx(ctx).Model(&entity.{Name}{}).Where("status=?", consts.ACTIVE).Count(&count).Error; err != nil {
+	find := db.Ctx(ctx).Model(&entity.{Name}{}).Where("status=?", consts.ACTIVE)
+	if err := find.Count(&count).Error; err != nil {
 		return nil, 0, err
 	}
-	if err := db.Ctx(ctx).Where("status=?", consts.ACTIVE).Order("createtime desc").Offset(page.GetOffset()).Limit(page.GetLimit()).Find(&list).Error; err != nil {
+	if err := find.Order("createtime desc").Offset(page.GetOffset()).Limit(page.GetLimit()).Find(&list).Error; err != nil {
 		return nil, 0, err
 	}
 	return list, count, nil
