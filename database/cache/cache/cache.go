@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	ErrNotFound = errors.New("cache: not found")
+	Nil = errors.New("cache: nil")
 )
 
 type Cache interface {

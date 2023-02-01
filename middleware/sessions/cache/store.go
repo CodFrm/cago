@@ -96,7 +96,7 @@ func (s *store) Deserialize(d []byte, ss *sessions.Session) error {
 func (s *store) load(session *sessions.Session) (bool, error) {
 	data, err := s.cache.Get(context.Background(), s.key(session)).Bytes()
 	if err != nil {
-		if err == cache.ErrNotFound {
+		if err == cache.Nil {
 			return false, nil
 		}
 		return false, err

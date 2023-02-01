@@ -79,7 +79,7 @@ func (r *redisCache) Marshal(v interface{}) ([]byte, error) {
 func (r *redisCache) Get(ctx context.Context, key string, opts ...cache.Option) cache.Value {
 	data, err := r.redis.Get(ctx, key).Result()
 	if err == redis.Nil {
-		err = cache.ErrNotFound
+		err = cache.Nil
 	}
 	options := cache.NewOptions(opts...)
 	return newValue(ctx, data, options, err)

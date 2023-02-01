@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"strconv"
 
 	"github.com/codfrm/cago/database/cache/cache"
@@ -71,9 +72,10 @@ type dependStore struct {
 func Unmarshal(ctx context.Context, data []byte, v interface{}, options *cache.Options) error {
 	// 反序列化时,如果有依赖,带上依赖
 	if options.Depend != nil {
+		newV := reflect.New(reflect.TypeOf(v).Elem())
 		dependStore := &dependStore{
 			Depend: options.Depend,
-			Data:   v,
+			Data:   newV.Interface(),
 		}
 		if err := json.Unmarshal(data, dependStore); err != nil {
 			return err
@@ -81,6 +83,8 @@ func Unmarshal(ctx context.Context, data []byte, v interface{}, options *cache.O
 		if err := options.Depend.Valid(ctx); err != nil {
 			return err
 		}
+		// 设置值
+		reflect.ValueOf(v).Elem().Set(newV.Elem())
 		return nil
 	} else {
 		// 否则直接反序列化
