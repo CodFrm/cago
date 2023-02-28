@@ -13,13 +13,12 @@ import (
 var defaultDB *gorm.DB
 
 type Config struct {
-	Dsn    string `yaml:"dsn"`
-	Prefix string `yaml:"prefix"`
+	Dsn string `yaml:"dsn"`
 }
 
 func Clickhouse(ctx context.Context, config *configs.Config) error {
 	cfg := &Config{}
-	if err := config.Scan("db", cfg); err != nil {
+	if err := config.Scan("clickhouse", cfg); err != nil {
 		return err
 	}
 	db, err := gorm.Open(clickhouse.Open(cfg.Dsn), &gorm.Config{})

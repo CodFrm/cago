@@ -89,6 +89,9 @@ func (s *Swagger) parseRoute(filename string, file *ast.File, decl *ast.GenDecl,
 	if method == http.MethodGet || contentType != JSONBodyType {
 		for _, field := range structSpec.Fields.List {
 			// 解析参数
+			if field.Tag == nil {
+				continue
+			}
 			tag := strings.TrimPrefix(field.Tag.Value, "`")
 			if field.Names == nil {
 				//inline类型
@@ -173,7 +176,7 @@ func (s *Swagger) parseRoute(filename string, file *ast.File, decl *ast.GenDecl,
 		// 解析uri参数
 		for _, field := range structSpec.Fields.List {
 			// 解析参数
-			if field.Names == nil {
+			if field.Names == nil || field.Tag == nil {
 				continue
 			}
 			tag := strings.TrimPrefix(field.Tag.Value, "`")
