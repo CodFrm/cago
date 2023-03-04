@@ -64,6 +64,9 @@ func (b *bind) bind(req *http.Request, ptr any) error {
 	}
 	for i := 0; i < ptrElem.NumField(); i++ {
 		tag := ptrType.Field(i).Tag
+		if tag == "" {
+			continue
+		}
 		if key := tag.Get("form"); key != "" {
 			if key == "-" {
 				continue
@@ -82,6 +85,8 @@ func (b *bind) bind(req *http.Request, ptr any) error {
 			}
 		} else if uri := tag.Get("uri"); uri != "" {
 			setValue(ptrElem.Field(i), tag, b.ctx.Param(uri))
+		} else if header := tag.Get("header"); header != "" {
+			setValue(ptrElem.Field(i), tag, b.ctx.GetHeader(header))
 		}
 	}
 	return nil
