@@ -1,5 +1,9 @@
 FROM alpine:3.16
 
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories
+
+RUN apk update && apk add tzdata
+
 ARG APP_NAME=cago
 
 ENV APP_NAME=$APP_NAME

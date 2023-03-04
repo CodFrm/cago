@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"reflect"
+	"strings"
 
 	"github.com/codfrm/cago/pkg/utils/httputils"
 	"github.com/gin-gonic/gin"
@@ -74,15 +75,20 @@ func (r *Router) bindFunc(controller reflect.Value, method reflect.Value, isFunc
 		}
 	}
 
-	switch route.Tag.Get("method") {
-	case http.MethodPost:
-		r.POST(route.Tag.Get("path"), r.bindHandler(request, call, ginContext))
-	case http.MethodPut:
-		r.PUT(route.Tag.Get("path"), r.bindHandler(request, call, ginContext))
-	case http.MethodDelete:
-		r.DELETE(route.Tag.Get("path"), r.bindHandler(request, call, ginContext))
-	default:
-		r.GET(route.Tag.Get("path"), r.bindHandler(request, call, ginContext))
+	methods := strings.Split(route.Tag.Get("method"), ",")
+	for _, method := range methods {
+		switch method {
+		case http.MethodPost:
+			r.POST(route.Tag.Get("path"), r.bindHandler(request, call, ginContext))
+		case http.MethodPut:
+			r.PUT(route.Tag.Get("path"), r.bindHandler(request, call, ginContext))
+		case http.MethodDelete:
+			r.DELETE(route.Tag.Get("path"), r.bindHandler(request, call, ginContext))
+		case http.MethodOptions:
+			r.OPTIONS(route.Tag.Get("path"), r.bindHandler(request, call, ginContext))
+		default:
+			r.GET(route.Tag.Get("path"), r.bindHandler(request, call, ginContext))
+		}
 	}
 	return nil
 }
