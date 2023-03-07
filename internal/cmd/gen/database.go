@@ -71,8 +71,8 @@ func New{Name}() repository.{Name}Repo {
 }
 
 func (u *{LowerName}Repo) Find(ctx context.Context, id int64) (*entity.{Name}, error) {
-	ret := &entity.{Name}{ID: id}
-	if err := db.Ctx(ctx).Where("status=?", consts.ACTIVE).First(ret).Error; err != nil {
+	ret := &entity.{Name}{}
+	if err := db.Ctx(ctx).Where("id=? and status=?", id, consts.ACTIVE).First(ret).Error; err != nil {
 		if db.RecordNotFound(err) {
 			return nil, nil
 		}
@@ -90,7 +90,7 @@ func (u *{LowerName}Repo) Update(ctx context.Context, {LowerName} *entity.{Name}
 }
 
 func (u *{LowerName}Repo) Delete(ctx context.Context, id int64) error {
-	return db.Ctx(ctx).Model(&entity.{Name}{ID: id}).Update("status", consts.DELETE).Error
+	return db.Ctx(ctx).Model(&entity.{Name}{}).Where("id=?", id).Update("status", consts.DELETE).Error
 }
 
 func (u *{LowerName}Repo) FindPage(ctx context.Context, page httputils.PageRequest) ([]*entity.{Name}, int64, error) {
