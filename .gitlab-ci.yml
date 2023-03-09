@@ -93,3 +93,19 @@ deploy-pre:
       --set appConfig.env=pre \
       --set ingress.hosts[0].host=pre.$DOMAIN \
       --set ingress.tls[0].hosts[0]=pre.$DOMAIN
+
+deploy-test:
+  stage: deploy
+  image: alpine/helm:3.9.0
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /^test\/.*$/
+  script:
+    - cd deploy/helm
+    - |
+      helm upgrade --install \
+      --namespace $NAMESPACE $APP_NAME-test . -f values.yaml \
+      --set image.tag=$CI_COMMIT_SHORT_SHA --set image.repository=$REGISTRY/$REPOSITORY \
+      --set etcdConfig.password=$ETCD_CONFIG_PASSWORD \
+      --set appConfig.env=test \
+      --set ingress.hosts[0].host=test.$DOMAIN \
+      --set ingress.tls[0].hosts[0]=test.$DOMAIN

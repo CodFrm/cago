@@ -180,3 +180,67 @@ func (c *CtxRedis) PFMerge(dest string, keys ...string) *redis.StatusCmd {
 func (c *CtxRedis) ScanType(cursor uint64, match string, count int64, keyType string) *redis.ScanCmd {
 	return c.Client.ScanType(c.ctx, cursor, match, count, keyType)
 }
+
+func (c *CtxRedis) ZAdd(key string, members ...redis.Z) *redis.IntCmd {
+	return c.Client.ZAdd(c.ctx, key, members...)
+}
+
+func (c *CtxRedis) ZAddNX(key string, members ...redis.Z) *redis.IntCmd {
+	return c.Client.ZAddNX(c.ctx, key, members...)
+}
+
+func (c *CtxRedis) ZAddXX(key string, members ...redis.Z) *redis.IntCmd {
+	return c.Client.ZAddXX(c.ctx, key, members...)
+}
+
+func (c *CtxRedis) ZAddArgs(key string, args redis.ZAddArgs) *redis.IntCmd {
+	return c.Client.ZAddArgs(c.ctx, key, args)
+}
+
+func (c *CtxRedis) ZAddArgsIncr(key string, args redis.ZAddArgs) *redis.FloatCmd {
+	return c.Client.ZAddArgsIncr(c.ctx, key, args)
+}
+
+func (c *CtxRedis) ZRemRangeByScore(key, min, max string) *redis.IntCmd {
+	return c.Client.ZRemRangeByScore(c.ctx, key, min, max)
+}
+
+func (c *CtxRedis) ZRemRangeByLex(key, min, max string) *redis.IntCmd {
+	return c.Client.ZRemRangeByLex(c.ctx, key, min, max)
+}
+
+func (c *CtxRedis) ZRemRangeByRank(key string, start, stop int64) *redis.IntCmd {
+	return c.Client.ZRemRangeByRank(c.ctx, key, start, stop)
+}
+
+func (c *CtxRedis) ZRevRangeByScore(key string, opt *redis.ZRangeBy) *redis.StringSliceCmd {
+	return c.Client.ZRevRangeByScore(c.ctx, key, opt)
+}
+
+func (c *CtxRedis) ZRevRangeByScoreWithScores(key string, opt *redis.ZRangeBy) *redis.ZSliceCmd {
+	return c.Client.ZRevRangeByScoreWithScores(c.ctx, key, opt)
+}
+
+func (c *CtxRedis) ZRevRangeByLex(key string, opt *redis.ZRangeBy) *redis.StringSliceCmd {
+	return c.Client.ZRevRangeByLex(c.ctx, key, opt)
+}
+
+func (c *CtxRedis) ZRangeWithScores(key string, start, stop int64) *redis.ZSliceCmd {
+	return c.Client.ZRangeWithScores(c.ctx, key, start, stop)
+}
+
+func (c *CtxRedis) ZRevRangeWithScores(key string, start, stop int64) *redis.ZSliceCmd {
+	return c.Client.ZRevRangeWithScores(c.ctx, key, start, stop)
+}
+
+func (c *CtxRedis) ZRangeByScoreWithScores(key string, opt *redis.ZRangeBy) *redis.ZSliceCmd {
+	return c.Client.ZRangeByScoreWithScores(c.ctx, key, opt)
+}
+
+func (c *CtxRedis) ZRangeByScore(key string, opt *redis.ZRangeBy) *redis.StringSliceCmd {
+	return c.Client.ZRangeByScore(c.ctx, key, opt)
+}
+
+func (c *CtxRedis) ZRangeByLex(key string, opt *redis.ZRangeBy) *redis.StringSliceCmd {
+	return c.Client.ZRangeByLex(c.ctx, key, opt)
+}
