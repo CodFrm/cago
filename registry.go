@@ -52,7 +52,7 @@ func (r *Cago) RegistryCancel(component ComponentCancel) *Cago {
 
 // Start 启动框架,在此之前组件已全部启动,此处只做停止等待
 func (r *Cago) Start() error {
-	quitSignal := make(chan os.Signal)
+	quitSignal := make(chan os.Signal, 1)
 	// 优雅启停
 	signal.Notify(
 		quitSignal,

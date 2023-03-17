@@ -6,7 +6,7 @@ import (
 	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/database/cache/cache"
 	"github.com/codfrm/cago/database/cache/redis"
-	redis2 "github.com/go-redis/redis/v9"
+	redis2 "github.com/redis/go-redis/v9"
 )
 
 const (

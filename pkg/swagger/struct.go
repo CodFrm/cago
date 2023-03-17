@@ -20,8 +20,7 @@ import (
 type parseStruct struct {
 	filename string
 	*Swagger
-	f       *ast.File
-	generic *spec.Ref
+	f *ast.File
 }
 
 func newParseStruct(filename string, s *Swagger, f *ast.File) *parseStruct {

@@ -5,8 +5,8 @@ import (
 
 	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/pkg/trace"
-	"github.com/go-redis/redis/extra/redisotel/v9"
-	"github.com/go-redis/redis/v9"
+	"github.com/redis/go-redis/extra/redisotel/v9"
+	"github.com/redis/go-redis/v9"
 )
 
 var defaultRedis *redis.Client

@@ -6,7 +6,7 @@ import (
 	"time"
 
 	redis2 "github.com/codfrm/cago/database/redis"
-	"github.com/go-redis/redis/v9"
+	"github.com/redis/go-redis/v9"
 )
 
 type redisLocker struct {
