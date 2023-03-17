@@ -122,3 +122,5 @@ require (
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
+
+replace go.opentelemetry.io/otel/metric => go.opentelemetry.io/otel/metric v0.36.0

@@ -7,7 +7,6 @@ import (
 	"github.com/codfrm/cago/pkg/trace/exporter"
 	"go.opentelemetry.io/otel/sdk/resource"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
-	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -74,7 +73,7 @@ func New(opt ...Option) (trace.TracerProvider, error) {
 	}
 
 	res, err := resource.New(context.Background(),
-		resource.WithSchemaURL(semconv.SchemaURL),
+		//resource.WithSchemaURL(semconv.SchemaURL),
 		resource.WithHost(),
 		//resource.WithContainer(),
 		//resource.WithOS(),
