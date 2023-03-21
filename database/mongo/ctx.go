@@ -12,6 +12,13 @@ type CtxMongoDatabase struct {
 	database *mongo.Database
 }
 
+func NewCtxMongoDatabase(ctx context.Context, database *mongo.Database) *CtxMongoDatabase {
+	return &CtxMongoDatabase{
+		ctx:      ctx,
+		database: database,
+	}
+}
+
 func (c *CtxMongoDatabase) Collection(name string, opts ...*options.CollectionOptions) *CtxCollection {
 	return &CtxCollection{c.ctx, c.database.Collection(name, opts...)}
 }

@@ -15,8 +15,7 @@ type Config struct {
 	Database string `json:"database"`
 }
 
-var defaultClient *mongo.Client
-var defaultDatabase *mongo.Database
+var defaultClient *Client
 
 func Mongo(ctx context.Context, config *configs.Config) error {
 	cfg := &Config{}
@@ -32,14 +31,14 @@ func Mongo(ctx context.Context, config *configs.Config) error {
 	if err != nil {
 		return err
 	}
-	defaultClient = client
-	defaultDatabase = client.Database(cfg.Database)
+	defaultClient = &Client{client: client, database: cfg.Database}
 	return nil
 }
 
+func Default() *Client {
+	return defaultClient
+}
+
 func Ctx(ctx context.Context) *CtxMongoDatabase {
-	return &CtxMongoDatabase{
-		ctx:      ctx,
-		database: defaultDatabase,
-	}
+	return defaultClient.Database(ctx)
 }
