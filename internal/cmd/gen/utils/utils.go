@@ -9,6 +9,7 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"text/template"
 	"unicode"
 )
 
@@ -274,4 +275,45 @@ func ParseTag(tag string, key string) string {
 
 func FileNameToCamel(filename string) string {
 	return UpperFirstChar(ToCamel(strings.TrimSuffix(path.Base(filename), ".go")))
+}
+
+func ParseTemplate(tpl string, params ...map[string]interface{}) (string, error) {
+	// 合并参数
+	param := make(map[string]interface{})
+	for _, p := range params {
+		for k, v := range p {
+			param[k] = v
+		}
+	}
+	t := template.New("template")
+	// 执行模板
+	t = t.Funcs(template.FuncMap{
+		"UpperFirstChar": UpperFirstChar,
+		"ToCamel":        ToCamel,
+		"LowerFirstChar": LowerFirstChar,
+	})
+	t, err := t.Parse(tpl)
+	if err != nil {
+		return "", err
+	}
+
+	var result strings.Builder
+	err = t.Execute(&result, param)
+	if err != nil {
+		return "", err
+	}
+	return result.String(), nil
+}
+
+func WriteFile(file string, data string) error {
+	// 存在不创建
+	if _, err := os.Stat(file); err == nil {
+		return errors.New(file + " 已经存在")
+	} else if !os.IsNotExist(err) {
+		return err
+	}
+	if err := os.MkdirAll(path.Dir(file), 0755); err != nil {
+		return err
+	}
+	return os.WriteFile(file, []byte(data), 0644)
 }

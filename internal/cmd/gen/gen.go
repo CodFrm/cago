@@ -35,8 +35,14 @@ func (c *Cmd) Commands() []*cobra.Command {
 	}
 	ret.AddCommand(&cobra.Command{
 		Use:   "gorm [table]",
-		Short: "输入表名,生成对应的model,需要配置好数据库连接",
+		Short: "输入表名,生成对应的数据库操作,需要配置好数据库连接",
 		RunE:  c.genDB,
+		Args:  cobra.ExactArgs(1),
+	})
+	ret.AddCommand(&cobra.Command{
+		Use:   "mongo [table]",
+		Short: "输入表名,生成对应的数据库操作,mongodb无需配置数据库连接",
+		RunE:  c.genMongo,
 		Args:  cobra.ExactArgs(1),
 	})
 	ret.Flags().StringVarP(&c.apiPath, "dir", "d", "./internal/api", "api目录")
