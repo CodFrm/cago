@@ -107,3 +107,15 @@ func (c *CtxCollection) Drop() error {
 func (c *CtxCollection) BulkWrite(requests []mongo.WriteModel, opts ...*options.BulkWriteOptions) (*mongo.BulkWriteResult, error) {
 	return c.collection.BulkWrite(c.ctx, requests, opts...)
 }
+
+func (c *CtxCollection) Clone(opts ...*options.CollectionOptions) (*CtxCollection, error) {
+	collection, err := c.collection.Clone(opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &CtxCollection{c.ctx, collection}, nil
+}
+
+func (c *CtxCollection) Indexes() *CtxIndex {
+	return NewCtxIndex(c.ctx, c.collection.Indexes())
+}

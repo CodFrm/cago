@@ -5,7 +5,7 @@ import (
 	"errors"
 	"reflect"
 
-	mongo2 "github.com/codfrm/cago/database/migrate/mongo"
+	mongo2 "github.com/codfrm/cago/database/migrate/mongomigrate"
 	mongo3 "github.com/codfrm/cago/database/mongo"
 	gormigrate "github.com/go-gormigrate/gormigrate/v2"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -72,7 +72,7 @@ func RunMigrations[T *gorm.DB | *mongo.Client](
 				},
 			})
 		}
-		m := mongo2.NewMongoMigrate(ctx, v.Interface().(*mongo3.Client), ms)
+		m := mongo2.New(ctx, v.Interface().(*mongo3.Client), ms)
 		return m.Migrate()
 	default:
 		return errors.New("unsupported database type")

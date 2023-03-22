@@ -1,4 +1,4 @@
-package mongo
+package mongomigrate
 
 import (
 	"context"
@@ -6,7 +6,9 @@ import (
 	"fmt"
 
 	"github.com/codfrm/cago/database/mongo"
+	"go.mongodb.org/mongo-driver/bson"
 	mongo2 "go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type MongoMigrateTable struct {
@@ -23,7 +25,7 @@ type MongoMigrate struct {
 	migrations []*Migration
 }
 
-func NewMongoMigrate(ctx context.Context, mongo *mongo.Client, migrations []*Migration) *MongoMigrate {
+func New(ctx context.Context, mongo *mongo.Client, migrations []*Migration) *MongoMigrate {
 	return &MongoMigrate{
 		ctx:        ctx,
 		db:         mongo,
@@ -34,7 +36,15 @@ func NewMongoMigrate(ctx context.Context, mongo *mongo.Client, migrations []*Mig
 func (m *MongoMigrate) Migrate() error {
 	// 获取所有的迁移记录
 	collection := m.db.Database(m.ctx).Collection((&MongoMigrateTable{}).CollectionName())
-	curs, err := collection.Find(m.ctx, nil)
+	// 创建索引
+	if _, err := collection.Indexes().CreateOne(mongo2.IndexModel{
+		Keys:    bson.D{{"id", 1}},
+		Options: options.Index().SetUnique(true),
+	}); err != nil {
+		return err
+	}
+	m.db.Database(m.ctx)
+	curs, err := collection.Find(bson.D{}, nil)
 	if err != nil {
 		return err
 	}
