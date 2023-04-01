@@ -10,7 +10,7 @@ const mongoEntityTpl = `package {{.tableName}}_entity
 import "go.mongodb.org/mongo-driver/bson/primitive"
 
 type {{.entityName}} struct {
-	ID         primitive.ObjectID ` + "`" + `bson:"id"` + "`" + `
+	ID         primitive.ObjectID ` + "`" + `bson:"_id"` + "`" + `
 	Status     int8               ` + "`" + `bson:"status"` + "`" + `
 	Createtime int64              ` + "`" + `bson:"createtime"` + "`" + `
 	Updatetime int64              ` + "`" + `bson:"updatetime,omitempty"` + "`" + `
@@ -21,7 +21,7 @@ func ({{.firstChar}} *{{.entityName}}) CollectionName() string {
 }
 `
 
-const mongoRepositoryTpl = `package repository
+const mongoRepositoryTpl = `package {{.tableName}}_repo
 
 import (
 	"context"
@@ -36,7 +36,7 @@ import (
 )
 
 type {{.entityName}}Repo interface {
-	Find(ctx context.Context, id int64) (*{{.tableName}}_entity.{{.entityName}}, error)
+	Find(ctx context.Context, id primitive.ObjectID) (*{{.tableName}}_entity.{{.entityName}}, error)
 	FindPage(ctx context.Context, page httputils.PageRequest) ([]*{{.tableName}}_entity.{{.entityName}}, int64, error)
 	Create(ctx context.Context, {{.lowerName}} *{{.tableName}}_entity.{{.entityName}}) error
 	Update(ctx context.Context, {{.lowerName}} *{{.tableName}}_entity.{{.entityName}}) error
@@ -60,14 +60,14 @@ func New{{.entityName}}() {{.entityName}}Repo {
 	return &{{.lowerName}}Repo{}
 }
 
-func (u *{{.lowerName}}Repo) Find(ctx context.Context, id int64) (*{{.tableName}}_entity.{{.entityName}}, error) {
+func (u *{{.lowerName}}Repo) Find(ctx context.Context, id primitive.ObjectID) (*{{.tableName}}_entity.{{.entityName}}, error) {
 	{{.lowerName}} := &{{.tableName}}_entity.{{.entityName}}{}
 	err := mongo.Ctx(ctx).Collection({{.lowerName}}.CollectionName()).FindOne(bson.M{
-		"id":     id,
+		"_id":     id,
 		"status": consts.ACTIVE,
 	}).Decode({{.lowerName}})
 	if err != nil {
-		if mongo.IsNilDocument(err) {
+		if mongo.IsNoDocuments(err) {
 			return nil, nil
 		}
 		return nil, err
@@ -77,6 +77,7 @@ func (u *{{.lowerName}}Repo) Find(ctx context.Context, id int64) (*{{.tableName}
 
 
 func (u *{{.lowerName}}Repo) Create(ctx context.Context, {{.lowerName}} *{{.tableName}}_entity.{{.entityName}}) error {
+	{{.lowerName}}.ID = primitive.NewObjectID()
 	_, err := mongo.Ctx(ctx).Collection({{.lowerName}}.CollectionName()).InsertOne({{.lowerName}})
 	return err
 }

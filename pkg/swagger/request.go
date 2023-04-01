@@ -94,9 +94,10 @@ func (s *Swagger) parseRoute(filename string, file *ast.File, decl *ast.GenDecl,
 					continue
 				}
 				tag := strings.TrimPrefix(field.Tag.Value, "`")
+				form := utils.ParseTag(tag, "form")
 				if field.Names == nil {
 					//inline类型
-					if utils.ParseTag(tag, "form") == ",inline" {
+					if form == ",inline" {
 						schema, err := newParseStruct(filename, s, file).parseFieldSwagger(field)
 						if err != nil {
 							log.Printf("%v,%v", tag, err)

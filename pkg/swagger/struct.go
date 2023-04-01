@@ -37,6 +37,15 @@ func (p *parseStruct) parseStruct(typeSpec *ast.TypeSpec) error {
 	if _, ok := p.swagger.Definitions[name]; ok {
 		return nil
 	}
+	// 特殊处理primitive.ObjectID
+	if name == "primitive.ObjectID" {
+		p.swagger.Definitions[name] = spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"string"},
+			},
+		}
+		return nil
+	}
 	schema, err := p.parseFieldType(typeSpec.Type)
 	if err != nil {
 		return err
@@ -179,6 +188,9 @@ func (p *parseStruct) parseFieldType(fieldType ast.Expr) (spec.Schema, error) {
 							swaggerType.Properties[k] = v
 						}
 					}
+					continue
+				}
+				if field.Tag == nil {
 					continue
 				}
 				// 解析字段

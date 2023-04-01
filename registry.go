@@ -2,8 +2,10 @@ package cago
 
 import (
 	"context"
+	"errors"
 	"os"
 	"os/signal"
+	"reflect"
 	"syscall"
 
 	"github.com/codfrm/cago/configs"
@@ -44,7 +46,7 @@ func (r *Cago) Registry(component Component) *Cago {
 func (r *Cago) RegistryCancel(component ComponentCancel) *Cago {
 	err := component.StartCancel(r.ctx, r.cancel, r.cfg)
 	if err != nil {
-		panic(err)
+		panic(errors.New("start component error: " + reflect.TypeOf(component).String() + " " + err.Error()))
 	}
 	r.components = append(r.components, component)
 	return r
