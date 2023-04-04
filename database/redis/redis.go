@@ -4,7 +4,8 @@ import (
 	"context"
 
 	"github.com/codfrm/cago/configs"
-	"github.com/codfrm/cago/pkg/trace"
+	"github.com/codfrm/cago/pkg/opentelemetry/metric"
+	"github.com/codfrm/cago/pkg/opentelemetry/trace"
 	"github.com/redis/go-redis/extra/redisotel/v9"
 	"github.com/redis/go-redis/v9"
 )
@@ -33,6 +34,11 @@ func Redis(ctx context.Context, config *configs.Config) error {
 	}
 	if tp := trace.Default(); tp != nil {
 		if err := redisotel.InstrumentTracing(ret, redisotel.WithTracerProvider(tp)); err != nil {
+			return err
+		}
+	}
+	if metric.Default() != nil {
+		if err := redisotel.InstrumentMetrics(ret, redisotel.WithMeterProvider(metric.Default())); err != nil {
 			return err
 		}
 	}

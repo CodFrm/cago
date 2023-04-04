@@ -4,7 +4,8 @@ import (
 	"context"
 
 	"github.com/codfrm/cago/configs"
-	"github.com/codfrm/cago/pkg/trace"
+	"github.com/codfrm/cago/pkg/opentelemetry/metric"
+	"github.com/codfrm/cago/pkg/opentelemetry/trace"
 	"gorm.io/driver/clickhouse"
 	"gorm.io/gorm"
 	"gorm.io/plugin/opentelemetry/tracing"
@@ -25,10 +26,21 @@ func Clickhouse(ctx context.Context, config *configs.Config) error {
 	if err != nil {
 		return err
 	}
+	tracingPlugin := make([]tracing.Option, 0)
 	if tp := trace.Default(); tp != nil {
-		if err := db.Use(tracing.NewPlugin(
+		tracingPlugin = append(tracingPlugin,
 			tracing.WithTracerProvider(tp),
-			tracing.WithoutMetrics(),
+			tracing.WithDBName("clickhouse"),
+		)
+		if metric.Default() == nil {
+			tracingPlugin = append(tracingPlugin,
+				tracing.WithoutMetrics(),
+			)
+		}
+	}
+	if len(tracingPlugin) != 0 {
+		if err := db.Use(tracing.NewPlugin(
+			tracingPlugin...,
 		)); err != nil {
 			return err
 		}

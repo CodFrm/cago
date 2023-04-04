@@ -6,7 +6,8 @@ import (
 	"time"
 
 	"github.com/codfrm/cago/database/cache/cache"
-	"github.com/codfrm/cago/pkg/trace"
+	"github.com/codfrm/cago/pkg/opentelemetry/metric"
+	"github.com/codfrm/cago/pkg/opentelemetry/trace"
 	"github.com/redis/go-redis/extra/redisotel/v9"
 	"github.com/redis/go-redis/v9"
 )
@@ -25,6 +26,13 @@ func NewRedisCache(config *redis.Options) (cache.Cache, error) {
 		if err := redisotel.InstrumentTracing(client,
 			redisotel.WithTracerProvider(tp),
 			redisotel.WithDBSystem("cache"),
+		); err != nil {
+			return nil, err
+		}
+	}
+	if metric.Default() != nil {
+		if err := redisotel.InstrumentMetrics(client,
+			redisotel.WithMeterProvider(metric.Default()),
 		); err != nil {
 			return nil, err
 		}

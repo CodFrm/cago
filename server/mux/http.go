@@ -7,12 +7,14 @@ import (
 	"github.com/codfrm/cago"
 	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/pkg/logger"
-	"github.com/codfrm/cago/pkg/trace"
+	"github.com/codfrm/cago/pkg/opentelemetry/metric"
+	trace2 "github.com/codfrm/cago/pkg/opentelemetry/trace"
 	"github.com/codfrm/cago/pkg/utils/validator"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"github.com/swaggo/gin-swagger/swaggerFiles"
 	"go.uber.org/zap"
 )
 
@@ -66,9 +68,14 @@ func (h *server) StartCancel(
 	r.ContextWithFallback = true
 	// 加入日志中间件
 	r.Use(Recover(), logger.Middleware(logger.Default()))
-	if tp := trace.Default(); tp != nil {
+	// 加入metrics中间件
+	if metric.Default() != nil {
+		r.GET("/metrics", gin.WrapH(promhttp.Handler()))
+	}
+
+	if tp := trace2.Default(); tp != nil {
 		// 加入链路追踪中间件
-		r.Use(trace.Middleware(cfg.AppName, tp))
+		r.Use(trace2.Middleware(cfg.AppName, tp))
 	}
 	if cfg.Env != configs.PROD {
 		url := ginSwagger.URL("/swagger/doc.json")

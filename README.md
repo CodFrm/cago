@@ -20,7 +20,7 @@ cago 只对社区工具进行集成,大大减少迁移难度和学习成本,我�
 ## 常用组件包
 
 - [broker](./pkg/broker)
-- [trace](./pkg/trace)
+- [trace](pkg/opentelemetry/trace)
 - [utils](./pkg/utils)
 
 ## 数据库

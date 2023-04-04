@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/codfrm/cago/pkg/trace/exporter"
+	exporter2 "github.com/codfrm/cago/pkg/opentelemetry/trace/exporter"
 	"go.opentelemetry.io/otel/sdk/resource"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/trace"
@@ -32,13 +32,13 @@ func NewWithConfig(ctx context.Context, cfg *Config, options ...Option) (trace.T
 	var err error
 	switch cfg.Type {
 	case Jaeger:
-		exp, err = exporter.JaegerExporter(&exporter.JaegerConfig{
+		exp, err = exporter2.JaegerExporter(&exporter2.JaegerConfig{
 			Endpoint: cfg.Endpoint,
 			Username: cfg.Username,
 			Password: cfg.Password,
 		})
 	case UpTrace:
-		exp, err = exporter.UpTraceExporter(&exporter.UpTraceConfig{
+		exp, err = exporter2.UpTraceExporter(&exporter2.UpTraceConfig{
 			Dsn: cfg.Dsn,
 		})
 	default:

@@ -4,7 +4,8 @@ import (
 	"context"
 
 	"github.com/codfrm/cago/configs"
-	"github.com/codfrm/cago/pkg/trace"
+	"github.com/codfrm/cago/pkg/opentelemetry/metric"
+	"github.com/codfrm/cago/pkg/opentelemetry/trace"
 	mysqlDriver "gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
@@ -39,10 +40,20 @@ func Database(ctx context.Context, config *configs.Config) error {
 	if err != nil {
 		return err
 	}
+	tracingPlugin := make([]tracing.Option, 0)
 	if tp := trace.Default(); tp != nil {
-		if err := orm.Use(tracing.NewPlugin(
+		tracingPlugin = append(tracingPlugin,
 			tracing.WithTracerProvider(tp),
-			tracing.WithoutMetrics(),
+		)
+		if metric.Default() == nil {
+			tracingPlugin = append(tracingPlugin,
+				tracing.WithoutMetrics(),
+			)
+		}
+	}
+	if len(tracingPlugin) != 0 {
+		if err := orm.Use(tracing.NewPlugin(
+			tracingPlugin...,
 		)); err != nil {
 			return err
 		}

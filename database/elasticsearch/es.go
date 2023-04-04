@@ -41,13 +41,14 @@ func Elasticsearch(ctx context.Context, cfg *configs.Config) error {
 			InsecureSkipVerify: true,
 		}
 	}
+	dialer := &net.Dialer{Timeout: time.Second * 4}
 	client, err := elasticsearch.NewClient(elasticsearch.Config{
 		Addresses: config.Address,
 		Username:  config.Username,
 		Password:  config.Password,
 		Transport: &http.Transport{
 			TLSClientConfig: tlsConfig,
-			DialContext:     (&net.Dialer{Timeout: time.Second * 4}).DialContext,
+			DialContext:     dialer.DialContext,
 		},
 	})
 	if err != nil {

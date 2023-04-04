@@ -11,6 +11,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type bind struct {
@@ -109,6 +110,12 @@ func setValue(field reflect.Value, tag reflect.StructTag, value string) {
 	case reflect.Bool:
 		i, _ := strconv.ParseBool(value)
 		field.SetBool(i)
+	default:
+		if field.Type() == reflect.TypeOf(primitive.ObjectID{}) {
+			if id, err := primitive.ObjectIDFromHex(value); err == nil {
+				field.Set(reflect.ValueOf(id))
+			}
+		}
 	}
 }
 

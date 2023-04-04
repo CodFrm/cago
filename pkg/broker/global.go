@@ -6,7 +6,7 @@ import (
 	"github.com/codfrm/cago"
 	"github.com/codfrm/cago/configs"
 	broker2 "github.com/codfrm/cago/pkg/broker/broker"
-	"github.com/codfrm/cago/pkg/trace"
+	"github.com/codfrm/cago/pkg/opentelemetry/trace"
 	trace2 "go.opentelemetry.io/otel/trace"
 )
 

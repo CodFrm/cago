@@ -5,7 +5,7 @@ import (
 
 	"github.com/codfrm/cago"
 	"github.com/codfrm/cago/configs"
-	"github.com/codfrm/cago/pkg/trace"
+	"github.com/codfrm/cago/pkg/opentelemetry/trace"
 	"github.com/robfig/cron/v3"
 	trace2 "go.opentelemetry.io/otel/trace"
 )

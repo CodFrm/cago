@@ -8,7 +8,7 @@ import (
 	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/examples/simple/internal/api"
 	"github.com/codfrm/cago/pkg/logger"
-	"github.com/codfrm/cago/pkg/trace"
+	"github.com/codfrm/cago/pkg/opentelemetry/trace"
 	"github.com/codfrm/cago/server/mux"
 )
 
@@ -20,7 +20,7 @@ func main() {
 	}
 	err = cago.New(ctx, cfg).
 		Registry(cago.FuncComponent(logger.Logger)).
-		Registry(cago.FuncComponent(trace.Trace)).
+		Registry(trace.Trace()).
 		//Registry(cago.FuncComponent(db.Database)).
 		RegistryCancel(mux.Http(api.Router)).
 		Registry(cago.FuncComponent(func(ctx context.Context, cfg *configs.Config) error {
