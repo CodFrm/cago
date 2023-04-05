@@ -45,10 +45,10 @@ func (b *bind) bind(req *http.Request, ptr any) error {
 	ptrVal := reflect.ValueOf(ptr)
 	ptrElem := ptrVal.Elem()
 	ptrType := ptrElem.Type()
-	var form func(key string) string
+	var form func(key string) []string
 	if req.Method == http.MethodGet ||
 		req.Method == http.MethodDelete {
-		form = b.ctx.Query
+		form = b.ctx.QueryArray
 	} else {
 		switch b.ctx.ContentType() {
 		case binding.MIMEJSON:
@@ -60,7 +60,7 @@ func (b *bind) bind(req *http.Request, ptr any) error {
 				return err
 			}
 		case binding.MIMEMultipartPOSTForm, binding.MIMEPOSTForm:
-			form = b.ctx.PostForm
+			form = b.ctx.PostFormArray
 		}
 	}
 	for i := 0; i < ptrElem.NumField(); i++ {
@@ -78,41 +78,48 @@ func (b *bind) bind(req *http.Request, ptr any) error {
 				// 处理key,label的情况,例如: key,default=1
 				key, opts := head(key, ",")
 				opts, val := head(opts, "=")
-				if opts == "default" && form(key) == "" {
-					setValue(ptrElem.Field(i), tag, val)
+				if opts == "default" && len(form(key)) == 0 {
+					setValue(ptrElem.Field(i), tag, []string{val})
 				} else {
 					setValue(ptrElem.Field(i), tag, form(key))
 				}
 			}
 		} else if uri := tag.Get("uri"); uri != "" {
-			setValue(ptrElem.Field(i), tag, b.ctx.Param(uri))
+			setValue(ptrElem.Field(i), tag, []string{b.ctx.Param(uri)})
 		} else if header := tag.Get("header"); header != "" {
-			setValue(ptrElem.Field(i), tag, b.ctx.GetHeader(header))
+			setValue(ptrElem.Field(i), tag, []string{b.ctx.GetHeader(header)})
 		}
 	}
 	return nil
 }
 
 // 设置值,暂时只支持基础类型
-func setValue(field reflect.Value, tag reflect.StructTag, value string) {
+func setValue(field reflect.Value, tag reflect.StructTag, value []string) {
+	if len(value) == 0 {
+		return
+	}
 	switch field.Kind() {
 	case reflect.String:
-		field.SetString(value)
+		field.SetString(value[0])
 	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
-		i, _ := strconv.ParseInt(value, 10, 64)
+		i, _ := strconv.ParseInt(value[0], 10, 64)
 		field.SetInt(i)
 	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint:
-		i, _ := strconv.ParseUint(value, 10, 64)
+		i, _ := strconv.ParseUint(value[0], 10, 64)
 		field.SetUint(i)
 	case reflect.Float32, reflect.Float64:
-		i, _ := strconv.ParseFloat(value, 64)
+		i, _ := strconv.ParseFloat(value[0], 64)
 		field.SetFloat(i)
 	case reflect.Bool:
-		i, _ := strconv.ParseBool(value)
+		i, _ := strconv.ParseBool(value[0])
 		field.SetBool(i)
+	case reflect.Slice:
+		if field.Type() == reflect.TypeOf([]string{}) {
+			field.Set(reflect.ValueOf(value))
+		}
 	default:
 		if field.Type() == reflect.TypeOf(primitive.ObjectID{}) {
-			if id, err := primitive.ObjectIDFromHex(value); err == nil {
+			if id, err := primitive.ObjectIDFromHex(value[0]); err == nil {
 				field.Set(reflect.ValueOf(id))
 			}
 		}
