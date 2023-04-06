@@ -8,10 +8,12 @@ import (
 )
 
 type event struct {
-	topic     string
-	data      *broker.Message
-	message   *nsq.Message
-	isRequeue bool
+	topic   string
+	data    *broker.Message
+	message *nsq.Message
+	// isAct 是否已经执行过Ack或者Requeue
+	isAct     bool
+	attempted int
 }
 
 func (e *event) Topic() string {
@@ -24,6 +26,7 @@ func (e *event) Message() *broker.Message {
 
 func (e *event) Ack() error {
 	e.message.Finish()
+	e.isAct = true
 	return nil
 }
 
@@ -33,6 +36,10 @@ func (e *event) Error() error {
 
 func (e *event) Requeue(delay time.Duration) error {
 	e.message.Requeue(delay)
-	e.isRequeue = true
+	e.isAct = true
 	return nil
+}
+
+func (e *event) Attempted() int {
+	return e.attempted
 }

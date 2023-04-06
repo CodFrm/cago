@@ -28,19 +28,29 @@ func newSubscribe(b *nsqBroker, topic string, handler broker.Handler, options br
 	}
 	logger := logger.Default().With(zap.String("topic", topic), zap.String("group", options.Group))
 	ret.consumer.AddHandler(nsq.HandlerFunc(func(message *nsq.Message) (err error) {
+		message.DisableAutoResponse()
 		data := &broker.Message{}
 		ev := &event{
-			topic:   topic,
-			data:    data,
-			message: message,
+			topic:     topic,
+			data:      data,
+			message:   message,
+			attempted: int(message.Attempts),
 		}
 		defer func() {
-			if options.AutoAck && !ev.isRequeue {
-				message.Finish()
-			}
 			if err != nil {
-				//message.Requeue(-1)
+				if !ev.isAct {
+					if options.Retry {
+						message.Requeue(-1)
+						logger.Error("nsq subscriber handle error", zap.Bool("retry", true), zap.Error(err))
+					} else if options.AutoAck {
+						message.Finish()
+					}
+				} else {
+					logger.Error("nsq subscriber handle error", zap.Bool("retry", true), zap.Error(err))
+				}
 				logger.Error("nsq subscriber handle error", zap.Error(err))
+			} else if options.AutoAck && !ev.isAct {
+				message.Finish()
 			}
 		}()
 		if err = json.Unmarshal(message.Body, data); err != nil {

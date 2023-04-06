@@ -30,3 +30,7 @@ func (e *event) Error() error {
 func (e *event) Requeue(delay time.Duration) error {
 	return nil
 }
+
+func (e *event) Attempted() int {
+	return -1
+}

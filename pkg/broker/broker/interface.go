@@ -11,10 +11,17 @@ type Message struct {
 }
 
 type Event interface {
+	// Topic 主题
 	Topic() string
+	// Message 消息
 	Message() *Message
+	// Ack 确认
 	Ack() error
+	// Requeue 重新入队
 	Requeue(delay time.Duration) error
+	// Attempted 尝试次数
+	Attempted() int
+	// Error 错误
 	Error() error
 }
 

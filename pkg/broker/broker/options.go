@@ -19,6 +19,7 @@ type SubscribeOptions struct {
 	Context context.Context
 	AutoAck bool
 	Group   string
+	Retry   bool
 }
 
 func NewOptions(opts ...Option) Options {
@@ -53,9 +54,17 @@ func Group(group string) SubscribeOption {
 	}
 }
 
+// NotAutoAck 不自动确认消息
 func NotAutoAck() SubscribeOption {
 	return func(options *SubscribeOptions) {
 		options.AutoAck = false
+	}
+}
+
+// Retry 产生错误时重试
+func Retry() SubscribeOption {
+	return func(options *SubscribeOptions) {
+		options.Retry = true
 	}
 }
 
