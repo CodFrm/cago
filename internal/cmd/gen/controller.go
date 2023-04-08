@@ -101,6 +101,7 @@ func (c *Cmd) regenController(ctrlFile string, f *ast.File, decl *ast.GenDecl,
 func (c *Cmd) genCtrlFunc(ctrlFile string, decl *ast.GenDecl, specs *ast.TypeSpec) string {
 	// 生成函数
 	funcTpl := controllerFuncTpl
+	pkgName := strings.TrimSuffix(path.Base(path.Dir(ctrlFile)), "_ctr")
 	ctrlName := utils.FileNameToCamel(ctrlFile)
 	funcTpl = strings.ReplaceAll(funcTpl, "{ControllerName}", ctrlName)
 	funcTpl = strings.ReplaceAll(funcTpl, "{SimpleName}", strings.ToLower(ctrlName[0:1]))
@@ -108,7 +109,7 @@ func (c *Cmd) genCtrlFunc(ctrlFile string, decl *ast.GenDecl, specs *ast.TypeSpe
 	funcTpl = strings.ReplaceAll(funcTpl, "{FuncName}", funcName)
 	funcTpl = strings.ReplaceAll(funcTpl, "{ApiRequest}", specs.Name.Name)
 	funcTpl = strings.ReplaceAll(funcTpl, "{ApiResponse}", funcName+"Response")
-	funcTpl = strings.ReplaceAll(funcTpl, "{ServiceName}", utils.LowerFirstChar(utils.ToCamel(ctrlName))+"_svc")
+	funcTpl = strings.ReplaceAll(funcTpl, "{ServiceName}", utils.LowerFirstChar(utils.ToCamel(pkgName))+"_svc")
 	desc := utils.GetTypeComment(decl, specs)
 	if desc == "" {
 		desc = "TODO"

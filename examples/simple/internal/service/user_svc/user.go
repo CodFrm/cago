@@ -7,8 +7,6 @@ import (
 )
 
 type UserSvc interface {
-	// Login 登录
-	Login(ctx context.Context, req *api.LoginRequest) (*api.LoginResponse, error)
 	// Register 注册
 	Register(ctx context.Context, req *api.RegisterRequest) (*api.RegisterResponse, error)
 	// Logout 登出
@@ -22,11 +20,6 @@ var defaultUser = &userSvc{}
 
 func User() UserSvc {
 	return defaultUser
-}
-
-// Login 登录
-func (u *userSvc) Login(ctx context.Context, req *api.LoginRequest) (*api.LoginResponse, error) {
-	return nil, nil
 }
 
 // Register 注册

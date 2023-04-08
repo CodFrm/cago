@@ -8,3 +8,7 @@ var (
 	Expiration = cache.Expiration
 	WithDepend = cache.WithDepend
 )
+
+func IsNil(err error) bool {
+	return cache.IsNil(err)
+}

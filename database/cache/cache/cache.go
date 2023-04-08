@@ -30,3 +30,7 @@ type Value interface {
 	Int64() (int64, error)
 	Bool() (bool, error)
 }
+
+func IsNil(err error) bool {
+	return err == Nil
+}

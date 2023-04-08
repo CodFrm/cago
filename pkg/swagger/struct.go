@@ -124,22 +124,6 @@ func (p *parseStruct) parseStruct(typeSpec *ast.TypeSpec) error {
 }
 
 func (p *parseStruct) parseFieldSwagger(field *ast.Field) (spec.Schema, error) {
-	// 数组类型
-	if expr, ok := field.Type.(*ast.ArrayType); ok {
-		// 解析数组类型
-		schema, err := p.parseFieldType(expr.Elt)
-		if err != nil {
-			return spec.Schema{}, err
-		}
-		return spec.Schema{
-			SchemaProps: spec.SchemaProps{
-				Type: []string{"array"},
-				Items: &spec.SchemaOrArray{
-					Schema: &schema,
-				},
-			},
-		}, nil
-	}
 	schema, err := p.parseFieldType(field.Type)
 	if err != nil {
 		return spec.Schema{}, err
@@ -203,6 +187,21 @@ func (p *parseStruct) parseFieldType(fieldType ast.Expr) (spec.Schema, error) {
 			swaggerType.Type = []string{"object"}
 			return spec.Schema{
 				SchemaProps: swaggerType,
+			}, nil
+		} else if expr, ok := fieldType.(*ast.ArrayType); ok {
+			// 数组类型
+			// 解析数组类型
+			schema, err := p.parseFieldType(expr.Elt)
+			if err != nil {
+				return spec.Schema{}, err
+			}
+			return spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Type: []string{"array"},
+					Items: &spec.SchemaOrArray{
+						Schema: &schema,
+					},
+				},
 			}, nil
 		}
 		return p.parseExpr(fieldType)
