@@ -117,6 +117,9 @@ func setValue(field reflect.Value, tag reflect.StructTag, value []string) {
 		if field.Type() == reflect.TypeOf([]string{}) {
 			field.Set(reflect.ValueOf(value))
 		}
+	case reflect.Map:
+		// JSON解析
+		_ = json.Unmarshal([]byte(value[0]), field.Addr().Interface())
 	default:
 		if field.Type() == reflect.TypeOf(primitive.ObjectID{}) {
 			if id, err := primitive.ObjectIDFromHex(value[0]); err == nil {
