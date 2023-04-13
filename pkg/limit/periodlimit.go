@@ -48,7 +48,7 @@ func (p *PeriodLimit) Take(ctx context.Context, key string) (func() error, error
 	}
 	if cnt < p.quota {
 		flag := utils.RandString(8, utils.Mix)
-		err = p.limitStore.ZAdd(ctx, key, redis.Z{
+		err := p.limitStore.ZAdd(ctx, key, redis.Z{
 			Score:  float64(now),
 			Member: flag,
 		}).Err()
@@ -57,6 +57,14 @@ func (p *PeriodLimit) Take(ctx context.Context, key string) (func() error, error
 		}
 		if err := p.limitStore.Expire(ctx, key, time.Duration(p.period)*time.Second).Err(); err != nil {
 			return nil, err
+		}
+		// 当记录为1000的余数时,删除过期记录
+		if cnt%1000 == 0 {
+			go func() {
+				if err := p.limitStore.ZRemRangeByScore(ctx, key, "-inf", strconv.FormatInt(now-p.period*2, 10)).Err(); err != nil {
+					logger.Ctx(ctx).Error("删除过期记录失败", zap.String("key", key), zap.Error(err))
+				}
+			}()
 		}
 		// 删除本次记录
 		return func() error {
@@ -81,4 +89,15 @@ func (p *PeriodLimit) FuncTake(ctx context.Context, key string, f func() (interf
 		return nil, err
 	}
 	return resp, nil
+}
+
+// Count 获取用量
+func (p *PeriodLimit) Count(ctx context.Context, key string) (int64, error) {
+	key = p.key(key)
+	now := time.Now().Unix()
+	cnt, err := p.limitStore.ZCount(ctx, key, strconv.FormatInt(now-p.period, 10), "+inf").Result()
+	if err != nil {
+		return 0, err
+	}
+	return cnt, nil
 }
