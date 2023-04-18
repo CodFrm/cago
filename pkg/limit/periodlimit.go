@@ -92,10 +92,10 @@ func (p *PeriodLimit) FuncTake(ctx context.Context, key string, f func() (interf
 }
 
 // Count 获取用量
-func (p *PeriodLimit) Count(ctx context.Context, key string) (int64, error) {
+func (p *PeriodLimit) Count(ctx context.Context, key string, period int64) (int64, error) {
 	key = p.key(key)
 	now := time.Now().Unix()
-	cnt, err := p.limitStore.ZCount(ctx, key, strconv.FormatInt(now-p.period, 10), "+inf").Result()
+	cnt, err := p.limitStore.ZCount(ctx, key, strconv.FormatInt(now-period, 10), "+inf").Result()
 	if err != nil {
 		return 0, err
 	}
