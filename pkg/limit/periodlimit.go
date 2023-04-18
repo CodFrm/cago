@@ -55,13 +55,13 @@ func (p *PeriodLimit) Take(ctx context.Context, key string) (func() error, error
 		if err != nil {
 			return nil, err
 		}
-		if err := p.limitStore.Expire(ctx, key, time.Duration(p.period)*time.Second).Err(); err != nil {
+		if err := p.limitStore.Expire(ctx, key, time.Duration(p.period+60)*time.Second).Err(); err != nil {
 			return nil, err
 		}
 		// 当记录为1000的余数时,删除过期记录
-		if cnt%1000 == 0 {
+		if cnt > 1000 && cnt%1000 == 0 {
 			go func() {
-				if err := p.limitStore.ZRemRangeByScore(ctx, key, "-inf", strconv.FormatInt(now-p.period*2, 10)).Err(); err != nil {
+				if err := p.limitStore.ZRemRangeByScore(ctx, key, "-inf", strconv.FormatInt(now-p.period*2+60, 10)).Err(); err != nil {
 					logger.Ctx(ctx).Error("删除过期记录失败", zap.String("key", key), zap.Error(err))
 				}
 			}()
