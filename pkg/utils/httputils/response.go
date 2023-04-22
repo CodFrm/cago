@@ -33,3 +33,35 @@ func NewBadRequestError(code int, err string) error {
 		Msg:    err,
 	}
 }
+
+func NewUnauthorizedError(code int, err string) error {
+	return &JsonResponseError{
+		Status: http.StatusUnauthorized,
+		Code:   code,
+		Msg:    err,
+	}
+}
+
+func NewForbiddenError(code int, err string) error {
+	return &JsonResponseError{
+		Status: http.StatusForbidden,
+		Code:   code,
+		Msg:    err,
+	}
+}
+
+func NewNotFoundError(code int, err string) error {
+	return &JsonResponseError{
+		Status: http.StatusNotFound,
+		Code:   code,
+		Msg:    err,
+	}
+}
+
+func NewInternalServerError(code int, err string) error {
+	return &JsonResponseError{
+		Status: http.StatusInternalServerError,
+		Code:   code,
+		Msg:    err,
+	}
+}
