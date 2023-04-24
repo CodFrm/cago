@@ -18,6 +18,10 @@ type bind struct {
 	ctx *gin.Context
 }
 
+func ShouldBindWith(c *gin.Context, obj any) error {
+	return c.MustBindWith(obj, &bind{ctx: c})
+}
+
 func (b *bind) Name() string {
 	return "cago"
 }

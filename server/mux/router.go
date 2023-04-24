@@ -19,7 +19,7 @@ func (r *Router) Group(path string, handler ...gin.HandlerFunc) *Router {
 	return &Router{r.IRouter.Group(path, handler...)}
 }
 
-// Bind 绑定控制器
+// ShouldBindWith 绑定控制器
 func (r *Router) Bind(handler ...interface{}) {
 	// 反射解析控制器方法
 	for _, c := range handler {
@@ -99,9 +99,7 @@ func (r *Router) bindHandler(request reflect.Type, call func(a reflect.Value, b 
 		req := reflect.New(request)
 		// 绑定请求参数
 		i := req.Interface()
-		if err := c.ShouldBindWith(i, &bind{
-			ctx: c,
-		}); err != nil {
+		if err := ShouldBindWith(c, i); err != nil {
 			httputils.HandleResp(c, err)
 			return
 		}
