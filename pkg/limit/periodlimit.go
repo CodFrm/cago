@@ -72,7 +72,6 @@ func (p *PeriodLimit) Take(ctx context.Context, key string) (func() error, error
 		}, nil
 	}
 	log := fmt.Sprintf("%d秒内产生了太多请求", p.period)
-	logger.Ctx(ctx).Warn(log, zap.String("key", key))
 	return nil, httputils.NewError(http.StatusTooManyRequests, -1, log)
 }
 
