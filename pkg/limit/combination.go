@@ -47,6 +47,9 @@ func (c *CombinationLimit) Take(ctx context.Context, key string) (func() error, 
 func (c *CombinationLimit) FuncTake(ctx context.Context, key string, f func() (interface{}, error)) (interface{}, error) {
 	cancel, err := c.Take(ctx, key)
 	if err != nil {
+		if err := cancel(); err != nil {
+			return nil, err
+		}
 		return nil, err
 	}
 	resp, err := f()
