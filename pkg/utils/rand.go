@@ -2,16 +2,9 @@ package utils
 
 import (
 	"math/rand"
-	"time"
 )
 
 const letterBytes = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-
-const (
-	letterIdxBits = 6 // 6 bits to represent a letter index
-)
-
-var src = rand.NewSource(time.Now().UnixNano())
 
 type RandStringType int
 

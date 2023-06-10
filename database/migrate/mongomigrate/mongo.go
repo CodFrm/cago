@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/codfrm/cago/configs"
 
 	"github.com/codfrm/cago/database/mongo"
 	"go.mongodb.org/mongo-driver/bson"
@@ -33,7 +34,11 @@ func New(ctx context.Context, mongo *mongo.Client, migrations []*Migration) *Mon
 	}
 }
 
-func (m *MongoMigrate) Migrate() error {
+func (m *MongoMigrate) Migrate(option ...Option) error {
+	opts := &Options{}
+	for _, o := range option {
+		o(opts)
+	}
 	// 获取所有的迁移记录
 	collection := m.db.Database(m.ctx).Collection((&MongoMigrateTable{}).CollectionName())
 	// 创建索引
@@ -55,7 +60,10 @@ func (m *MongoMigrate) Migrate() error {
 	}
 	// 对比迁移记录和迁移函数
 	if len(records) > len(m.migrations) {
-		return errors.New("migrate records more than migrate functions")
+		// 判断是否为pro并且拥有pre版本,那就忽略记录少的问题
+		if !(opts.hasPre && configs.Default().Env == configs.PROD) {
+			return errors.New("migrate records more than migrate functions")
+		}
 	}
 	for n, record := range records {
 		if record.ID != m.migrations[n].ID {
