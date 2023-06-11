@@ -20,6 +20,9 @@ swagger: check-cago
 lint: check-golangci-lint
 	golangci-lint run
 
+lint-fix: check-golangci-lint
+	golangci-lint run --fix
+
 test: lint
 	go test -v ./...
 
@@ -33,3 +36,17 @@ html-cover: coverage.out
 
 generate: check-mockgen swagger
 	go generate ./... -x
+
+GOOS=linux
+GOARCH=amd64
+APP_NAME=simple
+APP_VERSION=1.0.0
+
+SUFFIX=
+ifeq ($(GOOS),windows)
+	SUFFIX=.exe
+endif
+
+build:
+	GOOS=$(GOOS) GOARCH=$(GOARCH) go build -o bin/$(APP_NAME)_v$(APP_VERSION)$(SUFFIX) ./cmd/app
+

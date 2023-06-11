@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/codfrm/cago/database/db"
+	"github.com/codfrm/cago/examples/simple/internal/task/consumer"
 	"github.com/codfrm/cago/examples/simple/migrations"
 	"github.com/codfrm/cago/pkg/component"
 	"log"
@@ -25,6 +26,7 @@ func main() {
 		Registry(component.Broker()).
 		Registry(component.Redis()).
 		Registry(component.Cache()).
+		Registry(consumer.Consumer()).
 		Registry(cago.FuncComponent(func(ctx context.Context, cfg *configs.Config) error {
 			return migrations.RunMigrations(db.Default())
 		})).

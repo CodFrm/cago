@@ -12,7 +12,7 @@ cache:
 db:
     dsn: root:password@tcp(127.0.0.1:3306)/simple?charset=utf8mb4&collation=utf8mb4_unicode_ci&parseTime=True&loc=Local&multiStatements=true
     prefix: sm_
-debug: false
+debug: true
 env: dev
 etcd:
     endpoints:

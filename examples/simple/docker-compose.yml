@@ -29,20 +29,12 @@ services:
 
   nsqd:
     image: nsqio/nsq
-    command: /nsqd --lookupd-tcp-address=192.168.1.136:4160 --broadcast-address=192.168.1.136
+    command: /nsqd --lookupd-tcp-address=nsqlookupd:4160 --broadcast-address=127.0.0.1
     depends_on:
       - nsqlookupd
     ports:
       - 4150:4150
       - 4151:4151
-
-  nsqadmin:
-    image: nsqio/nsq
-    command: /nsqadmin --lookupd-http-address=192.168.1.136:4161
-    depends_on:
-      - nsqlookupd
-    ports:
-      - 4171:4171
 
   jaeger:
     image: jaegertracing/all-in-one:latest

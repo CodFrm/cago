@@ -18,12 +18,8 @@
 .vscode
 .docker
 
-/config.yaml
-
 /configs/config.yaml
-/configs/config.yaml.example
 
-/docs/docs.go
-/docs/swagger.json
-/docs/swagger.yaml
-/runtime
+/docs/
+runtime/
+bin/
