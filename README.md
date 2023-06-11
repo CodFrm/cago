@@ -35,11 +35,11 @@ cago 只对社区工具进行集成,大大减少迁移难度和学习成本,我�
 
 # 快速开始
 
-[简单示例](./examples/simple/main.go)
+[简单示例](./examples/simple/cmd/app/main.go)
 
 使用 goland 打开项目,复制 configs/config.yaml.example 到 configs/config.yaml,修改配置文件
 
-启动 example/simple/main.go,即可运行一个简单的服务
+启动 example/simple/cmd/app/main.go,即可运行一个简单的服务
 
 另外使用`docker-compose up -d`可以启动框架相关服务(loki、jaeger、grafana、etcd、etcdkeeper)
 
@@ -65,7 +65,8 @@ cago gen table_name
 
 # 部署
 
-cago 提供了`gitlab-ci`、`golanglint-ci`和`Kubernetes`的 CI/CD 配置文件,可以快速帮你实现 CI/CD.
+cago 提供了[`gitlab-ci`](./deploy/.gitlab-ci.yml)、[`golanglint-ci`](./deploy/.golangci.yml)和
+[`Kubernetes`](./deploy)的 CI/CD 配置文件,可以快速帮你实现 CI/CD.
 
 当本地调试时也可以使用`docker-compose up -d`启动调试环境.
 
@@ -78,4 +79,4 @@ cago 提供了`gitlab-ci`、`golanglint-ci`和`Kubernetes`的 CI/CD 配置文件
 
 ## License
 
-[MIT](LICENSE)
+[MIT](./LICENSE)

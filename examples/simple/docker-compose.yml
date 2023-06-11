@@ -14,8 +14,38 @@ services:
     image: mariadb:10.9.3
     environment:
       - MYSQL_ROOT_PASSWORD=password
-      - MYSQL_DATABASE=scriptlist
+      - MYSQL_DATABASE=simple
     ports:
       - 3306:3306
     volumes:
       - ./.docker/mysql:/var/lib/mysql
+
+  nsqlookupd:
+    image: nsqio/nsq
+    command: /nsqlookupd
+    ports:
+      - 4160:4160
+      - 4161:4161
+
+  nsqd:
+    image: nsqio/nsq
+    command: /nsqd --lookupd-tcp-address=192.168.1.136:4160 --broadcast-address=192.168.1.136
+    depends_on:
+      - nsqlookupd
+    ports:
+      - 4150:4150
+      - 4151:4151
+
+  nsqadmin:
+    image: nsqio/nsq
+    command: /nsqadmin --lookupd-http-address=192.168.1.136:4161
+    depends_on:
+      - nsqlookupd
+    ports:
+      - 4171:4171
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "14268:14268"
+      - "16686:16686"

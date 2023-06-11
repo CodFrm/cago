@@ -48,3 +48,8 @@ func (f *fileSource) Scan(key string, value interface{}) error {
 	}
 	return f.serialization.Unmarshal(b, value)
 }
+
+func (f *fileSource) Has(key string) (bool, error) {
+	_, ok := f.config[key]
+	return ok, nil
+}

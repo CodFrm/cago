@@ -2,13 +2,14 @@ package main
 
 import (
 	"context"
+	"github.com/codfrm/cago/database/db"
+	"github.com/codfrm/cago/examples/simple/migrations"
+	"github.com/codfrm/cago/pkg/component"
 	"log"
 
 	"github.com/codfrm/cago"
 	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/examples/simple/internal/api"
-	"github.com/codfrm/cago/pkg/logger"
-	"github.com/codfrm/cago/pkg/opentelemetry/trace"
 	"github.com/codfrm/cago/server/mux"
 )
 
@@ -19,18 +20,15 @@ func main() {
 		log.Fatalf("load config err: %v", err)
 	}
 	err = cago.New(ctx, cfg).
-		Registry(cago.FuncComponent(logger.Logger)).
-		Registry(trace.Trace()).
-		//Registry(cago.FuncComponent(db.Database)).
-		RegistryCancel(mux.Http(api.Router)).
+		Registry(component.Core()).
+		Registry(component.Database()).
+		Registry(component.Broker()).
+		Registry(component.Redis()).
+		Registry(component.Cache()).
 		Registry(cago.FuncComponent(func(ctx context.Context, cfg *configs.Config) error {
-			logger.Default().Info("cago simple example start")
-			go func() {
-				<-ctx.Done()
-				logger.Default().Info("cago simple example stop")
-			}()
-			return nil
+			return migrations.RunMigrations(db.Default())
 		})).
+		RegistryCancel(mux.Http(api.Router)).
 		Start()
 	if err != nil {
 		log.Fatalf("start err: %v", err)

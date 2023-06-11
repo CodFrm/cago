@@ -1,3 +1,18 @@
+broker:
+    nsq:
+        addr: 127.0.0.1:4150
+        nsqlookupaddr:
+            - 127.0.0.1:4161
+    type: nsq
+cache:
+    type: "redis"
+    addr: "127.0.0.1:6379"
+    password: ""
+    db: 1
+db:
+    dsn: root:password@tcp(127.0.0.1:3306)/simple?charset=utf8mb4&collation=utf8mb4_unicode_ci&parseTime=True&loc=Local&multiStatements=true
+    prefix: sm_
+debug: false
 env: dev
 etcd:
     endpoints:
@@ -15,10 +30,10 @@ logger:
     loki:
         level: info
         url: http://127.0.0.1:3100/loki/api/v1/push
-db:
-    dsn: root:password@tcp(127.0.0.1:3306)/scriptlist?charset=utf8mb4&collation=utf8mb4_unicode_ci&parseTime=True&loc=Local&multiStatements=true
-    prefix: cm_
-
+redis:
+    addr: 127.0.0.1:6379
+    db: 0
+    password: ""
 source: file
 trace:
     endpoint: http://localhost:14268/api/traces

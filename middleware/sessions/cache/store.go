@@ -24,7 +24,7 @@ type store struct {
 
 func NewCacheStore(cache cache.Cache, prefix string, opts ...Option) cagoSession.Store {
 	options := &Options{
-		prefix:        "session",
+		prefix:        prefix,
 		defaultMaxAge: 86400 * 30,
 		refreshTime:   86400,
 		sessionOptions: &sessions.Options{

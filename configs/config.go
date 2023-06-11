@@ -117,3 +117,7 @@ func (c *Config) String(key string) string {
 	}
 	return str
 }
+
+func (c *Config) Has(key string) (bool, error) {
+	return c.source.Has(key)
+}

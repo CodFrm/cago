@@ -10,6 +10,18 @@ definitions:
         description: 错误信息
         type: string
     type: object
+  example.LoginRequest:
+    type: object
+  example.LoginResponse:
+    properties:
+      username:
+        type: string
+    type: object
+  example.PingResponse:
+    properties:
+      pong:
+        type: string
+    type: object
   user.LoginRequest:
     properties:
       username:
@@ -21,8 +33,6 @@ definitions:
       username:
         description: 用户名
         type: string
-    type: object
-  user.LogoutRequest:
     type: object
   user.LogoutResponse:
     type: object
@@ -38,6 +48,61 @@ info:
   title: api文档
   version: "1.0"
 paths:
+  /example:
+    post:
+      consumes:
+      - application/json
+      description: 需要登录的接口
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/example.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/example.LoginResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 需要登录的接口
+      tags:
+      - example
+  /example/ping:
+    get:
+      consumes:
+      - application/json
+      description: ping
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/example.PingResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: ping
+      tags:
+      - example
   /user/login:
     post:
       consumes:
@@ -69,15 +134,10 @@ paths:
       tags:
       - user
   /user/logout:
-    delete:
+    get:
       consumes:
       - application/json
       description: 登出
-      parameters:
-      - in: body
-        name: body
-        schema:
-          $ref: '#/definitions/user.LogoutRequest'
       produces:
       - application/json
       responses:

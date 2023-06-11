@@ -23,6 +23,7 @@ type Config struct {
 	Prefix string `yaml:"prefix"`
 }
 
+// Database gorm数据库封装
 func Database(ctx context.Context, config *configs.Config) error {
 	cfg := &Config{}
 	if err := config.Scan("db", cfg); err != nil {

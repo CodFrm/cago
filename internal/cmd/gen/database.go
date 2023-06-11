@@ -13,29 +13,29 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const entityTpl = `
-package entity
+const entityTpl = `package {TableName}_entity
 
 type {EntityName} struct {
 {EntityField}
 }
 `
 
-const repositoryTpl = `
-package repository
+const repositoryTpl = `package {TableName}_repo
 
 import (
 	"context"
 
-	"{PkgName}"
+	"github.com/codfrm/cago/database/db"
+	"github.com/codfrm/cago/pkg/consts"
+	"{PkgName}/{TableName}_entity"
 	"github.com/codfrm/cago/pkg/utils/httputils"
 )
 
 type {Name}Repo interface {
-	Find(ctx context.Context, id int64) (*entity.{Name}, error)
-	FindPage(ctx context.Context, page httputils.PageRequest) ([]*entity.{Name}, int64, error)
-	Create(ctx context.Context, {LowerName} *entity.{Name}) error
-	Update(ctx context.Context, {LowerName} *entity.{Name}) error
+	Find(ctx context.Context, id int64) (*{TableName}_entity.{Name}, error)
+	FindPage(ctx context.Context, page httputils.PageRequest) ([]*{TableName}_entity.{Name}, int64, error)
+	Create(ctx context.Context, {LowerName} *{TableName}_entity.{Name}) error
+	Update(ctx context.Context, {LowerName} *{TableName}_entity.{Name}) error
 	Delete(ctx context.Context, id int64) error
 }
 
@@ -48,30 +48,16 @@ func {Name}() {Name}Repo {
 func Register{Name}(i {Name}Repo) {
 	default{Name} = i
 }
-`
-
-const persistenceTpl = `
-package persistence
-
-import (
-	"context"
-
-	"github.com/codfrm/cago/database/db"
-	"github.com/codfrm/cago/pkg/consts"
-	"{PkgName}/internal/model/entity"
-	"{PkgName}/internal/repository"
-	"github.com/codfrm/cago/pkg/utils/httputils"
-)
 
 type {LowerName}Repo struct {
 }
 
-func New{Name}() repository.{Name}Repo {
+func New{Name}() {Name}Repo {
 	return &{LowerName}Repo{}
 }
 
-func (u *{LowerName}Repo) Find(ctx context.Context, id int64) (*entity.{Name}, error) {
-	ret := &entity.{Name}{}
+func (u *{LowerName}Repo) Find(ctx context.Context, id int64) (*{TableName}_entity.{Name}, error) {
+	ret := &{TableName}_entity.{Name}{}
 	if err := db.Ctx(ctx).Where("id=? and status=?", id, consts.ACTIVE).First(ret).Error; err != nil {
 		if db.RecordNotFound(err) {
 			return nil, nil
@@ -81,22 +67,22 @@ func (u *{LowerName}Repo) Find(ctx context.Context, id int64) (*entity.{Name}, e
 	return ret, nil
 }
 
-func (u *{LowerName}Repo) Create(ctx context.Context, {LowerName} *entity.{Name}) error {
+func (u *{LowerName}Repo) Create(ctx context.Context, {LowerName} *{TableName}_entity.{Name}) error {
 	return db.Ctx(ctx).Create({LowerName}).Error
 }
 
-func (u *{LowerName}Repo) Update(ctx context.Context, {LowerName} *entity.{Name}) error {
+func (u *{LowerName}Repo) Update(ctx context.Context, {LowerName} *{TableName}_entity.{Name}) error {
 	return db.Ctx(ctx).Updates({LowerName}).Error
 }
 
 func (u *{LowerName}Repo) Delete(ctx context.Context, id int64) error {
-	return db.Ctx(ctx).Model(&entity.{Name}{}).Where("id=?", id).Update("status", consts.DELETE).Error
+	return db.Ctx(ctx).Model(&{TableName}_entity.{Name}{}).Where("id=?", id).Update("status", consts.DELETE).Error
 }
 
-func (u *{LowerName}Repo) FindPage(ctx context.Context, page httputils.PageRequest) ([]*entity.{Name}, int64, error) {
-	var list []*entity.{Name}
+func (u *{LowerName}Repo) FindPage(ctx context.Context, page httputils.PageRequest) ([]*{TableName}_entity.{Name}, int64, error) {
+	var list []*{TableName}_entity.{Name}
 	var count int64
-	find := db.Ctx(ctx).Model(&entity.{Name}{}).Where("status=?", consts.ACTIVE)
+	find := db.Ctx(ctx).Model(&{TableName}_entity.{Name}{}).Where("status=?", consts.ACTIVE)
 	if err := find.Count(&count).Error; err != nil {
 		return nil, 0, err
 	}
@@ -153,12 +139,8 @@ func (c *Cmd) genDB(cmd *cobra.Command, args []string) error {
 	if err := c.genEntity(table, column, index); err != nil {
 		return err
 	}
-	// 生成仓库接口
-	if err := c.genRepository(table); err != nil {
-		return err
-	}
 	// 生成仓库实现
-	return c.genPersistence(table)
+	return c.genRepository(table)
 }
 
 // 获取当前包名
@@ -175,7 +157,7 @@ func (c *Cmd) getCurrentPkgName(dir string) (string, error) {
 }
 
 func (c *Cmd) genRepository(table string) error {
-	filepath := "internal/repository/" + table + ".go"
+	filepath := "internal/repository/" + table + "_repo/" + table + ".go"
 	// 存在不创建
 	if _, err := os.Stat(filepath); err == nil {
 		return nil
@@ -191,38 +173,16 @@ func (c *Cmd) genRepository(table string) error {
 	repository = strings.ReplaceAll(repository, "{PkgName}", pkgName)
 	repository = strings.ReplaceAll(repository, "{Name}", utils.ToCamel(table))
 	repository = strings.ReplaceAll(repository, "{LowerName}", utils.LowerFirstChar(utils.ToCamel(table)))
+	repository = strings.ReplaceAll(repository, "{TableName}", table)
 	// 写文件
-	if err := os.MkdirAll("internal/repository", 0755); err != nil {
+	if err := os.MkdirAll("internal/repository/"+table+"_repo/", 0755); err != nil {
 		return err
 	}
 	return os.WriteFile(filepath, []byte(repository), 0644)
 }
 
-func (c *Cmd) genPersistence(table string) error {
-	filepath := "internal/repository/persistence/" + table + ".go"
-	// 存在不创建
-	if _, err := os.Stat(filepath); err == nil {
-		return nil
-	} else if !os.IsNotExist(err) {
-		return err
-	}
-	persistence := persistenceTpl
-	pkgName, err := c.getCurrentPkgName(".")
-	if err != nil {
-		return err
-	}
-	persistence = strings.ReplaceAll(persistence, "{PkgName}", pkgName)
-	persistence = strings.ReplaceAll(persistence, "{Name}", utils.ToCamel(table))
-	persistence = strings.ReplaceAll(persistence, "{LowerName}", utils.LowerFirstChar(utils.ToCamel(table)))
-	// 写文件
-	if err := os.MkdirAll("internal/repository/persistence", 0755); err != nil {
-		return err
-	}
-	return os.WriteFile(filepath, []byte(persistence), 0644)
-}
-
 func (c *Cmd) genEntity(table string, column []Column, index []Index) error {
-	filepath := "internal/model/entity/" + table + ".go"
+	filepath := "internal/model/entity/" + table + "_entity/" + table + ".go"
 	// 存在不创建
 	if _, err := os.Stat(filepath); err == nil {
 		return nil
@@ -231,6 +191,7 @@ func (c *Cmd) genEntity(table string, column []Column, index []Index) error {
 	}
 	// 获取表的索引信息
 	entity := entityTpl
+	entity = strings.ReplaceAll(entity, "{TableName}", table)
 	entity = strings.ReplaceAll(entity, "{EntityName}", utils.ToCamel(table))
 	var entityField string
 	for _, v := range column {
@@ -238,7 +199,7 @@ func (c *Cmd) genEntity(table string, column []Column, index []Index) error {
 	}
 	entity = strings.ReplaceAll(entity, "{EntityField}", strings.TrimRight(entityField, "\n"))
 	// 写文件
-	if err := os.MkdirAll("internal/model/entity", 0755); err != nil {
+	if err := os.MkdirAll("internal/model/entity/"+table+"_entity", 0755); err != nil {
 		return err
 	}
 	return os.WriteFile(filepath, []byte(entity), 0644)

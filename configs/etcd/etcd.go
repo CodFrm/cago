@@ -58,3 +58,11 @@ func (e *etcd) Scan(key string, value interface{}) error {
 	}
 	return e.serialization.Unmarshal(resp.Kvs[0].Value, value)
 }
+
+func (e *etcd) Has(key string) (bool, error) {
+	resp, err := e.Client.Get(context.Background(), path.Join(e.prefix, key))
+	if err != nil {
+		return false, err
+	}
+	return len(resp.Kvs) > 0, nil
+}
