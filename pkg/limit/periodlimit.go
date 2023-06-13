@@ -3,15 +3,15 @@ package limit
 import (
 	"context"
 	"fmt"
+	"github.com/codfrm/cago/pkg/logger"
+	"go.uber.org/zap"
 	"net/http"
 	"strconv"
 	"time"
 
-	"github.com/codfrm/cago/pkg/logger"
 	"github.com/codfrm/cago/pkg/utils"
 	"github.com/codfrm/cago/pkg/utils/httputils"
 	"github.com/redis/go-redis/v9"
-	"go.uber.org/zap"
 )
 
 // TODO: redis lua脚本保证原子性
@@ -44,7 +44,23 @@ func (p *PeriodLimit) Take(ctx context.Context, key string) (func() error, error
 	now := time.Now().Unix()
 	cnt, err := p.limitStore.ZCount(ctx, key, strconv.FormatInt(now-p.period, 10), "+inf").Result()
 	if err != nil {
-		return nil, err
+		if redis.Nil != err {
+			return nil, err
+		}
+	}
+	total, err := p.limitStore.ZCard(ctx, key).Result()
+	if err != nil {
+		if redis.Nil != err {
+			return nil, err
+		}
+	}
+	// 当总数为1000的余数时,删除过期记录
+	if total > 1000 && total%1000 == 0 {
+		go func() {
+			if err := p.limitStore.ZRemRangeByScore(ctx, key, "-inf", strconv.FormatInt(now-p.period*2+60, 10)).Err(); err != nil {
+				logger.Ctx(ctx).Error("删除过期记录失败", zap.String("key", key), zap.Error(err))
+			}
+		}()
 	}
 	if cnt < p.quota {
 		flag := utils.RandString(8, utils.Mix)
@@ -57,14 +73,6 @@ func (p *PeriodLimit) Take(ctx context.Context, key string) (func() error, error
 		}
 		if err := p.limitStore.Expire(ctx, key, time.Duration(p.period+60)*time.Second).Err(); err != nil {
 			return nil, err
-		}
-		// 当记录为1000的余数时,删除过期记录
-		if cnt > 1000 && cnt%1000 == 0 {
-			go func() {
-				if err := p.limitStore.ZRemRangeByScore(ctx, key, "-inf", strconv.FormatInt(now-p.period*2+60, 10)).Err(); err != nil {
-					logger.Ctx(ctx).Error("删除过期记录失败", zap.String("key", key), zap.Error(err))
-				}
-			}()
 		}
 		// 删除本次记录
 		return func() error {
