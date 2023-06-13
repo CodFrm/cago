@@ -54,10 +54,10 @@ func (p *PeriodLimit) Take(ctx context.Context, key string) (func() error, error
 			return nil, err
 		}
 	}
-	// 当总数为1000的余数时,删除过期记录
-	if total > 1000 && total%1000 == 0 {
+	// 当总数为500的余数时,删除过期记录
+	if total > 500 && total%500 == 0 {
 		go func() {
-			if err := p.limitStore.ZRemRangeByScore(ctx, key, "-inf", strconv.FormatInt(now-p.period*2+60, 10)).Err(); err != nil {
+			if err := p.limitStore.ZRemRangeByScore(context.Background(), key, "-inf", strconv.FormatInt(now-p.period*2+60, 10)).Err(); err != nil {
 				logger.Ctx(ctx).Error("删除过期记录失败", zap.String("key", key), zap.Error(err))
 			}
 		}()
