@@ -3,7 +3,7 @@ package mux
 import (
 	"context"
 	"encoding/json"
-	"errors"
+	"github.com/codfrm/cago/pkg/utils/httputils"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -57,11 +57,11 @@ func (b *bind) bind(req *http.Request, ptr any) error {
 		switch b.ctx.ContentType() {
 		case binding.MIMEJSON:
 			if req == nil || req.Body == nil {
-				return errors.New("invalid request")
+				return httputils.NewInternalServerError(-1, "json body is nil")
 			}
 			decoder := json.NewDecoder(req.Body)
 			if err := decoder.Decode(ptr); err != nil {
-				return err
+				return httputils.NewInternalServerError(-1, err.Error())
 			}
 		case binding.MIMEMultipartPOSTForm, binding.MIMEPOSTForm:
 			form = b.ctx.PostFormArray
