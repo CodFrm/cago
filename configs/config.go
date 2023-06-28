@@ -14,9 +14,9 @@ type Env string
 
 const (
 	DEV  Env = "dev"
-	TEST     = "test"
-	PRE      = "pre"
-	PROD     = "prod"
+	TEST Env = "test"
+	PRE  Env = "pre"
+	PROD Env = "prod"
 )
 
 type Config struct {

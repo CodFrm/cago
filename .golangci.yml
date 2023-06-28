@@ -1,0 +1,19 @@
+linters-settings:
+  golint:
+    min-confidence: 0
+  misspell:
+    locale: US
+linters:
+  disable-all: false
+  enable:
+    - typecheck
+    - goimports
+    - misspell
+    - govet
+    - ineffassign
+    - gosimple
+    - unused
+    - errcheck
+
+run:
+  timeout: 10m

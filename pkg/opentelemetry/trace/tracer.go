@@ -14,7 +14,7 @@ type ExporterType string
 
 const (
 	Jaeger  ExporterType = "jaeger"
-	UpTrace              = "uptrace"
+	UpTrace ExporterType = "uptrace"
 )
 
 type Config struct {

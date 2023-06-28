@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/codfrm/cago/configs"
 
 	"github.com/codfrm/cago/database/mongo"
@@ -43,7 +44,7 @@ func (m *MongoMigrate) Migrate(option ...Option) error {
 	collection := m.db.Database(m.ctx).Collection((&MongoMigrateTable{}).CollectionName())
 	// 创建索引
 	if _, err := collection.Indexes().CreateOne(mongo2.IndexModel{
-		Keys:    bson.D{{"id", 1}},
+		Keys:    bson.D{{Key: "id", Value: 1}},
 		Options: options.Index().SetUnique(true),
 	}); err != nil {
 		return err

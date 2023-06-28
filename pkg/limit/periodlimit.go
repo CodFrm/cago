@@ -3,11 +3,12 @@ package limit
 import (
 	"context"
 	"fmt"
-	"github.com/codfrm/cago/pkg/logger"
-	"go.uber.org/zap"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/codfrm/cago/pkg/logger"
+	"go.uber.org/zap"
 
 	"github.com/codfrm/cago/pkg/utils"
 	"github.com/codfrm/cago/pkg/utils/httputils"
@@ -15,8 +16,8 @@ import (
 )
 
 // TODO: redis lua脚本保证原子性
-const script = `
-`
+//const script = `
+//`
 
 // PeriodLimit 周期限流器,redis zet实现滑动窗口
 type PeriodLimit struct {

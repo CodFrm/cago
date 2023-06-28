@@ -3,11 +3,12 @@ package mux
 import (
 	"context"
 	"encoding/json"
-	"github.com/codfrm/cago/pkg/utils/httputils"
 	"net/http"
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/codfrm/cago/pkg/utils/httputils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -77,7 +78,9 @@ func (b *bind) bind(req *http.Request, ptr any) error {
 				continue
 			}
 			if key == ",inline" {
-				b.bind(req, ptrElem.Field(i).Addr().Interface())
+				if err := b.bind(req, ptrElem.Field(i).Addr().Interface()); err != nil {
+					return err
+				}
 			} else if form != nil {
 				// 处理key,label的情况,例如: key,default=1
 				key, opts := head(key, ",")
