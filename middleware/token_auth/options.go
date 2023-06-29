@@ -23,6 +23,8 @@ type Options struct {
 	storage        Storage
 	lock           sync.Locker
 	setContext     func(ctx context.Context, accessToken *AccessToken) (context.Context, error)
+	tokenExpired   int64
+	refreshExpired int64
 }
 
 type Option func(*Options)
@@ -33,7 +35,9 @@ func newOptions(opts ...Option) *Options {
 		handlerError: func(ctx *gin.Context, err error) error {
 			return err
 		},
-		lock: sync.NewLocker("token_auth"),
+		lock:           sync.NewLocker("token_auth"),
+		tokenExpired:   7200,
+		refreshExpired: 3600 * 24 * 30,
 	}
 	for _, o := range opts {
 		o(opt)
@@ -71,12 +75,16 @@ func WithSetContext(setContext func(ctx context.Context, accessToken *AccessToke
 	}
 }
 
+func WithTokenExpired(tokenExpired int64, refreshExpired int64) Option {
+	return func(o *Options) {
+		o.tokenExpired = tokenExpired
+		o.refreshExpired = refreshExpired
+	}
+}
+
 func defaultGetAccessToken(ctx *gin.Context) (string, error) {
 	// 找到access_token
-	accessToken, err := ctx.Cookie("access_token")
-	if err != nil {
-		return "", err
-	}
+	accessToken, _ := ctx.Cookie("access_token")
 	if accessToken == "" {
 		accessToken = ctx.GetHeader("Authorization")
 		if accessToken != "" {

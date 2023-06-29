@@ -9,13 +9,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-const (
-	TokenExpired        = 7200
-	RefreshTokenExpired = 3600 * 24 * 30
-)
-
 var (
-	accessTokenKey = &AccessToken{}
+	accessTokenKey = "accessTokenKey"
 )
 
 type TokenAuth struct {
@@ -75,8 +70,8 @@ func (t *TokenAuth) Generate(ctx context.Context) *AccessToken {
 		AccessToken:  utils.RandString(32, utils.Mix),
 		RefreshToken: utils.RandString(32, utils.Mix),
 		KvMap:        map[string]string{},
-		ExpireAt:     time.Now().Unix() + TokenExpired,
-		RefreshAt:    time.Now().Unix() + RefreshTokenExpired,
+		ExpireAt:     time.Now().Unix() + t.options.tokenExpired,
+		RefreshAt:    time.Now().Unix() + t.options.refreshExpired,
 	}
 }
 

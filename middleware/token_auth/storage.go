@@ -57,7 +57,7 @@ func (r *cacheStorage) Deserialize(d []byte, token *AccessToken) error {
 }
 
 func (r *cacheStorage) Save(ctx context.Context, accessToken *AccessToken) error {
-	b, err := r.Serialize(accessTokenKey)
+	b, err := r.Serialize(accessToken)
 	if err != nil {
 		return err
 	}
