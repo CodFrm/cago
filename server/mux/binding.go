@@ -20,7 +20,7 @@ type bind struct {
 }
 
 func ShouldBindWith(c *gin.Context, obj any) error {
-	return c.MustBindWith(obj, &bind{ctx: c})
+	return c.ShouldBindWith(obj, &bind{ctx: c})
 }
 
 func (b *bind) Name() string {
