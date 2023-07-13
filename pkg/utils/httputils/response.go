@@ -1,6 +1,8 @@
 package httputils
 
-import "net/http"
+import (
+	"net/http"
+)
 
 type JsonResponse struct {
 	Code int         `json:"code"`
@@ -8,60 +10,40 @@ type JsonResponse struct {
 	Data interface{} `json:"data"`
 }
 
-type JsonResponseError struct {
+type Error struct {
 	Status int    `json:"-"`
 	Code   int    `json:"code"`
 	Msg    string `json:"msg"`
 }
 
 func NewError(status, code int, msg string) error {
-	return &JsonResponseError{
+	return &Error{
 		Status: status,
 		Code:   code,
 		Msg:    msg,
 	}
 }
 
-func (j *JsonResponseError) Error() string {
+func (j *Error) Error() string {
 	return j.Msg
 }
 
 func NewBadRequestError(code int, err string) error {
-	return &JsonResponseError{
-		Status: http.StatusBadRequest,
-		Code:   code,
-		Msg:    err,
-	}
+	return NewError(http.StatusBadRequest, code, err)
 }
 
 func NewUnauthorizedError(code int, err string) error {
-	return &JsonResponseError{
-		Status: http.StatusUnauthorized,
-		Code:   code,
-		Msg:    err,
-	}
+	return NewError(http.StatusUnauthorized, code, err)
 }
 
 func NewForbiddenError(code int, err string) error {
-	return &JsonResponseError{
-		Status: http.StatusForbidden,
-		Code:   code,
-		Msg:    err,
-	}
+	return NewError(http.StatusForbidden, code, err)
 }
 
 func NewNotFoundError(code int, err string) error {
-	return &JsonResponseError{
-		Status: http.StatusNotFound,
-		Code:   code,
-		Msg:    err,
-	}
+	return NewError(http.StatusNotFound, code, err)
 }
 
 func NewInternalServerError(code int, err string) error {
-	return &JsonResponseError{
-		Status: http.StatusInternalServerError,
-		Code:   code,
-		Msg:    err,
-	}
+	return NewError(http.StatusInternalServerError, code, err)
 }

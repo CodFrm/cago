@@ -17,10 +17,10 @@ type User struct {
 
 func (u *User) Check(ctx context.Context) error {
 	if u == nil {
-		return i18n.NewError(ctx, code.UserNotFound)
+		return i18n.NewError(code.UserNotFound)
 	}
 	if u.Status != consts.ACTIVE {
-		return i18n.NewError(ctx, code.UserIsBanned)
+		return i18n.NewError(code.UserIsBanned)
 	}
 	return nil
 }

@@ -9,8 +9,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var (
-	accessTokenKey = "accessTokenKey"
+type key int
+
+const (
+	accessTokenKey key = iota
 )
 
 type TokenAuth struct {
