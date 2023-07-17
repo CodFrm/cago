@@ -23,10 +23,7 @@ func (s *Error) Field() []zap.Field {
 }
 
 func WarpStack(err error) error {
-	return &Error{
-		err:   err,
-		field: []zap.Field{zap.StackSkip("stack", 2)},
-	}
+	return Warp(err, "", zap.StackSkip("stack", 2))
 }
 
 func Warp(err error, msg string, field ...zap.Field) error {

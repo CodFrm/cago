@@ -92,7 +92,7 @@ func (c *Config) findKey(key string, value interface{}) error {
 	}
 	valueMap := make(map[string]interface{})
 	if err := c.source.Scan(keys[0], &valueMap); err != nil {
-		return nil
+		return err
 	}
 	for i := 1; i < len(keys); i++ {
 		if v, ok := valueMap[keys[i]]; ok {

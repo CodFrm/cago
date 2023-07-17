@@ -315,5 +315,5 @@ func WriteFile(file string, data string) error {
 	if err := os.MkdirAll(path.Dir(file), 0755); err != nil {
 		return err
 	}
-	return os.WriteFile(file, []byte(data), 0644)
+	return os.WriteFile(file, []byte(data), 0600)
 }

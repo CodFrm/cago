@@ -94,14 +94,14 @@ func (s *Swagger) Write() error {
 	if err != nil {
 		return err
 	}
-	if err := os.WriteFile("./docs/swagger.yaml", b, 0644); err != nil {
+	if err := os.WriteFile("./docs/swagger.yaml", b, 0600); err != nil {
 		return err
 	}
 	b, err = json.MarshalIndent(s.swagger, "", "    ")
 	if err != nil {
 		return err
 	}
-	if err := os.WriteFile("./docs/swagger.json", b, 0644); err != nil {
+	if err := os.WriteFile("./docs/swagger.json", b, 0600); err != nil {
 		return err
 	}
 	f, err := os.Create("./docs/docs.go")

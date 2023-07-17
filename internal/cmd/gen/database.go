@@ -178,7 +178,7 @@ func (c *Cmd) genRepository(table string) error {
 	if err := os.MkdirAll("internal/repository/"+table+"_repo/", 0755); err != nil {
 		return err
 	}
-	return os.WriteFile(filepath, []byte(repository), 0644)
+	return os.WriteFile(filepath, []byte(repository), 0600)
 }
 
 func (c *Cmd) genEntity(table string, column []Column, index []Index) error {
@@ -202,7 +202,7 @@ func (c *Cmd) genEntity(table string, column []Column, index []Index) error {
 	if err := os.MkdirAll("internal/model/entity/"+table+"_entity", 0755); err != nil {
 		return err
 	}
-	return os.WriteFile(filepath, []byte(entity), 0644)
+	return os.WriteFile(filepath, []byte(entity), 0600)
 }
 
 func convSqlTag(column Column, index []Index) string {

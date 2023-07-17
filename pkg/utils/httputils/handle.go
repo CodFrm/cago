@@ -1,11 +1,10 @@
 package httputils
 
 import (
-	"github.com/codfrm/cago/pkg/utils/httputils/errs"
 	"net/http"
 
-	"github.com/codfrm/cago/pkg/i18n"
 	"github.com/codfrm/cago/pkg/logger"
+	"github.com/codfrm/cago/pkg/utils/httputils/errs"
 	pkgValidator "github.com/codfrm/cago/pkg/utils/validator"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -34,10 +33,6 @@ func deal(ctx *gin.Context, resp any, field []zap.Field) {
 	case validator.ValidationErrors:
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 			"code": -1, "msg": pkgValidator.TransError(data),
-		})
-	case *i18n.Error:
-		ctx.AbortWithStatusJSON(data.Status(), gin.H{
-			"code": data.Code(), "msg": data.Msg(i18n.DefaultLang),
 		})
 	case error:
 		field = append(field, zap.Error(data))
