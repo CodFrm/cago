@@ -1,12 +1,16 @@
 package configs
 
-import "github.com/codfrm/cago/configs/file"
+import (
+	"github.com/codfrm/cago/configs/file"
+	"github.com/codfrm/cago/configs/source"
+)
 
 type Option func(*Options)
 
 type Options struct {
 	file          string
 	serialization file.Serialization
+	source        source.Source
 }
 
 func WithConfigFile(file string) Option {
@@ -18,5 +22,11 @@ func WithConfigFile(file string) Option {
 func WithSerialization(serialization file.Serialization) Option {
 	return func(options *Options) {
 		options.serialization = serialization
+	}
+}
+
+func WithSource(source source.Source) Option {
+	return func(options *Options) {
+		options.source = source
 	}
 }

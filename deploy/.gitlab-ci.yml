@@ -34,7 +34,7 @@ lint-job:
     paths:
       - .lint-cache
   script:
-    - golangci-lint run
+    - golangci-lint run -v
 
 build:
   stage: build
@@ -74,7 +74,7 @@ deploy-prod:
   script:
     - cd deploy/helm
     - |
-      helm upgrade --install --namespace $NAMESPACE $APP_NAME . --kubeconfig $K3S_CONFIG \
+      helm upgrade --install --namespace $NAMESPACE $APP_NAME . \
       --set image.tag=$CI_COMMIT_SHORT_SHA --set image.repository=$REGISTRY/$REPOSITORY \
       --set etcdConfig.password=$ETCD_CONFIG_PASSWORD
 
@@ -87,7 +87,7 @@ deploy-pre:
     - cd deploy/helm
     - |
       helm upgrade --install \
-      --namespace $NAMESPACE $APP_NAME-pre . -f values.yaml --kubeconfig $K3S_CONFIG \
+      --namespace $NAMESPACE $APP_NAME-pre . -f values.yaml \
       --set image.tag=$CI_COMMIT_SHORT_SHA --set image.repository=$REGISTRY/$REPOSITORY \
       --set etcdConfig.password=$ETCD_CONFIG_PASSWORD \
       --set appConfig.env=pre \

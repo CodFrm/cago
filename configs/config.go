@@ -1,13 +1,11 @@
 package configs
 
 import (
-	"path"
 	"reflect"
 	"strings"
 
-	"github.com/codfrm/cago/configs/etcd"
 	"github.com/codfrm/cago/configs/file"
-	source2 "github.com/codfrm/cago/configs/source"
+	"github.com/codfrm/cago/configs/source"
 )
 
 type Env string
@@ -20,11 +18,12 @@ const (
 )
 
 type Config struct {
-	AppName string
-	Version string
-	Env     Env
-	Debug   bool
-	source  source2.Source
+	AppName       string
+	Version       string
+	Env           Env
+	Debug         bool
+	source        source.Source
+	serialization file.Serialization
 }
 
 func NewConfig(appName string, opt ...Option) (*Config, error) {
@@ -35,47 +34,36 @@ func NewConfig(appName string, opt ...Option) (*Config, error) {
 	for _, o := range opt {
 		o(options)
 	}
-	source, err := file.NewSource(options.file, options.serialization)
-	if err != nil {
-		return nil, err
-	}
-	configSource := ""
-	if err := source.Scan("source", &configSource); err != nil {
-		return nil, err
-	}
-	var env Env
-	if err := source.Scan("env", &env); err != nil {
-		return nil, err
-	}
-	var debug bool
-	if err := source.Scan("debug", &debug); err != nil {
-		return nil, err
-	}
-	version := ""
-	if err := source.Scan("version", &version); err != nil {
-		return nil, err
-	}
-
-	switch configSource {
-	case "etcd":
-		etcdConfig := &etcd.Config{}
-		if err := source.Scan("etcd", etcdConfig); err != nil {
-			return nil, err
-		}
+	var s source.Source
+	if options.source == nil {
 		var err error
-		etcdConfig.Prefix = path.Join(etcdConfig.Prefix, string(env), appName)
-		source, err = etcd.NewSource(etcdConfig, options.serialization)
+		s, err = file.NewSource(options.file, options.serialization)
 		if err != nil {
 			return nil, err
 		}
+	} else {
+		s = options.source
+	}
+	var env Env
+	if err := s.Scan("env", &env); err != nil {
+		return nil, err
+	}
+	var debug bool
+	if err := s.Scan("debug", &debug); err != nil {
+		return nil, err
+	}
+	version := ""
+	if err := s.Scan("version", &version); err != nil {
+		return nil, err
 	}
 
 	c := &Config{
-		AppName: appName,
-		Debug:   debug,
-		Env:     env,
-		Version: version,
-		source:  source,
+		AppName:       appName,
+		Debug:         debug,
+		Env:           env,
+		Version:       version,
+		source:        s,
+		serialization: options.serialization,
 	}
 	defaultConfig = c
 	return c, nil

@@ -65,10 +65,10 @@ func (r *Cago) Start() error {
 		r.cancel()
 	case <-r.ctx.Done():
 	}
-	logger.Default().Info("cago is stopping...")
+	logger.Default().Info(r.cfg.AppName + " is stopping...")
 	for _, v := range r.components {
 		v.CloseHandle()
 	}
-	logger.Default().Info("cago is stopped")
+	logger.Default().Info(r.cfg.AppName + " is stopped")
 	return nil
 }
