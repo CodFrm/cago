@@ -19,7 +19,7 @@ func (r *Router) Group(path string, handler ...gin.HandlerFunc) *Router {
 	return &Router{r.IRouter.Group(path, handler...)}
 }
 
-// ShouldBindWith 绑定控制器
+// Bind 绑定控制器
 func (r *Router) Bind(handler ...interface{}) {
 	// 反射解析控制器方法
 	for _, c := range handler {
@@ -54,12 +54,12 @@ func (r *Router) bindFunc(controller reflect.Value, method reflect.Value, isFunc
 	}
 	ginContext := false
 	// 判断方法的第一个参数是否是context.Context
-	parame1 := methodType.In(1 + pos)
+	param1 := methodType.In(1 + pos)
 	if methodType.NumIn() != 3+pos {
 		return errors.New("invalid method, first parameter must be context.Context or *gin.Context")
 	}
-	if parame1 != reflect.TypeOf((*context.Context)(nil)).Elem() {
-		if parame1 != reflect.TypeOf((*gin.Context)(nil)) {
+	if param1 != reflect.TypeOf((*context.Context)(nil)).Elem() {
+		if param1 != reflect.TypeOf((*gin.Context)(nil)) {
 			return errors.New("invalid method, first parameter must be context.Context or *gin.Context")
 		}
 		ginContext = true

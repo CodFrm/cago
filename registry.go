@@ -7,6 +7,9 @@ import (
 	"os/signal"
 	"reflect"
 	"syscall"
+	"time"
+
+	"github.com/codfrm/cago/pkg/gogo"
 
 	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/pkg/logger"
@@ -68,6 +71,16 @@ func (r *Cago) Start() error {
 	logger.Default().Info(r.cfg.AppName + " is stopping...")
 	for _, v := range r.components {
 		v.CloseHandle()
+	}
+	// 等待所有组件退出
+	stopCh := make(chan struct{})
+	go func() {
+		gogo.Wait()
+		close(stopCh)
+	}()
+	select {
+	case <-stopCh:
+	case <-time.After(time.Second * 10):
 	}
 	logger.Default().Info(r.cfg.AppName + " is stopped")
 	return nil

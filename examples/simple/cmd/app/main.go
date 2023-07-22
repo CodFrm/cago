@@ -30,7 +30,7 @@ func main() {
 		Registry(cago.FuncComponent(func(ctx context.Context, cfg *configs.Config) error {
 			return migrations.RunMigrations(db.Default())
 		})).
-		RegistryCancel(mux.Http(api.Router)).
+		RegistryCancel(mux.HTTP(api.Router)).
 		Start()
 	if err != nil {
 		log.Fatalf("start err: %v", err)

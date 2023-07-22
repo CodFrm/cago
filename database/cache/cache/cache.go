@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	Nil = errors.New("cache: nil")
+	ErrNil = errors.New("cache: nil")
 )
 
 type Cache interface {
@@ -32,5 +32,5 @@ type Value interface {
 }
 
 func IsNil(err error) bool {
-	return err == Nil
+	return err == ErrNil
 }

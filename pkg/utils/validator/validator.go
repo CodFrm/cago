@@ -72,7 +72,7 @@ func (v *DefaultValidator) registerValidation() {
 			if len(pwd) < 8 || len(pwd) > 16 {
 				return false
 			}
-			var level int = 0
+			var level = 0
 			patternList := []string{`[0-9]+`, `[a-z]+`, `[A-Z]+`, `[~!@#$%^&*?_-]+`}
 			for _, pattern := range patternList {
 				match, _ := regexp.MatchString(pattern, pwd)

@@ -65,7 +65,7 @@ func (c *Cmd) genController(apiFile string, f *ast.File, decl *ast.GenDecl, spec
 	// 生成函数
 	funcTpl := c.genCtrlFunc(ctrlFile, decl, specs)
 	data = append(data, []byte(funcTpl)...)
-	return false, os.WriteFile(ctrlFile, data, 0600)
+	return false, os.WriteFile(ctrlFile, data, 0644)
 }
 
 // 重新生成controller

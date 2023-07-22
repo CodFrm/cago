@@ -44,7 +44,7 @@ func deal(ctx *gin.Context, resp any, field []zap.Field) {
 			"code": -1, "msg": "系统错误",
 		})
 	default:
-		ctx.JSON(http.StatusOK, JsonResponse{
+		ctx.JSON(http.StatusOK, JSONResponse{
 			Code: 0,
 			Msg:  "success",
 			Data: data,

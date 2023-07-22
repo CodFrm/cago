@@ -37,7 +37,7 @@ func (f *fileSource) Scan(key string, value interface{}) error {
 		if err != nil {
 			return err
 		}
-		if err := os.WriteFile(f.path, b, 0600); err != nil {
+		if err := os.WriteFile(f.path, b, 0644); err != nil {
 			return err
 		}
 		return errors.New("file config key not found")

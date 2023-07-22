@@ -178,7 +178,7 @@ func (c *Cmd) genRepository(table string) error {
 	if err := os.MkdirAll("internal/repository/"+table+"_repo/", 0755); err != nil {
 		return err
 	}
-	return os.WriteFile(filepath, []byte(repository), 0600)
+	return os.WriteFile(filepath, []byte(repository), 0644)
 }
 
 func (c *Cmd) genEntity(table string, column []Column, index []Index) error {
@@ -195,17 +195,17 @@ func (c *Cmd) genEntity(table string, column []Column, index []Index) error {
 	entity = strings.ReplaceAll(entity, "{EntityName}", utils.ToCamel(table))
 	var entityField string
 	for _, v := range column {
-		entityField += "\t" + utils.ToCamel(v.Field) + " " + convSqlType(v.Type) + " `" + convSqlTag(v, index) + "`\n"
+		entityField += "\t" + utils.ToCamel(v.Field) + " " + convSQLType(v.Type) + " `" + convSQLTag(v, index) + "`\n"
 	}
 	entity = strings.ReplaceAll(entity, "{EntityField}", strings.TrimRight(entityField, "\n"))
 	// 写文件
 	if err := os.MkdirAll("internal/model/entity/"+table+"_entity", 0755); err != nil {
 		return err
 	}
-	return os.WriteFile(filepath, []byte(entity), 0600)
+	return os.WriteFile(filepath, []byte(entity), 0644)
 }
 
-func convSqlTag(column Column, index []Index) string {
+func convSQLTag(column Column, index []Index) string {
 	tags := make([]string, 0)
 	tags = append(tags, "column:"+column.Field)
 	tags = append(tags, "type:"+column.Type)
@@ -232,7 +232,7 @@ func convSqlTag(column Column, index []Index) string {
 	return "gorm:\"" + strings.Join(tags, ";") + "\""
 }
 
-func convSqlType(sqlType string) string {
+func convSQLType(sqlType string) string {
 	// 取括号前的类型
 	if strings.Contains(sqlType, "(") {
 		sqlType = sqlType[:strings.Index(sqlType, "(")]

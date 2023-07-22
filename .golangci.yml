@@ -1,9 +1,3 @@
-linters-settings:
-  golint:
-    min-confidence: 0
-  misspell:
-    locale: US
-
 linters:
   disable-all: false
   enable:
@@ -20,6 +14,28 @@ linters:
     - bodyclose
     - loggercheck
     - nilerr
+    - prealloc
+    - predeclared
+    - durationcheck
+    - makezero
+    - exportloopref
+    - rowserrcheck
+    - stylecheck
+    - gosec
 
 run:
   timeout: 10m
+
+linters-settings:
+  stylecheck:
+    checks: ["-ST1003"]
+  gosec:
+    excludes:
+      - G306
+      - G402
+      - G404
+  golint:
+    min-confidence: 0
+  misspell:
+    locale: US
+

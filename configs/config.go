@@ -65,6 +65,9 @@ func NewConfig(appName string, opt ...Option) (*Config, error) {
 		source:        s,
 		serialization: options.serialization,
 	}
+	if err := c.init(); err != nil {
+		return nil, err
+	}
 	defaultConfig = c
 	return c, nil
 }

@@ -11,7 +11,7 @@ import (
 )
 
 type Config struct {
-	Uri      string `yaml:"uri"`
+	URI      string `yaml:"uri"`
 	Database string `json:"database"`
 }
 
@@ -26,7 +26,7 @@ func Mongo(ctx context.Context, config *configs.Config) error {
 	if trace.Default() != nil {
 		opts.Monitor = otelmongo.NewMonitor(otelmongo.WithTracerProvider(trace.Default()))
 	}
-	opts.ApplyURI(cfg.Uri)
+	opts.ApplyURI(cfg.URI)
 	client, err := mongo.Connect(ctx, opts)
 	if err != nil {
 		return err
