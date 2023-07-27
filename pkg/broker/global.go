@@ -26,7 +26,8 @@ func Broker(ctx context.Context, config *configs.Config) error {
 			trace2.WithInstrumentationVersion("semver:"+cago.Version()),
 		)))
 	}
-	options = append(options, WithDefaultGroup(config.AppName), WithTopicPrefix(string(config.Env)))
+	options = append(options, WithDefaultGroup(config.AppName),
+		WithTopicPrefix(config.AppName+"."+string(config.Env)))
 	b, err := NewWithConfig(ctx, cfg, options...)
 	if err != nil {
 		return err

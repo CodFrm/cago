@@ -22,6 +22,7 @@ linters:
     - rowserrcheck
     - stylecheck
     - gosec
+    - nolintlint
 
 run:
   timeout: 10m
