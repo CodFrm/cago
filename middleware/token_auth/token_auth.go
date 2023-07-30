@@ -117,5 +117,5 @@ func (t *TokenAuth) Refresh(ctx context.Context, refreshToken string) (*AccessTo
 	// 生成新的
 	generate := t.Generate(ctx)
 	generate.KvMap = m.KvMap
-	return m, t.options.storage.Save(ctx, m)
+	return generate, t.options.storage.Save(ctx, generate)
 }

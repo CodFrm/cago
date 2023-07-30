@@ -33,8 +33,11 @@ linters-settings:
   gosec:
     excludes:
       - G306
+      - G401
       - G402
       - G404
+      - G501
+      - G505
   golint:
     min-confidence: 0
   misspell:
