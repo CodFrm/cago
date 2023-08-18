@@ -50,7 +50,7 @@ func (l *loginSvc) Register(ctx context.Context, req *api.RegisterRequest) (*api
 		return nil, err
 	}
 	if user != nil {
-		return nil, i18n.NewError(code.UsernameAlreadyExists)
+		return nil, i18n.NewError(ctx, code.UsernameAlreadyExists)
 	}
 	// 创建用户
 	user = &user_entity.User{
@@ -97,7 +97,7 @@ func (l *loginSvc) Middleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		uid, ok := sessions.Ctx(c).Get("user_id").(int64)
 		if !ok {
-			httputils.HandleResp(c, i18n.NewError(code.UserNotLogin))
+			httputils.HandleResp(c, i18n.NewError(c.Request.Context(), code.UserNotLogin))
 			return
 		}
 		ctx, err := l.SetUser(c.Request.Context(), uid)

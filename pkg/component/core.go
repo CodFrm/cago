@@ -3,6 +3,10 @@ package component
 import (
 	"context"
 
+	_ "github.com/codfrm/cago/configs/etcd"
+	_ "github.com/codfrm/cago/pkg/logger/loki"
+	_ "github.com/codfrm/cago/pkg/opentelemetry/trace/exporter/jaeger"
+
 	"github.com/codfrm/cago"
 	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/database/cache"

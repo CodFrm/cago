@@ -4,6 +4,8 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/mitchellh/mapstructure"
+
 	"github.com/codfrm/cago/configs/file"
 	"github.com/codfrm/cago/configs/source"
 )
@@ -56,7 +58,6 @@ func NewConfig(appName string, opt ...Option) (*Config, error) {
 	if err := s.Scan("version", &version); err != nil {
 		return nil, err
 	}
-
 	c := &Config{
 		AppName:       appName,
 		Debug:         debug,
@@ -72,8 +73,32 @@ func NewConfig(appName string, opt ...Option) (*Config, error) {
 	return c, nil
 }
 
+func (c *Config) init() error {
+	configSource := ""
+	err := c.source.Scan("source", &configSource)
+	if err != nil {
+		return err
+	}
+	if configSource == "" || configSource == "file" {
+		return nil
+	}
+	c.source, err = sources[configSource](c, c.serialization)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (c *Config) Scan(key string, value interface{}) error {
-	return c.source.Scan(key, value)
+	keys := strings.Split(key, ".")
+	if len(keys) == 1 {
+		return c.source.Scan(key, value)
+	}
+	var i interface{}
+	if err := c.findKey(key, &i); err != nil {
+		return err
+	}
+	return mapstructure.Decode(i, value)
 }
 
 func (c *Config) findKey(key string, value interface{}) error {
@@ -96,8 +121,6 @@ func (c *Config) findKey(key string, value interface{}) error {
 			return nil
 		}
 	}
-	// 使用反射复制valueMap到value
-	reflect.ValueOf(value).Elem().Set(reflect.ValueOf(valueMap))
 	return nil
 }
 
@@ -107,6 +130,14 @@ func (c *Config) String(key string) string {
 		return ""
 	}
 	return str
+}
+
+func (c *Config) Bool(key string) bool {
+	var b bool
+	if err := c.findKey(key, &b); err != nil {
+		return false
+	}
+	return b
 }
 
 func (c *Config) Has(key string) (bool, error) {

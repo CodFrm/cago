@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/codfrm/cago/middleware"
+
 	"github.com/codfrm/cago/pkg/gogo"
 
 	"github.com/codfrm/cago"
@@ -72,7 +74,7 @@ func (h *server) StartCancel(
 	// ginContext支持fallback
 	r.ContextWithFallback = true
 	// 加入日志中间件
-	r.Use(logger.Middleware(logger.Default()))
+	r.Use(middleware.Logger(logger.Default()))
 	// 加入metrics中间件
 	if metric.Default() != nil {
 		r.GET("/metrics", gin.WrapH(promhttp.Handler()))

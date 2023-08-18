@@ -17,6 +17,7 @@ require (
 	github.com/gorilla/context v1.1.1
 	github.com/gorilla/securecookie v1.1.1
 	github.com/gorilla/sessions v1.2.1
+	github.com/mitchellh/mapstructure v1.5.0
 	github.com/nsqio/go-nsq v1.1.0
 	github.com/prometheus/client_golang v1.14.0
 	github.com/redis/go-redis/extra/redisotel/v9 v9.0.2

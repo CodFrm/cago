@@ -6,10 +6,28 @@ import (
 	"path"
 	"time"
 
+	"github.com/codfrm/cago/configs"
+
 	"github.com/codfrm/cago/configs/file"
 	"github.com/codfrm/cago/configs/source"
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
+
+func init() {
+	configs.RegistrySource("etcd", func(cfg *configs.Config, serialization file.Serialization) (source.Source, error) {
+		etcdConfig := &Config{}
+		if err := cfg.Scan("etcd", etcdConfig); err != nil {
+			return nil, err
+		}
+		var err error
+		etcdConfig.Prefix = path.Join(etcdConfig.Prefix, string(cfg.Env), cfg.AppName)
+		s, err := NewSource(etcdConfig, serialization)
+		if err != nil {
+			return nil, err
+		}
+		return s, nil
+	})
+}
 
 type Config struct {
 	Endpoints []string

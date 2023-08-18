@@ -5,11 +5,57 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"net/url"
 	"time"
+
+	"github.com/codfrm/cago/configs"
+	"github.com/codfrm/cago/pkg/logger"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
+
+type Config struct {
+	Enable   bool
+	Url      string
+	Username string
+	Password string
+}
+
+func init() {
+	logger.RegistryInitLogger(func(ctx context.Context, config *configs.Config, loggerConfig *logger.Config) ([]logger.Option, error) {
+		cfg := &Config{}
+		if err := config.Scan("logger.loki", cfg); err != nil {
+			return nil, err
+		}
+		if !cfg.Enable {
+			return nil, nil
+		}
+		lokiOptions := append([]Option{},
+			AppendLabels(zap.String("app", config.AppName)),
+			AppendLabels(zap.String("version", config.Version)),
+			AppendLabels(zap.String("env", string(config.Env))),
+		)
+		u, err := url.Parse(cfg.Url)
+		if err != nil {
+			return nil, err
+		}
+		lokiOptions = append(lokiOptions, WithLokiUrl(u))
+		level := logger.ToLevel(loggerConfig.Level)
+		lokiOptions = append(lokiOptions, WithLevelEnable(func(l zapcore.Level) bool {
+			return l >= level
+		}))
+		lokiOptions = append(lokiOptions, WithEnv())
+		if cfg.Username != "" {
+			lokiOptions = append(lokiOptions, BasicAuth(
+				cfg.Username, cfg.Password,
+			))
+		}
+		return []logger.Option{
+			logger.AppendCore(NewLokiCore(ctx, lokiOptions...)),
+		}, nil
+	})
+}
 
 type lokiCore struct {
 	zapcore.Core

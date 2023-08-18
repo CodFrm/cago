@@ -9,9 +9,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/codfrm/cago/pkg/gogo"
-
 	"github.com/codfrm/cago/configs"
+	"github.com/codfrm/cago/pkg/gogo"
 	"github.com/codfrm/cago/pkg/logger"
 )
 

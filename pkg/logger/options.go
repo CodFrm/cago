@@ -14,13 +14,6 @@ type Options struct {
 	level string
 }
 
-type LokiConfig struct {
-	Enable   bool
-	Url      string
-	Username string
-	Password string
-}
-
 func WithWriter(w io.Writer) Option {
 	return func(o *Options) {
 		o.w = w

@@ -3,12 +3,24 @@ package trace
 import (
 	"context"
 
+	tracesdk "go.opentelemetry.io/otel/sdk/trace"
+
 	"github.com/codfrm/cago/configs"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"
 	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
 	"go.opentelemetry.io/otel/trace"
 )
+
+type NewExporterFunc func(ctx context.Context, config *Config) (tracesdk.SpanExporter, error)
+
+var (
+	exporters = make(map[string]NewExporterFunc)
+)
+
+func RegisterExporter(name string, f NewExporterFunc) {
+	exporters[name] = f
+}
 
 var tracerProvider trace.TracerProvider
 

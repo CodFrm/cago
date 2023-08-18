@@ -2,14 +2,27 @@ package logger
 
 import (
 	"context"
+	"os"
 
 	"github.com/codfrm/cago/configs"
-	"github.com/codfrm/cago/pkg/logger/loki"
-	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
-var logger *zap.Logger
+type loggerContextKeyType int
+
+const loggerKey loggerContextKeyType = iota
+
+type InitLogger func(ctx context.Context, config *configs.Config, loggerConfig *Config) ([]Option, error)
+
+var (
+	logger     *zap.Logger
+	initLogger = make([]InitLogger, 0)
+)
+
+func RegistryInitLogger(f InitLogger) {
+	initLogger = append(initLogger, f)
+}
 
 // Logger 日志组件,核心组件,必须提前注册
 func Logger(ctx context.Context, config *configs.Config) error {
@@ -17,13 +30,33 @@ func Logger(ctx context.Context, config *configs.Config) error {
 	if err := config.Scan("logger", cfg); err != nil {
 		return err
 	}
-	cfg.lokiOptions = append(cfg.lokiOptions,
-		loki.AppendLabels(zap.String("app", config.AppName)),
-		loki.AppendLabels(zap.String("version", config.Version)),
-		loki.AppendLabels(zap.String("env", string(config.Env))),
-	)
-	cfg.debug = config.Debug
-	l, err := NewWithConfig(ctx, cfg)
+	opts := make([]Option, 0)
+	if cfg.Level != "" {
+		opts = append(opts, Level(cfg.Level))
+	}
+	if cfg.LogFile.Enable {
+		if cfg.LogFile.Filename != "" {
+			opts = append(opts, AppendCore(NewFileCore(ToLevel(cfg.Level), cfg.LogFile.Filename)))
+		}
+		if cfg.LogFile.ErrorFilename != "" {
+			opts = append(opts, AppendCore(NewFileCore(zap.ErrorLevel, cfg.LogFile.ErrorFilename)))
+		}
+	}
+	if config.Debug {
+		opts = append(opts, AppendCore(zapcore.NewCore(
+			zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig()),
+			zapcore.Lock(os.Stdout),
+			zapcore.DebugLevel,
+		)))
+	}
+	for _, f := range initLogger {
+		o, err := f(ctx, config, cfg)
+		if err != nil {
+			return err
+		}
+		opts = append(opts, o...)
+	}
+	l, err := New(opts...)
 	if err != nil {
 		return err
 	}
@@ -43,10 +76,11 @@ func Default() *zap.Logger {
 func Ctx(ctx context.Context) *zap.Logger {
 	log, ok := ctx.Value(loggerKey).(*zap.Logger)
 	if !ok {
-		if gctx, ok := ctx.(*gin.Context); ok {
-			return gctx.Request.Context().Value(loggerKey).(*zap.Logger)
-		}
 		return logger
 	}
 	return log
+}
+
+func ContextWithLogger(ctx context.Context, logger *zap.Logger) context.Context {
+	return context.WithValue(ctx, loggerKey, logger)
 }

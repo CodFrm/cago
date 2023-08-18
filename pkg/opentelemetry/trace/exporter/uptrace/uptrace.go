@@ -1,7 +1,9 @@
-package exporter
+package uptrace
 
 import (
 	"context"
+
+	"github.com/codfrm/cago/pkg/opentelemetry/trace"
 
 	"github.com/uptrace/uptrace-go/uptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
@@ -11,19 +13,27 @@ import (
 	"google.golang.org/grpc/encoding/gzip"
 )
 
-type UpTraceConfig struct {
+func init() {
+	trace.RegisterExporter("uptrace", func(ctx context.Context, config *trace.Config) (tracesdk.SpanExporter, error) {
+		return Exporter(&Config{
+			Dsn: config.Dsn,
+		})
+	})
+}
+
+type Config struct {
 	Dsn string
 }
 
-func UpTraceExporter(config *UpTraceConfig) (tracesdk.SpanExporter, error) {
+func Exporter(config *Config) (tracesdk.SpanExporter, error) {
 	dsn, err := uptrace.ParseDSN(config.Dsn)
 	if err != nil {
 		return nil, err
 	}
-	return otlptrace.New(context.Background(), otlpTraceClient(dsn))
+	return otlptrace.New(context.Background(), traceClient(dsn))
 }
 
-func otlpTraceClient(dsn *uptrace.DSN) otlptrace.Client {
+func traceClient(dsn *uptrace.DSN) otlptrace.Client {
 	options := []otlptracegrpc.Option{
 		otlptracegrpc.WithEndpoint(dsn.OTLPHost()),
 		otlptracegrpc.WithHeaders(map[string]string{

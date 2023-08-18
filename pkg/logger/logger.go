@@ -1,23 +1,16 @@
 package logger
 
 import (
-	"context"
 	"io"
-	"net/url"
-	"os"
 
-	"github.com/codfrm/cago/pkg/logger/loki"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	lumberjack "gopkg.in/natefinch/lumberjack.v2"
 )
 
 type Config struct {
-	Level       string
-	LogFile     LogFileConfig
-	Loki        LokiConfig
-	lokiOptions []loki.Option
-	debug       bool
+	Level   string
+	LogFile LogFileConfig
 }
 
 type LogFileConfig struct {
@@ -26,54 +19,13 @@ type LogFileConfig struct {
 	ErrorFilename string
 }
 
-func NewWithConfig(ctx context.Context, cfg *Config, opts ...Option) (*zap.Logger, error) {
-	if cfg.Level != "" {
-		opts = append(opts, Level(cfg.Level))
-	}
-	if cfg.LogFile.Enable {
-		if cfg.LogFile.Filename != "" {
-			opts = append(opts, AppendCore(NewFileCore(toLevel(cfg.Level), cfg.LogFile.Filename)))
-		}
-		if cfg.LogFile.ErrorFilename != "" {
-			opts = append(opts, AppendCore(NewFileCore(zap.ErrorLevel, cfg.LogFile.ErrorFilename)))
-		}
-	}
-	if cfg.debug {
-		opts = append(opts, AppendCore(zapcore.NewCore(
-			zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig()),
-			zapcore.Lock(os.Stdout),
-			zapcore.DebugLevel,
-		)))
-	}
-	if cfg.Loki.Enable {
-		lokiOptions := cfg.lokiOptions
-		u, err := url.Parse(cfg.Loki.Url)
-		if err != nil {
-			return nil, err
-		}
-		lokiOptions = append(lokiOptions, loki.WithLokiUrl(u))
-		level := toLevel(cfg.Level)
-		lokiOptions = append(lokiOptions, loki.WithLevelEnable(func(l zapcore.Level) bool {
-			return l >= level
-		}))
-		lokiOptions = append(lokiOptions, loki.WithEnv())
-		if cfg.Loki.Username != "" {
-			lokiOptions = append(lokiOptions, loki.BasicAuth(
-				cfg.Loki.Username, cfg.Loki.Password,
-			))
-		}
-		opts = append(opts, AppendCore(loki.NewLokiCore(ctx, lokiOptions...)))
-	}
-	return New(opts...)
-}
-
 func New(opt ...Option) (*zap.Logger, error) {
 	options := &Options{}
 	for _, o := range opt {
 		o(options)
 	}
 	core := make([]zapcore.Core, 0, 1)
-	level := toLevel(options.level)
+	level := ToLevel(options.level)
 	levelEnable := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
 		return lvl >= level
 	})
@@ -94,7 +46,7 @@ func New(opt ...Option) (*zap.Logger, error) {
 	return logger, nil
 }
 
-func toLevel(level string) zapcore.Level {
+func ToLevel(level string) zapcore.Level {
 	switch level {
 	case "debug":
 		return zap.DebugLevel

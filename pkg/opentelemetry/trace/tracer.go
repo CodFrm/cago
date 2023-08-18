@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 
-	exporter2 "github.com/codfrm/cago/pkg/opentelemetry/trace/exporter"
 	"go.opentelemetry.io/otel/sdk/resource"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/trace"
@@ -28,22 +27,11 @@ type Config struct {
 }
 
 func NewWithConfig(ctx context.Context, cfg *Config, options ...Option) (trace.TracerProvider, error) {
-	var exp tracesdk.SpanExporter
-	var err error
-	switch cfg.Type {
-	case Jaeger:
-		exp, err = exporter2.JaegerExporter(&exporter2.JaegerConfig{
-			Endpoint: cfg.Endpoint,
-			Username: cfg.Username,
-			Password: cfg.Password,
-		})
-	case UpTrace:
-		exp, err = exporter2.UpTraceExporter(&exporter2.UpTraceConfig{
-			Dsn: cfg.Dsn,
-		})
-	default:
+	f, ok := exporters[string(cfg.Type)]
+	if !ok {
 		return nil, errors.New("type not found")
 	}
+	exp, err := f(ctx, cfg)
 	if err != nil {
 		return nil, err
 	}
