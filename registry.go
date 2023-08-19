@@ -3,6 +3,7 @@ package cago
 import (
 	"context"
 	"errors"
+	"go.uber.org/zap"
 	"os"
 	"os/signal"
 	"reflect"
@@ -19,6 +20,7 @@ type Cago struct {
 	cancel     context.CancelFunc
 	cfg        *configs.Config
 	components []Component
+	disableLog bool
 }
 
 type CloseHandle func()
@@ -67,7 +69,7 @@ func (r *Cago) Start() error {
 		r.cancel()
 	case <-r.ctx.Done():
 	}
-	logger.Default().Info(r.cfg.AppName + " is stopping...")
+	r.info(r.cfg.AppName + " is stopping...")
 	for _, v := range r.components {
 		v.CloseHandle()
 	}
@@ -81,6 +83,19 @@ func (r *Cago) Start() error {
 	case <-stopCh:
 	case <-time.After(time.Second * 10):
 	}
-	logger.Default().Info(r.cfg.AppName + " is stopped")
+	r.info(r.cfg.AppName + " is stopped")
 	return nil
+}
+
+func (r *Cago) info(msg string, fields ...zap.Field) {
+	if r.disableLog {
+		return
+	}
+	logger.Default().Info(msg, fields...)
+}
+
+// DisableLogger 禁用框架日志
+func (r *Cago) DisableLogger() *Cago {
+	r.disableLog = true
+	return r
 }

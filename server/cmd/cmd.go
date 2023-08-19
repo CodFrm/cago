@@ -6,9 +6,7 @@ import (
 	"github.com/codfrm/cago"
 	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/pkg/gogo"
-	"github.com/codfrm/cago/pkg/logger"
 	"github.com/spf13/cobra"
-	"go.uber.org/zap"
 )
 
 func Cmd(callback func(ctx context.Context, cmd *cobra.Command) error) cago.FuncComponentCancel {
@@ -23,7 +21,6 @@ func Cmd(callback func(ctx context.Context, cmd *cobra.Command) error) cago.Func
 		_ = gogo.Go(func(ctx context.Context) error {
 			defer cancel()
 			if err := rootCmd.ExecuteContext(ctx); err != nil {
-				logger.Ctx(ctx).Error("cmd execute err: %v", zap.Error(err))
 				return err
 			}
 			return nil
