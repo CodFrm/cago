@@ -2,6 +2,8 @@ package trace
 
 import (
 	"context"
+	"github.com/codfrm/cago/server/mux"
+	"github.com/gin-gonic/gin"
 
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 
@@ -11,6 +13,16 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
 	"go.opentelemetry.io/otel/trace"
 )
+
+func init() {
+	mux.RegisterMiddleware(func(cfg *configs.Config, r *gin.Engine) error {
+		if tp := Default(); tp != nil {
+			// 加入链路追踪中间件
+			r.Use(Middleware(cfg.AppName, tp))
+		}
+		return nil
+	})
+}
 
 type NewExporterFunc func(ctx context.Context, config *Config) (tracesdk.SpanExporter, error)
 

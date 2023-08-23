@@ -2,6 +2,10 @@ package component
 
 import (
 	"context"
+	"github.com/codfrm/cago/server/mux"
+	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 
 	_ "github.com/codfrm/cago/configs/etcd"
 	_ "github.com/codfrm/cago/pkg/logger/loki"
@@ -22,6 +26,13 @@ import (
 
 // Core 核心组件,包括日志组件、链路追踪、指标
 func Core() cago.FuncComponent {
+	mux.RegisterMiddleware(func(cfg *configs.Config, r *gin.Engine) error {
+		if cfg.Env != configs.PROD {
+			url := ginSwagger.URL("/swagger/doc.json")
+			r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
+		}
+		return nil
+	})
 	return func(ctx context.Context, cfg *configs.Config) error {
 		// 日志组件必须注册
 		if err := logger.Logger(ctx, cfg); err != nil {

@@ -13,14 +13,9 @@ import (
 	"github.com/codfrm/cago"
 	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/pkg/logger"
-	"github.com/codfrm/cago/pkg/opentelemetry/metric"
-	"github.com/codfrm/cago/pkg/opentelemetry/trace"
 	"github.com/codfrm/cago/pkg/utils/validator"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
 	"go.uber.org/zap"
 )
 
@@ -75,23 +70,14 @@ func (h *server) StartCancel(
 	r.ContextWithFallback = true
 	// 加入日志中间件
 	r.Use(middleware.Logger(logger.Default()))
-	// 加入metrics中间件
-	if metric.Default() != nil {
-		r.GET("/metrics", gin.WrapH(promhttp.Handler()))
-	}
-
-	if tp := trace.Default(); tp != nil {
-		// 加入链路追踪中间件
-		r.Use(trace.Middleware(cfg.AppName, tp))
-	}
-	if cfg.Env != configs.PROD {
-		url := ginSwagger.URL("/swagger/doc.json")
-		r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
+	for _, f := range registerMiddleware {
+		if err := f(cfg, r); err != nil {
+			return err
+		}
 	}
 	if err := h.callback(&Router{IRouter: r}); err != nil {
 		return errors.New("failed to register http server: " + err.Error())
 	}
-
 	if len(config.Address) == 0 {
 		config.Address = []string{"127.0.0.1:80"}
 	}
