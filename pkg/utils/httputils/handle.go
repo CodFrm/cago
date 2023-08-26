@@ -1,19 +1,15 @@
 package httputils
 
 import (
+	"github.com/codfrm/cago/pkg/errs"
 	"net/http"
 
 	"github.com/codfrm/cago/pkg/logger"
-	"github.com/codfrm/cago/pkg/utils/httputils/errs"
 	pkgValidator "github.com/codfrm/cago/pkg/utils/validator"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"go.uber.org/zap"
 )
-
-type Unwrap interface {
-	Unwrap() error
-}
 
 func Handle(ctx *gin.Context, f func() interface{}) {
 	resp := f()
@@ -55,7 +51,7 @@ func deal(ctx *gin.Context, resp any, field []zap.Field) {
 func HandleResp(ctx *gin.Context, resp any) {
 	var field []zap.Field
 	for {
-		if err, ok := resp.(Unwrap); ok {
+		if err, ok := resp.(errs.Unwrap); ok {
 			switch err := err.(type) {
 			case *errs.Error:
 				field = append(field, err.Field()...)

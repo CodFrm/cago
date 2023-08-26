@@ -4,6 +4,10 @@ import (
 	"go.uber.org/zap"
 )
 
+type Unwrap interface {
+	Unwrap() error
+}
+
 type Error struct {
 	err   error
 	msg   string
