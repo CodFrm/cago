@@ -3,12 +3,13 @@ package cago
 import (
 	"context"
 	"errors"
-	"go.uber.org/zap"
 	"os"
 	"os/signal"
 	"reflect"
 	"syscall"
 	"time"
+
+	"go.uber.org/zap"
 
 	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/pkg/gogo"

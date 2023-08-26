@@ -2,6 +2,7 @@ package metric
 
 import (
 	"context"
+
 	"github.com/codfrm/cago/server/mux"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"

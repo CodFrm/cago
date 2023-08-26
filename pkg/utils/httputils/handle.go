@@ -1,8 +1,9 @@
 package httputils
 
 import (
-	"github.com/codfrm/cago/pkg/errs"
 	"net/http"
+
+	"github.com/codfrm/cago/pkg/errs"
 
 	"github.com/codfrm/cago/pkg/logger"
 	pkgValidator "github.com/codfrm/cago/pkg/utils/validator"
