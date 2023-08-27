@@ -100,8 +100,7 @@ func (h *server) StartCancel(
 	_ = gogo.Go(func(ctx context.Context) error {
 		defer cancel()
 		if err := srv.ListenAndServe(); err != nil {
-			if err == http.ErrServerClosed {
-				l.Info("http server closed")
+			if errors.Is(err, http.ErrServerClosed) {
 				return nil
 			}
 			l.Error("failed to start http server", zap.Error(err))
