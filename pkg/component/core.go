@@ -55,6 +55,18 @@ func Core() cago.FuncComponent {
 	}
 }
 
+func Logger() cago.FuncComponent {
+	return logger.Logger
+}
+
+func Trace() cago.FuncComponent {
+	return trace.Trace
+}
+
+func Metrics() cago.FuncComponent {
+	return metric.Metrics
+}
+
 // Database 数据库组件
 func Database() cago.FuncComponent {
 	return db.Database
