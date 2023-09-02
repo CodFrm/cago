@@ -92,9 +92,6 @@ func Middleware(serviceName string, tracerProvider trace.TracerProvider) gin.Han
 }
 
 func SpanFromContext(ctx context.Context) trace.Span {
-	if gctx, ok := ctx.(*gin.Context); ok {
-		return trace.SpanFromContext(gctx.Request.Context())
-	}
 	return trace.SpanFromContext(ctx)
 }
 

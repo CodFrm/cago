@@ -1,15 +1,15 @@
 package httputils
 
 import (
-	"github.com/codfrm/cago/pkg/opentelemetry/trace"
+	"context"
 	"net/http"
 
 	"github.com/codfrm/cago/pkg/errs"
-
 	"github.com/codfrm/cago/pkg/logger"
 	pkgValidator "github.com/codfrm/cago/pkg/utils/validator"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 )
 
@@ -34,7 +34,7 @@ func deal(ctx *gin.Context, resp any, field []zap.Field) {
 			"code": -1, "msg": pkgValidator.TransError(data),
 		})
 	case error:
-		requestId := trace.RequestID(ctx)
+		requestId := RequestID(ctx)
 		field = append(field, zap.Error(data))
 		logger.Ctx(ctx).Error(
 			"internal server error",
@@ -72,4 +72,13 @@ func HandleResp(ctx *gin.Context, resp any) {
 		}
 	}
 	deal(ctx, resp, field)
+}
+
+func RequestID(ctx context.Context) string {
+	if span := trace.SpanFromContext(ctx); span != nil {
+		if span.SpanContext().TraceID().IsValid() {
+			return span.SpanContext().TraceID().String()
+		}
+	}
+	return ""
 }

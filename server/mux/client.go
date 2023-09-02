@@ -6,13 +6,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/codfrm/cago/pkg/utils/httputils"
 	"io"
 	"net/http"
 	"net/url"
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/codfrm/cago/pkg/utils/httputils"
 )
 
 type DoOptions struct {
@@ -71,11 +72,11 @@ func (c *Client) Request(ctx context.Context, req, resp any, opts ...DoOption) (
 	switch method {
 	case http.MethodGet, http.MethodDelete:
 		form = func(key string, value any) {
-			switch value.(type) {
+			switch value := value.(type) {
 			case string:
-				query.Add(key, value.(string))
+				query.Add(key, value)
 			case bool:
-				query.Add(key, strconv.FormatBool(value.(bool)))
+				query.Add(key, strconv.FormatBool(value))
 			case int8, int16, int, int32, int64, uint8, uint16, uint, uint32, uint64:
 				query.Add(key, fmt.Sprintf("%d", value))
 			case float32, float64:

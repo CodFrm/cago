@@ -3,14 +3,12 @@ package trace
 import (
 	"context"
 
+	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/server/mux"
 	"github.com/gin-gonic/gin"
-
-	tracesdk "go.opentelemetry.io/otel/sdk/trace"
-
-	"github.com/codfrm/cago/configs"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"
+	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -62,11 +60,4 @@ func Trace(ctx context.Context, config *configs.Config) error {
 
 func Default() trace.TracerProvider {
 	return tracerProvider
-}
-
-func RequestID(ctx context.Context) string {
-	if span := trace.SpanFromContext(ctx); span != nil {
-		return span.SpanContext().TraceID().String()
-	}
-	return ""
 }

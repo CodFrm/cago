@@ -3,17 +3,9 @@ package component
 import (
 	"context"
 
-	"github.com/codfrm/cago/server/mux"
-	"github.com/gin-gonic/gin"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
-
-	_ "github.com/codfrm/cago/configs/etcd"
-	_ "github.com/codfrm/cago/pkg/logger/loki"
-	_ "github.com/codfrm/cago/pkg/opentelemetry/trace/exporter/jaeger"
-
 	"github.com/codfrm/cago"
 	"github.com/codfrm/cago/configs"
+	_ "github.com/codfrm/cago/configs/etcd"
 	"github.com/codfrm/cago/database/cache"
 	"github.com/codfrm/cago/database/db"
 	"github.com/codfrm/cago/database/elasticsearch"
@@ -21,8 +13,14 @@ import (
 	"github.com/codfrm/cago/database/redis"
 	"github.com/codfrm/cago/pkg/broker"
 	"github.com/codfrm/cago/pkg/logger"
+	_ "github.com/codfrm/cago/pkg/logger/loki"
 	"github.com/codfrm/cago/pkg/opentelemetry/metric"
 	"github.com/codfrm/cago/pkg/opentelemetry/trace"
+	_ "github.com/codfrm/cago/pkg/opentelemetry/trace/exporter/jaeger"
+	"github.com/codfrm/cago/server/mux"
+	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 // Core 核心组件,包括日志组件、链路追踪、指标

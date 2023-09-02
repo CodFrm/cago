@@ -6,12 +6,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/codfrm/cago/middleware"
-
-	"github.com/codfrm/cago/pkg/gogo"
-
 	"github.com/codfrm/cago"
 	"github.com/codfrm/cago/configs"
+	"github.com/codfrm/cago/middleware"
+	"github.com/codfrm/cago/pkg/gogo"
 	"github.com/codfrm/cago/pkg/logger"
 	"github.com/codfrm/cago/pkg/utils/validator"
 	"github.com/gin-gonic/gin"
