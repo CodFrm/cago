@@ -63,3 +63,10 @@ func Trace(ctx context.Context, config *configs.Config) error {
 func Default() trace.TracerProvider {
 	return tracerProvider
 }
+
+func RequestID(ctx context.Context) string {
+	if span := trace.SpanFromContext(ctx); span != nil {
+		return span.SpanContext().TraceID().String()
+	}
+	return ""
+}

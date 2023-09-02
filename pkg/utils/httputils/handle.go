@@ -1,6 +1,7 @@
 package httputils
 
 import (
+	"github.com/codfrm/cago/pkg/opentelemetry/trace"
 	"net/http"
 
 	"github.com/codfrm/cago/pkg/errs"
@@ -24,6 +25,7 @@ func Handle(ctx *gin.Context, f func() interface{}) {
 }
 
 func deal(ctx *gin.Context, resp any, field []zap.Field) {
+	// 从trace中获取
 	switch data := resp.(type) {
 	case *Error:
 		ctx.AbortWithStatusJSON(data.Status, data)
@@ -32,14 +34,21 @@ func deal(ctx *gin.Context, resp any, field []zap.Field) {
 			"code": -1, "msg": pkgValidator.TransError(data),
 		})
 	case error:
+		requestId := trace.RequestID(ctx)
 		field = append(field, zap.Error(data))
 		logger.Ctx(ctx).Error(
 			"internal server error",
 			field...,
 		)
-		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-			"code": -1, "msg": "系统错误",
-		})
+		if requestId != "" {
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+				"code": -1, "msg": "系统错误", "request_id": requestId,
+			})
+		} else {
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+				"code": -1, "msg": "系统错误",
+			})
+		}
 	default:
 		ctx.JSON(http.StatusOK, JSONResponse{
 			Code: 0,

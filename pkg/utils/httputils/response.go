@@ -11,9 +11,10 @@ type JSONResponse struct {
 }
 
 type Error struct {
-	Status int    `json:"-"`
-	Code   int    `json:"code"`
-	Msg    string `json:"msg"`
+	Status    int    `json:"-"`
+	Code      int    `json:"code"`
+	Msg       string `json:"msg"`
+	RequestID string `json:"request_id,omitempty"`
 }
 
 func NewError(status, code int, msg string) error {
