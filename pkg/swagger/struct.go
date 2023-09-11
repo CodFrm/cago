@@ -64,6 +64,9 @@ func (p *parseStruct) parseStruct(typeSpec *ast.TypeSpec) error {
 			if !ok {
 				continue
 			}
+			if valueSpec.Type == nil {
+				continue
+			}
 			if valueSpec.Type.(*ast.Ident).Name != typeSpec.Name.Name {
 				continue
 			}
@@ -328,6 +331,17 @@ func (p *parseStruct) findStruct(pkgName string, structName string) error {
 	for _, f := range p.f.Imports {
 		dir := strings.Trim(f.Path.Value, "\"")
 		if (f.Name != nil && f.Name.Name == pkgName) || (path.Base(dir) == pkgName) {
+			// 处理特殊结构
+			if dir == "time" {
+				if structName == "Time" {
+					p.swagger.Definitions["time.Time"] = spec.Schema{
+						SchemaProps: spec.SchemaProps{
+							Type: []string{"string"},
+						},
+					}
+					return nil
+				}
+			}
 			// 解析包文件,转化为文件路径
 			dir, err := utils.PkgToPath(p.rootPkgPath, p.rootPkgName, dir)
 			if err != nil {

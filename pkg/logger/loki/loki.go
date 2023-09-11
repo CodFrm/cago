@@ -10,7 +10,6 @@ import (
 
 	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/pkg/logger"
-
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )

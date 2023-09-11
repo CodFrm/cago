@@ -2,7 +2,6 @@ package event_bus
 
 import (
 	"context"
-	"errors"
 
 	evbus "github.com/asaskevich/EventBus"
 	"github.com/codfrm/cago/pkg/broker/broker"
@@ -25,10 +24,7 @@ func (e *eventBusBroker) Publish(ctx context.Context, topic string, data *broker
 }
 
 func (e *eventBusBroker) Subscribe(ctx context.Context, topic string, h broker.Handler, opts ...broker.SubscribeOption) (broker.Subscriber, error) {
-	options := broker.NewSubscribeOptions(opts...)
-	if options.Group != "" {
-		return nil, errors.New("event_bus not support group")
-	}
+	//options := broker.NewSubscribeOptions(opts...)
 	return newSubscriber(e, topic, h)
 }
 

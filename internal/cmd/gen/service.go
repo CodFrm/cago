@@ -100,6 +100,9 @@ func (c *Cmd) genService(apiFile string, f *ast.File, decl *ast.GenDecl, specs *
 		name := strings.TrimSuffix(specs.Name.Name, "Request")
 		flag := false
 		for _, method := range typeSpec.Type.(*ast.InterfaceType).Methods.List {
+			if len(method.Names) == 0 {
+				continue
+			}
 			if method.Names[0].Name == name {
 				flag = true
 				break
@@ -196,6 +199,9 @@ func (c *Cmd) genServiceFile(path string, f *ast.File, genDecl *ast.GenDecl, typ
 	}
 	// 生成方法
 	for _, method := range typeSpec.Type.(*ast.InterfaceType).Methods.List {
+		if len(method.Names) == 0 {
+			continue
+		}
 		// 判断是否已经生成
 		hasMethod := false
 		for _, decl := range f.Decls {

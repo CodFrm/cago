@@ -28,6 +28,7 @@ func deal(ctx *gin.Context, resp any, field []zap.Field) {
 	// 从trace中获取
 	switch data := resp.(type) {
 	case *Error:
+		data.RequestID = RequestID(ctx)
 		ctx.AbortWithStatusJSON(data.Status, data)
 	case validator.ValidationErrors:
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
