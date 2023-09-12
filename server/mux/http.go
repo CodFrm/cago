@@ -21,7 +21,7 @@ type Config struct {
 	Address []string `yaml:"address"`
 }
 
-type Callback func(r *Router) error
+type Callback func(ctx context.Context, r *Router) error
 
 type server struct {
 	//ctx context.Context
@@ -73,7 +73,7 @@ func (h *server) StartCancel(
 			return err
 		}
 	}
-	if err := h.callback(&Router{IRouter: r}); err != nil {
+	if err := h.callback(ctx, &Router{IRouter: r}); err != nil {
 		return errors.New("failed to register http server: " + err.Error())
 	}
 	if len(config.Address) == 0 {
