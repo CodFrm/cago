@@ -16,22 +16,22 @@ import (
 	"github.com/codfrm/cago/pkg/utils/httputils"
 )
 
-type DoOptions struct {
+type ClientOptions struct {
 	path string
 }
 
-type DoOption func(*DoOptions)
+type ClientOption func(*ClientOptions)
 
-func NewDoOptions(opts ...DoOption) *DoOptions {
-	options := &DoOptions{}
+func NewDoOptions(opts ...ClientOption) *ClientOptions {
+	options := &ClientOptions{}
 	for _, opt := range opts {
 		opt(options)
 	}
 	return options
 }
 
-func WithPath(path string) DoOption {
-	return func(options *DoOptions) {
+func WithPath(path string) ClientOption {
+	return func(options *ClientOptions) {
 		options.path = path
 	}
 }
@@ -46,7 +46,7 @@ func NewClient(baseURL string) *Client {
 	}
 }
 
-func (c *Client) Request(ctx context.Context, req, resp any, opts ...DoOption) (*http.Request, error) {
+func (c *Client) Request(ctx context.Context, req any, opts ...ClientOption) (*http.Request, error) {
 	options := NewDoOptions(opts...)
 	route, ok := reflect.TypeOf(req).Elem().FieldByName("Meta")
 	if !ok {
@@ -132,11 +132,15 @@ func (c *Client) Request(ctx context.Context, req, resp any, opts ...DoOption) (
 	return httpReq, nil
 }
 
-func (c *Client) Do(ctx context.Context, req any, resp any, opts ...DoOption) error {
-	httpReq, err := c.Request(ctx, req, resp, opts...)
+func (c *Client) Do(ctx context.Context, req any, resp any, opts ...ClientOption) error {
+	httpReq, err := c.Request(ctx, req, opts...)
 	if err != nil {
 		return err
 	}
+	return c.HttpDo(httpReq, resp)
+}
+
+func (c *Client) HttpDo(httpReq *http.Request, resp any) error {
 	httpResp, err := http.DefaultClient.Do(httpReq)
 	if err != nil {
 		return err
