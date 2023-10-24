@@ -36,6 +36,7 @@ func (t *wrap) Subscribe(ctx context.Context, topic string, h broker2.Handler, o
 	}
 	return t.Broker.Subscribe(ctx, topic, func(ctx context.Context, event broker2.Event) error {
 		ctx = logger.ContextWithLogger(ctx, logger.Ctx(ctx).With(
+			zap.String("topic", topic), zap.String("group", options.Group),
 			// 请求开始时间
 			zap.Time("start_time", time.Now()),
 		))

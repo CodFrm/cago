@@ -1,4 +1,4 @@
-name: Release
+name: Deploy
 
 on:
   push:
@@ -14,11 +14,13 @@ on:
       - test/*
 
 env:
-  APP_NAME: "cago"
+  APP_NAME: ${{ github.event.repository.name }}
   NAMESPACE: app
   REGISTRY: ${{ secrets.DOCKER_REGISTRY && secrets.DOCKER_REGISTRY || 'docker.io' }}
-  REPOSITORY: "codfrm/cago"
+  REPOSITORY: ${{ github.repository }}
   GOPROXY: ${{ secrets.GOPROXY && secrets.GOPROXY || 'https://goproxy.cn,direct' }}
+  DOMAIN: cago.com
+  ENV: ${{ startsWith(github.ref, 'refs/heads/release/') && 'pre' || startsWith(github.ref, 'refs/heads/test/') && 'test' || github.ref=='refs/heads/main' && 'prod' }}
   RUNNER_TOOL_CACHE: /toolcache
 
 jobs:
@@ -65,7 +67,8 @@ jobs:
 
     - name: Set outputs
       id: vars
-      run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+      run: |
+        echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
     - name: Docker build and push
 #      use: docker/build-push-action@v5
@@ -92,9 +95,21 @@ jobs:
       with:
          version: 'v3.13.1' # default is latest (stable)
 
-    - name: Deploy
+    - name: Deploy ${{ env.ENV }}
+      env:
+        APP_NAME: ${{ env.APP_NAME }}${{ env.ENV=='prod' && '' || format('-{0}', env.ENV) }}
+        DOMAIN: ${{ env.ENV=='prod' && '' || format('{0}.', env.ENV) }}${{ env.DOMAIN }}
+        RESOURCE_CPU: ${{ env.ENV=='prod' && '500m' || '50m' }}
+        RESOURCE_MEMORY: ${{ env.ENV=='prod' && '512Mi' || '128Mi' }}
       run: |
         cd deploy/helm
-        helm upgrade --install --namespace $NAMESPACE $APP_NAME . \
-        --set image.tag=${{ steps.vars.outputs.sha_short }} --set image.repository=${{ env.REGISTRY }}/${{ env.REPOSITORY }} \
-        --set etcdConfig.password=${{ secrets.ETCD_CONFIG_PASSWORD }}
+        helm upgrade --install \
+        --namespace $NAMESPACE $APP_NAME . -f values.yaml \
+        --set image.tag=${{ steps.vars.outputs.sha_short }} --set image.repository=$REGISTRY/$REPOSITORY \
+        --set etcdConfig.password=$ETCD_CONFIG_PASSWORD \
+        --set appConfig.env=${{ env.ENV }} \
+        --set ingress.hosts[0].host=$DOMAIN \
+        --set ingress.tls[0].hosts[0]=$DOMAIN \
+        --set resources.requests.cpu=$RESOURCE_CPU \
+        --set resources.requests.memory=$RESOURCE_MEMORY
+
