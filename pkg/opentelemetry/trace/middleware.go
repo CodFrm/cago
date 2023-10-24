@@ -66,7 +66,7 @@ func Middleware(serviceName string, tracerProvider trace.TracerProvider) gin.Han
 
 		// 给logger加上traceID
 		ctx = logger.ContextWithLogger(ctx, logger.Ctx(c.Request.Context()).
-			With(zap.String("trace_id", span.SpanContext().TraceID().String())))
+			With(LoggerLabel(ctx)...))
 
 		// 请求带上traceID
 		c.Header("X-Trace-Id", span.SpanContext().TraceID().String())
@@ -101,6 +101,7 @@ func LoggerLabel(ctx context.Context) []zap.Field {
 	if span.SpanContext().IsValid() {
 		return []zap.Field{
 			zap.String("trace_id", span.SpanContext().TraceID().String()),
+			zap.String("span_id", span.SpanContext().SpanID().String()),
 		}
 	}
 	return []zap.Field{}

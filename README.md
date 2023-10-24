@@ -20,7 +20,7 @@ Cago 只对社区工具进行集成,大大减少迁移难度和学习成本,我�
 
 [部署资源](./deploy)
 
-cago 提供了[`gitlab-ci`](./deploy/.gitlab-ci.yml)、[`golanglint-ci`](./deploy/.golangci.yml)和
+cago 提供了[`gitlab-ci`](deploy/gitlab/.gitlab-ci.yml)、[`golanglint-ci`](./deploy/.golangci.yml)和
 [`Kubernetes`](./deploy)的 CI/CD 配置文件,可以快速帮你实现 CI/CD.
 
 当本地调试时也可以使用`docker compose up -d`启动调试环境.

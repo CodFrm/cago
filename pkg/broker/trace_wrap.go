@@ -2,6 +2,8 @@ package broker
 
 import (
 	"context"
+	"github.com/codfrm/cago/pkg/logger"
+	trace2 "github.com/codfrm/cago/pkg/opentelemetry/trace"
 
 	broker2 "github.com/codfrm/cago/pkg/broker/broker"
 	"go.opentelemetry.io/otel"
@@ -52,6 +54,9 @@ func (t *traceBroker) Subscribe(ctx context.Context, topic string, h broker2.Han
 			trace.WithSpanKind(trace.SpanKindConsumer),
 		)
 		defer span.End()
+		ctx = logger.ContextWithLogger(ctx, logger.Ctx(ctx).With(
+			trace2.LoggerLabel(ctx)...,
+		))
 		return h(ctx, event)
 	}, opts...)
 }

@@ -2,6 +2,7 @@ package broker
 
 import (
 	"context"
+	"time"
 
 	broker2 "github.com/codfrm/cago/pkg/broker/broker"
 	"github.com/codfrm/cago/pkg/logger"
@@ -34,6 +35,11 @@ func (t *wrap) Subscribe(ctx context.Context, topic string, h broker2.Handler, o
 		opts = append(opts, broker2.Group(t.options.defaultGroup))
 	}
 	return t.Broker.Subscribe(ctx, topic, func(ctx context.Context, event broker2.Event) error {
+		ctx = logger.ContextWithLogger(ctx, logger.Ctx(ctx).With(
+			// 请求开始时间
+			zap.Time("start_time", time.Now()),
+		))
+
 		defer func() {
 			if r := recover(); r != nil {
 				logger.Ctx(ctx).Error("broker subscribe panic",
