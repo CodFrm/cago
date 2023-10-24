@@ -2,13 +2,12 @@ package metric
 
 import (
 	"context"
-
 	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/server/mux"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/prometheus"
-	"go.opentelemetry.io/otel/metric/global"
 	"go.opentelemetry.io/otel/sdk/metric"
 )
 
@@ -31,7 +30,7 @@ func Metrics(ctx context.Context, cfg *configs.Config) error {
 		return err
 	}
 	provider = metric.NewMeterProvider(metric.WithReader(exporter))
-	global.SetMeterProvider(provider)
+	otel.SetMeterProvider(provider)
 	return nil
 }
 
