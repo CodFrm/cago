@@ -95,6 +95,10 @@ func SpanFromContext(ctx context.Context) trace.Span {
 	return trace.SpanFromContext(ctx)
 }
 
+func ContextWithSpan(parent context.Context, span trace.Span) context.Context {
+	return trace.ContextWithSpan(parent, span)
+}
+
 // LoggerLabel 获取logger的traceID
 func LoggerLabel(ctx context.Context) []zap.Field {
 	span := trace.SpanFromContext(ctx)
