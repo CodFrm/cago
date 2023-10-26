@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/codfrm/cago/pkg/logger"
-
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )

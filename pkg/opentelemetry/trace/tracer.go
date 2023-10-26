@@ -2,62 +2,56 @@ package trace
 
 import (
 	"context"
-	"errors"
-
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/sdk/resource"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/trace"
-)
-
-type ExporterType string
-
-const (
-	Jaeger  ExporterType = "jaeger"
-	UpTrace ExporterType = "uptrace"
+	"time"
 )
 
 type Config struct {
-	Endpoint string
-	Type     ExporterType
-	Username string
-	Password string
-	Dsn      string
 	// Sample 采样率 0-1 其它数字为跟随父配置
-	Sample float64
+	Sample   float64
+	Endpoint string
+	UseSSL   bool
+	Header   map[string]string
 }
 
-func NewWithConfig(ctx context.Context, cfg *Config, options ...Option) (trace.TracerProvider, error) {
-	f, ok := exporters[string(cfg.Type)]
-	if !ok {
-		return nil, errors.New("type not found")
-	}
-	exp, err := f(ctx, cfg)
-	if err != nil {
-		return nil, err
-	}
-	options = append(options, Sample(cfg.Sample), WithExporter(exp))
-	return New(options...)
-}
-
-func New(opt ...Option) (trace.TracerProvider, error) {
+func NewWithConfig(ctx context.Context, cfg *Config, opts ...Option) (trace.TracerProvider, error) {
 	options := &Options{}
-	for _, o := range opt {
-		o(options)
+	for _, v := range opts {
+		v(options)
 	}
-
 	var sample tracesdk.Sampler
-	if options.sample <= 0 {
+	if cfg.Sample <= 0 {
 		// 总是关闭
 		sample = tracesdk.NeverSample()
-	} else if options.sample < 1 {
+	} else if cfg.Sample < 1 {
 		// 百分比采样，如果父开启了那么会开启
-		sample = tracesdk.ParentBased(tracesdk.TraceIDRatioBased(options.sample))
-	} else if options.sample == 1 {
+		sample = tracesdk.ParentBased(tracesdk.TraceIDRatioBased(cfg.Sample))
+	} else if cfg.Sample == 1 {
 		// 总是采样，如果父未开启那么不会开启
 		sample = tracesdk.ParentBased(tracesdk.AlwaysSample())
 	} else {
 		// 总是关闭，如果父开启了那么会开启
 		sample = tracesdk.ParentBased(tracesdk.NeverSample())
+	}
+	clientOpts := []otlptracegrpc.Option{
+		otlptracegrpc.WithEndpoint(cfg.Endpoint),
+		otlptracegrpc.WithHeaders(cfg.Header),
+		otlptracegrpc.WithTimeout(10 * time.Second),
+	}
+
+	if !cfg.UseSSL {
+		clientOpts = append(clientOpts, otlptracegrpc.WithInsecure())
+	}
+
+	client := otlptracegrpc.NewClient(clientOpts...)
+
+	exporter, err := otlptrace.New(ctx, client)
+	if err != nil {
+		return nil, err
 	}
 
 	res, err := resource.New(context.Background(),
@@ -75,7 +69,7 @@ func New(opt ...Option) (trace.TracerProvider, error) {
 
 	tp := tracesdk.NewTracerProvider(
 		// Always be sure to batch in production.
-		tracesdk.WithBatcher(options.exp),
+		tracesdk.WithBatcher(exporter),
 		// Record information about this application in a Resource.
 		tracesdk.WithResource(res),
 		tracesdk.WithSampler(sample),

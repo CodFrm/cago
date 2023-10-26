@@ -16,7 +16,6 @@ import (
 	_ "github.com/codfrm/cago/pkg/logger/loki"
 	"github.com/codfrm/cago/pkg/opentelemetry/metric"
 	"github.com/codfrm/cago/pkg/opentelemetry/trace"
-	_ "github.com/codfrm/cago/pkg/opentelemetry/trace/exporter/jaeger"
 	"github.com/codfrm/cago/server/mux"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"

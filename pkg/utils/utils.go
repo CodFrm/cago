@@ -2,6 +2,7 @@ package utils
 
 import (
 	"context"
+
 	"github.com/codfrm/cago/pkg/logger"
 	"github.com/codfrm/cago/pkg/opentelemetry/trace"
 )

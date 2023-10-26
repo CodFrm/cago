@@ -2,6 +2,7 @@ package broker
 
 import (
 	"context"
+
 	"github.com/codfrm/cago/pkg/logger"
 	trace2 "github.com/codfrm/cago/pkg/opentelemetry/trace"
 
