@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	cache2 "github.com/codfrm/cago/database/cache"
 	_ "github.com/codfrm/cago/examples/simple/docs"
 	"github.com/codfrm/cago/examples/simple/internal/controller/example_ctr"
@@ -15,7 +16,7 @@ import (
 // @title    api文档
 // @version  1.0
 // @BasePath /api/v1
-func Router(root *mux.Router) error {
+func Router(ctx context.Context, root *mux.Router) error {
 	// 注册储存实例
 	user_repo.RegisterUser(user_repo.NewUser())
 

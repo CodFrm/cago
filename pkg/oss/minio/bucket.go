@@ -2,10 +2,11 @@ package minio
 
 import (
 	"context"
-	"github.com/minio/minio-go/v7"
 	"io"
 	"net/url"
 	"time"
+
+	"github.com/minio/minio-go/v7"
 )
 
 type Bucket struct {
@@ -23,7 +24,7 @@ func (b *Bucket) PreSignedPutObject(ctx context.Context, objectName string, expi
 	return b.client.client.PresignedPutObject(ctx, b.bucket, objectName, expires)
 }
 
-func (b *Bucket) GetObject(ctx context.Context, objectName string) (io.Reader, error) {
+func (b *Bucket) GetObject(ctx context.Context, objectName string) (io.ReadCloser, error) {
 	obj, err := b.client.client.GetObject(ctx, b.bucket, objectName, minio.GetObjectOptions{})
 	if err != nil {
 		return nil, err

@@ -25,7 +25,8 @@ func (c *CtxLogger) Ctx(ctx context.Context) *CtxLogger {
 }
 
 func (c *CtxLogger) With(fields ...zap.Field) *CtxLogger {
-	c.labels = append(c.labels, fields...)
-	c.Logger = c.Logger.With(fields...)
-	return c
+	return &CtxLogger{
+		Logger: logger.With(fields...),
+		labels: append(c.labels, fields...),
+	}
 }

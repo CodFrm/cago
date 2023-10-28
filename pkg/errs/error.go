@@ -26,11 +26,11 @@ func (s *Error) Field() []zap.Field {
 	return s.field
 }
 
-func WarpStack(err error) error {
-	return Warp(err, "", zap.StackSkip("stack", 2))
+func WrapStack(err error) error {
+	return Wrap(err, "", zap.StackSkip("stack", 2))
 }
 
-func Warp(err error, msg string, field ...zap.Field) error {
+func Wrap(err error, msg string, field ...zap.Field) error {
 	return &Error{
 		err:   err,
 		msg:   msg,

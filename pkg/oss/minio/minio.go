@@ -1,33 +1,35 @@
 package minio
 
 import (
-	context "context"
-	oss2 "github.com/codfrm/cago/pkg/oss"
+	"context"
+
 	"github.com/codfrm/cago/pkg/oss/oss"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 )
+
+type Config struct {
+	Endpoint        string
+	AccessKeyID     string
+	SecretAccessKey string
+}
 
 type Client struct {
 	client *minio.Client
 	core   *minio.Core
 }
 
-func NewMinio(cfg *oss2.Config) (oss.Client, error) {
-	endpoint := "192.168.1.136:9000"
-	accessKeyID := "wCDPeNpuuxcpBU8l7oes"
-	secretAccessKey := "fVyO7LQSvezIPPN9fL1uhRXaatxrpb7zU45eGFxm"
-
+func New(cfg *Config) (oss.Client, error) {
 	// Initialize minio core object.
-	minioCore, err := minio.NewCore(endpoint, &minio.Options{
-		Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
+	minioCore, err := minio.NewCore(cfg.Endpoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(cfg.AccessKeyID, cfg.SecretAccessKey, ""),
 		Secure: false,
 	})
 	if err != nil {
 		return nil, err
 	}
-	minioClient, err := minio.New(endpoint, &minio.Options{
-		Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
+	minioClient, err := minio.New(cfg.Endpoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(cfg.AccessKeyID, cfg.SecretAccessKey, ""),
 		Secure: false,
 	})
 	if err != nil {
@@ -49,7 +51,6 @@ func (c *Client) ListBuckets(ctx context.Context) ([]*oss.BucketInfo, error) {
 }
 
 func (c *Client) Bucket(ctx context.Context, bucket string) (oss.Bucket, error) {
-
 	return &Bucket{
 		client: c,
 		bucket: bucket,

@@ -28,8 +28,6 @@ logger:
     password: loki
 
 trace:
-  endpoint: "http://localhost:14268/api/traces"
-  type: "jaeger"
-  username: ""
-  password: ""
-  sample: 1
+    endpoint: "192.168.1.136:14268"
+    useSsl: false
+    sample: 1
