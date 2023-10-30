@@ -1,12 +1,13 @@
 package oss
 
 import (
+	"time"
+
 	"github.com/codfrm/cago"
 	"github.com/codfrm/cago/pkg/opentelemetry/trace"
 	"github.com/codfrm/cago/pkg/utils/wrap"
 	"go.opentelemetry.io/otel/attribute"
 	trace2 "go.opentelemetry.io/otel/trace"
-	"time"
 )
 
 const instrumName = "github.com/codfrm/cago/pkg/oss"

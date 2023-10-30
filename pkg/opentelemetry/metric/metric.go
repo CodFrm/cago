@@ -16,6 +16,11 @@ func init() {
 	mux.RegisterMiddleware(func(cfg *configs.Config, r *gin.Engine) error {
 		// 加入metrics中间件
 		if Default() != nil {
+			m, err := Middleware(Default())
+			if err != nil {
+				return err
+			}
+			r.Use(m)
 			r.GET("/metrics", gin.WrapH(promhttp.Handler()))
 		}
 		return nil
