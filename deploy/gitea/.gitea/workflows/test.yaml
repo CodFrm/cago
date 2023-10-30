@@ -8,10 +8,6 @@ on:
       - !test/*
 
   pull_request:
-    branches:
-      - !main
-      - !release/*
-      - !test/*
 
 env:
   GOPROXY: ${{ secrets.GOPROXY && secrets.GOPROXY || 'https://goproxy.cn,direct' }}

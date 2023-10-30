@@ -49,8 +49,12 @@ func Middleware(m metric.MeterProvider) (gin.HandlerFunc, error) {
 
 	return func(c *gin.Context) {
 		ts := time.Now()
+		fullPath := "/"
+		if c.FullPath() != "" {
+			fullPath = c.FullPath()
+		}
 		attr := metric.WithAttributes(
-			attribute.String("uri", c.FullPath()),
+			attribute.String("uri", fullPath),
 		)
 		requestTotal.Add(c.Request.Context(), 1,
 			attr,
@@ -77,8 +81,10 @@ func Middleware(m metric.MeterProvider) (gin.HandlerFunc, error) {
 		responseBodySize.Add(c.Request.Context(), int64(c.Writer.Size()),
 			attr,
 		)
-		httpStatusCode.Add(c.Request.Context(), int64(c.Writer.Status()),
+		httpStatusCode.Add(c.Request.Context(), 1,
 			attr,
+			metric.WithAttributes(
+				attribute.Int("status_code", c.Writer.Status())),
 		)
 	}, nil
 }
