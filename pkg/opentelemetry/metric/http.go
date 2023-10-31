@@ -1,11 +1,13 @@
 package metric
 
 import (
+	"net/http"
+	"time"
+
 	"github.com/codfrm/cago"
 	"github.com/gin-gonic/gin"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
-	"time"
 )
 
 const instrumName = "github.com/codfrm/cago/pkg/opentelemetry/metric.http"
@@ -81,10 +83,14 @@ func Middleware(m metric.MeterProvider) (gin.HandlerFunc, error) {
 		responseBodySize.Add(c.Request.Context(), int64(c.Writer.Size()),
 			attr,
 		)
+		code := http.StatusOK
+		if c.Writer.Status() != 0 {
+			code = c.Writer.Status()
+		}
 		httpStatusCode.Add(c.Request.Context(), 1,
 			attr,
 			metric.WithAttributes(
-				attribute.Int("status_code", c.Writer.Status())),
+				attribute.Int("status_code", code)),
 		)
 	}, nil
 }
