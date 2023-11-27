@@ -1,11 +1,13 @@
 package swagger
 
 import (
+	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
 	"log"
 	"net/http"
+	"path"
 	"strings"
 
 	"github.com/codfrm/cago/internal/cmd/gen/utils"
@@ -64,7 +66,7 @@ func (s *Swagger) parseRoute(filename string, file *ast.File, decl *ast.GenDecl,
 	tag := strings.TrimPrefix(field.Tag.Value, "`")
 	tag = strings.TrimSuffix(tag, "`")
 	// 取出path值
-	path := utils.ParseTag(tag, "path")
+	urlPath := utils.ParseTag(tag, "path")
 	// 取出method值
 	methods := strings.Split(utils.ParseTag(tag, "method"), ",")
 	for _, method := range methods {
@@ -138,7 +140,7 @@ func (s *Swagger) parseRoute(filename string, file *ast.File, decl *ast.GenDecl,
 				}
 				if in == "path" {
 					required = true
-					path = strings.ReplaceAll(path, ":"+uri, "{"+uri+"}")
+					urlPath = strings.ReplaceAll(urlPath, ":"+uri, "{"+uri+"}")
 				}
 				schema, err := newParseStruct(filename, s, file).parseFieldSwagger(field)
 				if err != nil {
@@ -187,7 +189,7 @@ func (s *Swagger) parseRoute(filename string, file *ast.File, decl *ast.GenDecl,
 				if uri == "" {
 					continue
 				}
-				path = strings.ReplaceAll(path, ":"+uri, "{"+uri+"}")
+				urlPath = strings.ReplaceAll(urlPath, ":"+uri, "{"+uri+"}")
 				schema, err := newParseStruct(filename, s, file).parseFieldSwagger(field)
 				if err != nil {
 					return err
@@ -282,9 +284,16 @@ func (s *Swagger) parseRoute(filename string, file *ast.File, decl *ast.GenDecl,
 		}}
 
 		// 添加tag
+		fmt.Println(file.Name.Name, filename)
+		base := path.Base(filename)
+		// 去除后缀
+		base = base[:len(base)-len(path.Ext(base))]
 		operation.Tags = []string{file.Name.Name}
+		if base != file.Name.Name {
+			operation.Tags = []string{file.Name.Name + "/" + base}
+		}
 
-		pathItem, ok := s.swagger.Paths.Paths[path]
+		pathItem, ok := s.swagger.Paths.Paths[urlPath]
 		if !ok {
 			pathItem = spec.PathItem{
 				PathItemProps: spec.PathItemProps{},
@@ -300,7 +309,7 @@ func (s *Swagger) parseRoute(filename string, file *ast.File, decl *ast.GenDecl,
 		case http.MethodDelete:
 			pathItem.PathItemProps.Delete = operation
 		}
-		s.swagger.Paths.Paths[path] = pathItem
+		s.swagger.Paths.Paths[urlPath] = pathItem
 	}
 	return nil
 }
