@@ -2,6 +2,8 @@ package example_ctr
 
 import (
 	"context"
+	"github.com/gin-gonic/gin"
+	"net/http"
 
 	api "github.com/codfrm/cago/examples/simple/internal/api/example"
 	"github.com/codfrm/cago/examples/simple/internal/service/example_svc"
@@ -22,4 +24,9 @@ func (e *Example) Login(ctx context.Context, req *api.LoginRequest) (*api.LoginR
 // Ping ping
 func (e *Example) Ping(ctx context.Context, req *api.PingRequest) (*api.PingResponse, error) {
 	return example_svc.Example().Ping(ctx, req)
+}
+
+// GinFun gin function
+func (e *Example) GinFun(ctx *gin.Context, req *api.GinFunRequest) {
+	ctx.String(http.StatusOK, "ok")
 }

@@ -37,10 +37,6 @@ func (r *Router) Bind(handler ...interface{}) {
 // 根据方法去绑定路由
 func (r *Router) bindFunc(controller reflect.Value, method reflect.Value, isFunc bool) error {
 	methodType := method.Type()
-	// 判断返回值是否是error
-	if methodType.NumOut() != 2 || methodType.Out(1) != reflect.TypeOf((*error)(nil)).Elem() {
-		return nil
-	}
 	pos := 0
 	if isFunc {
 		pos = -1
@@ -96,7 +92,9 @@ func (r *Router) bindFunc(controller reflect.Value, method reflect.Value, isFunc
 	return nil
 }
 
-func (r *Router) bindHandler(request reflect.Type, call func(a reflect.Value, b interface{}) []reflect.Value, ginContext bool) gin.HandlerFunc {
+func (r *Router) bindHandler(request reflect.Type,
+	call func(a reflect.Value, b interface{}) []reflect.Value,
+	ginContext bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// 创建请求参数
 		req := reflect.New(request)
@@ -114,6 +112,9 @@ func (r *Router) bindHandler(request reflect.Type, call func(a reflect.Value, b 
 			ctx = reflect.ValueOf(c.Request.Context())
 		}
 		resp := call(ctx, req.Interface())
+		if len(resp) == 0 {
+			return
+		}
 		if resp[1].IsNil() {
 			httputils.HandleResp(c, resp[0].Interface())
 			return

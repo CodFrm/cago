@@ -10,6 +10,8 @@ definitions:
         description: 错误信息
         type: string
     type: object
+  example.GinFunResponse:
+    type: object
   example.LoginRequest:
     type: object
   example.LoginResponse:
@@ -78,6 +80,31 @@ paths:
       summary: 需要登录的接口
       tags:
       - example
+  /example/gin-fun:
+    get:
+      consumes:
+      - application/json
+      description: gin function
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/example.GinFunResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: gin function
+      tags:
+      - example
   /example/ping:
     get:
       consumes:
@@ -132,7 +159,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 登录
       tags:
-      - user
+      - user/login
   /user/logout:
     get:
       consumes:
@@ -157,7 +184,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 登出
       tags:
-      - user
+      - user/login
   /user/register:
     post:
       consumes:
@@ -187,5 +214,5 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 注册
       tags:
-      - user
+      - user/login
 swagger: "2.0"

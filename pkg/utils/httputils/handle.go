@@ -47,7 +47,7 @@ func deal(ctx *gin.Context, resp any, field []zap.Field) {
 			})
 		} else {
 			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-				"code": -1, "msg": "系统错误",
+				"code": -1, "msg": "系统错误", "request_id": requestId,
 			})
 		}
 	default:

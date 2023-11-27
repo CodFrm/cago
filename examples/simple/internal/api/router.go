@@ -40,6 +40,7 @@ func Router(ctx context.Context, root *mux.Router) error {
 		exampleCtl := example_ctr.NewExample()
 		r.Group("/").Bind(
 			exampleCtl.Ping,
+			exampleCtl.GinFun,
 		)
 		r.Group("/", userLoginCtr.Middleware()).Bind(
 			exampleCtl.Login,

@@ -1,7 +1,6 @@
 package swagger
 
 import (
-	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
@@ -284,7 +283,6 @@ func (s *Swagger) parseRoute(filename string, file *ast.File, decl *ast.GenDecl,
 		}}
 
 		// 添加tag
-		fmt.Println(file.Name.Name, filename)
 		base := path.Base(filename)
 		// 去除后缀
 		base = base[:len(base)-len(path.Ext(base))]
