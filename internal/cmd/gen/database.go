@@ -123,7 +123,8 @@ func (c *Cmd) genDB(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	if err := db.Database(context.Background(), cfg); err != nil {
+	dbComponent := db.Database()
+	if err := dbComponent.Start(context.Background(), cfg); err != nil {
 		return err
 	}
 	column := make([]Column, 0)

@@ -2,6 +2,7 @@ package user_entity
 
 import (
 	"context"
+
 	"github.com/codfrm/cago/examples/simple/internal/pkg/code"
 	"github.com/codfrm/cago/pkg/consts"
 	"github.com/codfrm/cago/pkg/i18n"

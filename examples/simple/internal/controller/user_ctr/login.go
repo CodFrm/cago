@@ -2,6 +2,7 @@ package user_ctr
 
 import (
 	"context"
+
 	"github.com/gin-gonic/gin"
 
 	api "github.com/codfrm/cago/examples/simple/internal/api/user"

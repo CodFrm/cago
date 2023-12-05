@@ -2,13 +2,14 @@ package db
 
 import (
 	"context"
+	"testing"
+
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/configs/memory"
 	"github.com/stretchr/testify/assert"
 	mysqlDriver "gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"testing"
 )
 
 type User struct {
@@ -99,7 +100,7 @@ func TestDatabase(t *testing.T) {
 	info = &Info{ID: 3}
 	err = Ctx(ctx).First(info).Error
 	assert.Equal(t, gorm.ErrRecordNotFound, err)
-	err = CtxWith(ctx, "mock2").First(info).Error
+	CtxWith(ctx, "mock2").First(info)
 	assert.Equal(t, 3, info.ID)
 	assert.Equal(t, "avatar3", info.Avatar)
 

@@ -17,7 +17,7 @@ default: # 默认链接, 必须设置
   driver: mysql
   dsn: root:password@tcp(127.0.0.1:3306)/db?charset=utf8mb4&collation=utf8mb4_unicode_ci&parseTime=True&loc=Local&multiStatements=true
   prefix: prefix_
-ch: # clickhouse
+clickhouse: # clickhouse
   driver: clickhouse
   dsn: clickhouse://127.0.0.1:9009/default?read_timeout=10s
 

@@ -2,6 +2,7 @@ package consumer
 
 import (
 	"context"
+
 	"github.com/codfrm/cago"
 	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/examples/simple/internal/task/consumer/subscribe"

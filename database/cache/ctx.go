@@ -3,11 +3,11 @@ package cache
 import (
 	"context"
 
-	"github.com/codfrm/cago/database/cache/cache"
+	cache2 "github.com/codfrm/cago/database/cache/cache"
 )
 
 type CtxCache struct {
-	cache.Cache
+	cache2.Cache
 	ctx context.Context
 }
 
@@ -15,15 +15,15 @@ func Ctx(ctx context.Context) *CtxCache {
 	return &CtxCache{ctx: ctx, Cache: Default()}
 }
 
-func (c *CtxCache) GetOrSet(key string, set func() (interface{}, error), opts ...cache.Option) cache.Value {
+func (c *CtxCache) GetOrSet(key string, set func() (interface{}, error), opts ...cache2.Option) cache2.Value {
 	return c.Cache.GetOrSet(c.ctx, key, set, opts...)
 }
 
-func (c *CtxCache) Set(key string, val interface{}, opts ...cache.Option) cache.Value {
+func (c *CtxCache) Set(key string, val interface{}, opts ...cache2.Option) cache2.Value {
 	return c.Cache.Set(c.ctx, key, val, opts...)
 }
 
-func (c *CtxCache) Get(key string, opts ...cache.Option) cache.Value {
+func (c *CtxCache) Get(key string, opts ...cache2.Option) cache2.Value {
 	return c.Cache.Get(c.ctx, key, opts...)
 }
 

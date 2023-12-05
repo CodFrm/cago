@@ -2,6 +2,7 @@ package subscribe
 
 import (
 	"context"
+
 	"github.com/codfrm/cago/examples/simple/internal/task/producer"
 	"github.com/codfrm/cago/pkg/logger"
 	"go.uber.org/zap"

@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"errors"
+
 	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/pkg/opentelemetry/metric"
 	"github.com/codfrm/cago/pkg/opentelemetry/trace"

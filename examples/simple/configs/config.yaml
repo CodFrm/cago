@@ -36,9 +36,9 @@ redis:
     password: ""
 source: file
 trace:
-    endpoint: http://localhost:14268/api/traces
-    password: ""
+    endpoint: localhost:4317
     sample: 1
-    type: jaeger
-    username: ""
+    useSSL: false
+    header:
+        Authorization: ""
 version: 1.0.0

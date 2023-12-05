@@ -2,12 +2,13 @@ package example_svc
 
 import (
 	"context"
+	"time"
+
 	"github.com/codfrm/cago/examples/simple/internal/service/user_svc"
 	"github.com/codfrm/cago/examples/simple/internal/task/producer"
 	"github.com/codfrm/cago/pkg/logger"
 	"github.com/codfrm/cago/pkg/utils"
 	"go.uber.org/zap"
-	"time"
 
 	api "github.com/codfrm/cago/examples/simple/internal/api/example"
 )

@@ -13,10 +13,10 @@ import (
 
 type Config struct {
 	// Sample 采样率 0-1 其它数字为跟随父配置
-	Sample   float64
-	Endpoint string
-	UseSSL   bool
-	Header   map[string]string
+	Sample   float64           `yaml:"sample"`
+	Endpoint string            `yaml:"endpoint"`
+	UseSSL   bool              `yaml:"useSSL"`
+	Header   map[string]string `yaml:"header"`
 }
 
 func NewWithConfig(ctx context.Context, cfg *Config, opts ...Option) (trace.TracerProvider, error) {

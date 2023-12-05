@@ -2,8 +2,9 @@ package example_ctr
 
 import (
 	"context"
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 
 	api "github.com/codfrm/cago/examples/simple/internal/api/example"
 	"github.com/codfrm/cago/examples/simple/internal/service/example_svc"

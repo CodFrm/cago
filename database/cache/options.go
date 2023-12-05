@@ -1,14 +1,14 @@
 package cache
 
 import (
-	"github.com/codfrm/cago/database/cache/cache"
+	cache2 "github.com/codfrm/cago/database/cache/cache"
 )
 
 var (
-	Expiration = cache.Expiration
-	WithDepend = cache.WithDepend
+	Expiration = cache2.Expiration
+	WithDepend = cache2.WithDepend
 )
 
 func IsNil(err error) bool {
-	return cache.IsNil(err)
+	return cache2.IsNil(err)
 }

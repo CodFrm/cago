@@ -10,4 +10,4 @@
 
 ## 运行
 
-请注意你的运行目录，需要将[`config.yaml`](./configs/config.yaml)复制到运行目录下的`configs`文件夹中
+请注意你的运行目录，需要将[`config.yaml`](./configs/config.yaml.tmp)复制到运行目录下的`configs`文件夹中

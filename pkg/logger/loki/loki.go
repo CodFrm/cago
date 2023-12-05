@@ -15,10 +15,10 @@ import (
 )
 
 type Config struct {
-	Enable   bool
-	Url      string
-	Username string
-	Password string
+	Enable   bool   `yaml:"enable"`
+	Url      string `yaml:"url"`
+	Username string `yaml:"username"`
+	Password string `yaml:"password"`
 }
 
 func init() {

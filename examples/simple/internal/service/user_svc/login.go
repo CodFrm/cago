@@ -2,6 +2,8 @@ package user_svc
 
 import (
 	"context"
+	"time"
+
 	"github.com/codfrm/cago/examples/simple/internal/model"
 	"github.com/codfrm/cago/examples/simple/internal/model/entity/user_entity"
 	"github.com/codfrm/cago/examples/simple/internal/pkg/code"
@@ -15,7 +17,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.opentelemetry.io/otel/attribute"
 	"go.uber.org/zap"
-	"time"
 
 	api "github.com/codfrm/cago/examples/simple/internal/api/user"
 )

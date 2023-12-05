@@ -1,33 +1,74 @@
 # 配置源,当你设置为etcd时,必须指定etcd配置
 source: file
-
 debug: true
-
 env: dev
+version: 1.0.0
 
+# 消息队列配置
+broker:
+    nsq:
+        addr: 127.0.0.1:4150
+        nsqlookupaddr:
+            - 127.0.0.1:4161
+    type: nsq
+
+# 缓存配置
+cache:
+    type: "redis"
+    addr: "127.0.0.1:6379"
+    password: ""
+    db: 1
+
+# 数据库单库模式
+db:
+    driver: mysql
+    dsn: root:password@tcp(127.0.0.1:3306)/simple?charset=utf8mb4&collation=utf8mb4_unicode_ci&parseTime=True&loc=Local&multiStatements=true
+    prefix: sm_
+
+# 数据库多库模式
+#dbs:
+#    default: # 默认链接, 必须设置
+#        driver: mysql
+#        dsn: root:password@tcp(127.0.0.1:3306)/db?charset=utf8mb4&collation=utf8mb4_unicode_ci&parseTime=True&loc=Local&multiStatements=true
+#        prefix: prefix_
+#    clickhouse: # clickhouse
+#        driver: clickhouse
+#        dsn: clickhouse://127.0.0.1:9009/default?read_timeout=10s
+
+# etcd 配置中心配置，source需要配置为etcd
 etcd:
-  prefix: /config
-  endpoints:
-    - 127.0.0.1:2379
+    endpoints:
+        - 127.0.0.1:2379
+    prefix: /config
 
-# 下面是各个组件的配置项,当然可能并未补全,当你执行时会自动生成相关的结构
+# web服务配置
 http:
-  address:
-    - "127.0.0.1:8080"
+    address:
+        - :8080
 
+# 日志组件配置
 logger:
-  level: info
-  logfile:
-    enable: true
-    filename: ./runtime/logs/cago.log
-    errorfilename: ./runtime/logs/cago.err.log
-  loki:
-    enable: false
-    url: "http://127.0.0.1:3100/loki/api/v1/push"
-    username: loki
-    password: loki
+    level: info
+    logfile:
+        enable: true
+        errorfilename: ./runtime/logs/cago.err.log
+        filename: ./runtime/logs/cago.log
+    loki:
+        level: info
+        url: http://127.0.0.1:3100/loki/api/v1/push
+        username: ""
+        password: ""
 
+# redis配置
+redis:
+    addr: 127.0.0.1:6379
+    db: 0
+    password: ""
+
+# 链路追踪配置
 trace:
-    endpoint: "192.168.1.136:14268"
-    useSsl: false
+    endpoint: localhost:4317
     sample: 1
+    useSSL: false
+    header:
+        Authorization: ""
