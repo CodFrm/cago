@@ -2,9 +2,9 @@ package cache
 
 import (
 	"context"
-
+	"github.com/codfrm/cago"
 	"github.com/codfrm/cago/configs"
-	"github.com/codfrm/cago/database/cache/cache"
+	cache2 "github.com/codfrm/cago/database/cache/cache"
 	"github.com/codfrm/cago/database/cache/redis"
 	redis2 "github.com/redis/go-redis/v9"
 )
@@ -22,22 +22,36 @@ type Config struct {
 	DB       int
 }
 
-var defaultCache cache.Cache
+var defaultCache *cache
 
-func Cache(ctx context.Context, config *configs.Config) error {
+type cache struct {
+	cache2.Cache
+}
+
+func Cache() cago.Component {
+	return &cache{}
+}
+
+func (*cache) Start(ctx context.Context, config *configs.Config) error {
 	cfg := &Config{}
 	if err := config.Scan("cache", cfg); err != nil {
 		return err
 	}
-	cache, err := NewWithConfig(ctx, cfg)
+	c, err := NewWithConfig(ctx, cfg)
 	if err != nil {
 		return err
 	}
-	defaultCache = cache
+	defaultCache = &cache{
+		Cache: c,
+	}
 	return nil
 }
 
-func NewWithConfig(ctx context.Context, cfg *Config, opts ...cache.Option) (cache.Cache, error) {
+func (c *cache) CloseHandle() {
+	_ = c.Close()
+}
+
+func NewWithConfig(ctx context.Context, cfg *Config, opts ...cache2.Option) (cache2.Cache, error) {
 	return redis.NewRedisCache(&redis2.Options{
 		Addr:     cfg.Addr,
 		Password: cfg.Password,
@@ -45,6 +59,6 @@ func NewWithConfig(ctx context.Context, cfg *Config, opts ...cache.Option) (cach
 	})
 }
 
-func Default() cache.Cache {
+func Default() cache2.Cache {
 	return defaultCache
 }

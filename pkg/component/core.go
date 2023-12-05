@@ -65,8 +65,8 @@ func Metrics() cago.FuncComponent {
 }
 
 // Database 数据库组件
-func Database() cago.FuncComponent {
-	return db.Database
+func Database() cago.Component {
+	return db.Database()
 }
 
 // Broker 消息队列组件
@@ -85,8 +85,8 @@ func Redis() cago.FuncComponent {
 }
 
 // Cache 缓存组件
-func Cache() cago.FuncComponent {
-	return cache.Cache
+func Cache() cago.Component {
+	return cache.Cache()
 }
 
 // Elasticsearch elasticsearch组件

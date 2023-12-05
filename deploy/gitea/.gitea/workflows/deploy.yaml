@@ -13,9 +13,9 @@ env:
   REGISTRY: ${{ secrets.DOCKER_REGISTRY && secrets.DOCKER_REGISTRY || 'docker.io' }}
   REPOSITORY: ${{ github.repository }}
   GOPROXY: ${{ secrets.GOPROXY && secrets.GOPROXY || 'https://goproxy.cn,direct' }}
-  DOMAIN: cago.com
   ENV: ${{ startsWith(github.ref, 'refs/heads/release/') && 'pre' || startsWith(github.ref, 'refs/heads/test/') && 'test' || github.ref=='refs/heads/main' && 'prod' }}
   RUNNER_TOOL_CACHE: /toolcache
+  BASEIMAGE: ${{ secrets.BASEIMAGE && secrets.BASEIMAGE || '' }}
 
 jobs:
   deploy:
@@ -34,6 +34,7 @@ jobs:
       with:
         version: latest
         install-mode: goinstall
+        args: --timeout=30m
 
     - name: Tests
       run: |
@@ -74,6 +75,7 @@ jobs:
         context: .
         build-args: |
           APP_NAME=${{ env.APP_NAME }}
+          BASEIMAGE=${{ env.BASEIMAGE }}/debian:12-slim
 
     - name: Set up kubeconfig
 #      uses: azure/k8s-set-context@v3
@@ -106,4 +108,3 @@ jobs:
         --set ingress.tls[0].hosts[0]=$DOMAIN \
         --set resources.requests.cpu=$RESOURCE_CPU \
         --set resources.requests.memory=$RESOURCE_MEMORY
-

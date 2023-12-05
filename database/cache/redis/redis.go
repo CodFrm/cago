@@ -137,3 +137,7 @@ func (r *redisCache) Has(ctx context.Context, key string) (bool, error) {
 func (r *redisCache) Del(ctx context.Context, key string) error {
 	return r.redis.Del(ctx, key).Err()
 }
+
+func (r *redisCache) Close() error {
+	return r.redis.Close()
+}

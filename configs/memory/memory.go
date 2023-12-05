@@ -2,7 +2,6 @@ package memory
 
 import (
 	"encoding/json"
-
 	"github.com/codfrm/cago/configs/source"
 )
 

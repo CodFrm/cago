@@ -18,6 +18,10 @@ type Config struct {
 	DB       int
 }
 
+type Component struct {
+	redis.Client
+}
+
 func Redis(ctx context.Context, config *configs.Config) error {
 	cfg := &Config{}
 	if err := config.Scan("redis", cfg); err != nil {

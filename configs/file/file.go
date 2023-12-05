@@ -1,7 +1,7 @@
 package file
 
 import (
-	"errors"
+	"fmt"
 	"os"
 
 	"github.com/codfrm/cago/configs/source"
@@ -40,7 +40,7 @@ func (f *fileSource) Scan(key string, value interface{}) error {
 		if err := os.WriteFile(f.path, b, 0644); err != nil {
 			return err
 		}
-		return errors.New("file config key not found")
+		return fmt.Errorf("file %w: %s", source.ErrNotFound, key)
 	}
 	var b, err = f.serialization.Marshal(cfg)
 	if err != nil {

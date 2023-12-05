@@ -15,6 +15,7 @@ type Cache interface {
 	Get(ctx context.Context, key string, opts ...Option) Value
 	Has(ctx context.Context, key string) (bool, error)
 	Del(ctx context.Context, key string) error
+	Close() error
 }
 
 type Depend interface {

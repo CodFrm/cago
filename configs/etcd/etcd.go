@@ -2,7 +2,7 @@ package etcd
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"path"
 	"time"
 
@@ -72,7 +72,7 @@ func (e *etcd) Scan(key string, value interface{}) error {
 		if _, err := e.Client.Put(context.Background(), path.Join(e.prefix, key), string(b)); err != nil {
 			return err
 		}
-		return errors.New("etcd config key not found")
+		return fmt.Errorf("etcd %w: %s", source.ErrNotFound, key)
 	}
 	return e.serialization.Unmarshal(resp.Kvs[0].Value, value)
 }
