@@ -26,6 +26,8 @@ func NewTokenAuth(option ...Option) *TokenAuth {
 	}
 }
 
+// Middleware 中间件
+// force 是否强制要求鉴权
 func (t *TokenAuth) Middleware(force bool) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		accessToken, err := t.options.getAccessToken(ctx)

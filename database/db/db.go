@@ -49,6 +49,9 @@ func Database() *DB {
 }
 
 func (d *DB) newDB(cfg *Config) (*gorm.DB, error) {
+	if cfg.Driver == "" {
+		cfg.Driver = MySQL
+	}
 	orm, err := gorm.Open(driver[cfg.Driver](cfg), &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: true,
 		NamingStrategy: schema.NamingStrategy{
