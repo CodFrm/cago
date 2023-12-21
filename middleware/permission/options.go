@@ -1,37 +1,37 @@
 package permission
 
 type Options struct {
-	storageMatcher Matcher
+	matcher Matcher
 }
 
 type Option func(*Options)
 
-func WithStorageMatcher(matcher Matcher) Option {
+func WithMatcher(matcher Matcher) Option {
 	return func(options *Options) {
-		options.storageMatcher = matcher
+		options.matcher = matcher
 	}
 }
 
-func WithFuncStorageMatcher(matcher FuncMatcher) Option {
+func WithFuncMatcher(matcher FuncMatcher) Option {
 	return func(options *Options) {
-		options.storageMatcher = matcher
+		options.matcher = matcher
 	}
 }
 
 type CheckOptions struct {
-	storageMatcher Matcher
+	matcher Matcher
 }
 
 type CheckOption func(*CheckOptions)
 
-func WithCheckStorageMatcher(matcher Matcher) CheckOption {
+func WithCheckMatcher(matcher Matcher) CheckOption {
 	return func(options *CheckOptions) {
-		options.storageMatcher = matcher
+		options.matcher = matcher
 	}
 }
 
-func WithCheckFuncStorageMatcher(matcher FuncMatcher) CheckOption {
+func WithCheckFuncMatcher(matcher FuncMatcher) CheckOption {
 	return func(options *CheckOptions) {
-		options.storageMatcher = matcher
+		options.matcher = matcher
 	}
 }

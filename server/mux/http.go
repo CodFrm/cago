@@ -73,7 +73,10 @@ func (h *server) StartCancel(
 			return err
 		}
 	}
-	if err := h.callback(ctx, &Router{IRouter: r}); err != nil {
+	if err := h.callback(ctx, &Router{
+		Routes:  &Routes{IRoutes: r},
+		IRouter: r,
+	}); err != nil {
 		return errors.New("failed to register http server: " + err.Error())
 	}
 	if len(config.Address) == 0 {

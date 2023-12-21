@@ -1,6 +1,9 @@
 package utils
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 func ToString(val interface{}) string {
 	return fmt.Sprintf("%v", val)
@@ -21,4 +24,12 @@ func StringReverse(s string) string {
 		a[i], a[j] = a[j], a[i]
 	}
 	return string(a)
+}
+
+func Head(str, sep string) (head string, tail string) {
+	idx := strings.Index(str, sep)
+	if idx < 0 {
+		return str, ""
+	}
+	return str[:idx], str[idx+len(sep):]
 }

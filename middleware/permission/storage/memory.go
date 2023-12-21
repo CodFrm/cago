@@ -1,4 +1,4 @@
-package memory
+package storage
 
 import (
 	"context"
@@ -31,10 +31,10 @@ func (m *Memory) FindPolicyBySubject(ctx context.Context, sub string) ([]*permis
 	return list, nil
 }
 
-func (m *Memory) FindPolicyByObject(ctx context.Context, sub, obj string) ([]*permission.Policy, error) {
+func (m *Memory) FindPolicyByResource(ctx context.Context, sub, res string) ([]*permission.Policy, error) {
 	list := make([]*permission.Policy, 0)
 	for _, v := range m.list {
-		if v.Subject == sub && v.Object == obj {
+		if v.Subject == sub && v.Resource == res {
 			list = append(list, v)
 		}
 	}

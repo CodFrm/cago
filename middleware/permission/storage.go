@@ -7,7 +7,7 @@ import (
 // PolicyStorageFinder 策略存储查找器
 type PolicyStorageFinder interface {
 	FindPolicyBySubject(ctx context.Context, sub string) ([]*Policy, error)
-	FindPolicyByObject(ctx context.Context, sub, obj string) ([]*Policy, error)
+	FindPolicyByResource(ctx context.Context, sub, res string) ([]*Policy, error)
 }
 
 // PolicyStorage 策略存储

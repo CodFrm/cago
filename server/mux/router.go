@@ -12,15 +12,28 @@ import (
 )
 
 type Router struct {
+	*Routes
 	gin.IRouter
 }
 
+type Routes struct {
+	gin.IRoutes
+}
+
 func (r *Router) Group(path string, handler ...gin.HandlerFunc) *Router {
-	return &Router{r.IRouter.Group(path, handler...)}
+	g := r.IRouter.Group(path, handler...)
+	return &Router{
+		Routes:  &Routes{IRoutes: g},
+		IRouter: g,
+	}
+}
+
+func (r *Router) Use(handler ...gin.HandlerFunc) *Routes {
+	return &Routes{IRoutes: r.IRouter.Use(handler...)}
 }
 
 // Bind 绑定控制器
-func (r *Router) Bind(handler ...interface{}) {
+func (r *Routes) Bind(handler ...interface{}) {
 	// 反射解析控制器方法
 	for _, c := range handler {
 		el := reflect.TypeOf(c)
@@ -35,7 +48,7 @@ func (r *Router) Bind(handler ...interface{}) {
 }
 
 // 根据方法去绑定路由
-func (r *Router) bindFunc(controller reflect.Value, method reflect.Value, isFunc bool) error {
+func (r *Routes) bindFunc(controller reflect.Value, method reflect.Value, isFunc bool) error {
 	methodType := method.Type()
 	pos := 0
 	if isFunc {
@@ -92,7 +105,7 @@ func (r *Router) bindFunc(controller reflect.Value, method reflect.Value, isFunc
 	return nil
 }
 
-func (r *Router) bindHandler(request reflect.Type,
+func (r *Routes) bindHandler(request reflect.Type,
 	call func(a reflect.Value, b interface{}) []reflect.Value,
 	ginContext bool) gin.HandlerFunc {
 	return func(c *gin.Context) {

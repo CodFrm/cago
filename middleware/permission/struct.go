@@ -13,7 +13,7 @@ var (
 // Request 请求
 type Request struct {
 	Subject     string            // 访问者
-	Object      string            // 资源信息
+	Resource    string            // 资源信息
 	Action      string            // 操作
 	Environment map[string]string // 环境信息
 }
@@ -27,13 +27,12 @@ const (
 
 // Policy 策略
 type Policy struct {
-	ID          string            // 策略id
-	Subject     string            // 访问者
-	Object      string            // 资源信息
-	Actions     []string          // 策略的操作类型
-	Environment map[string]string // 环境策略
-	Effect      PolicyEffect      // 结果
-	Priority    int               // 优先级
+	ID       string       // 策略id
+	Subject  string       // 访问者
+	Resource string       // 资源信息
+	Actions  []string     // 策略的操作类型
+	Effect   PolicyEffect // 结果
+	Priority int          // 优先级
 }
 
 func (p *Policy) InAction(action string) bool {

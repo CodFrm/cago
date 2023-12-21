@@ -13,13 +13,13 @@ func NewEqualMatcher() Matcher {
 
 func (m *equalMatcher) Match(ctx context.Context, request *Request, policyStorage PolicyStorageFinder) ([]*Policy, error) {
 	// 查询出相关策略
-	policies, err := policyStorage.FindPolicyByObject(ctx, request.Subject, request.Object)
+	policies, err := policyStorage.FindPolicyByResource(ctx, request.Subject, request.Resource)
 	if err != nil {
 		return nil, err
 	}
 	matchedPolicies := make([]*Policy, 0)
 	for _, policy := range policies {
-		if policy.Object == request.Object {
+		if policy.Resource == request.Resource {
 			if policy.InAction(request.Action) {
 				matchedPolicies = append(matchedPolicies, policy)
 			}

@@ -12,7 +12,7 @@ type Permission struct {
 
 func NewPermission(policyStorage PolicyStorage, opts ...Option) *Permission {
 	options := &Options{
-		storageMatcher: &equalMatcher{},
+		matcher: &equalMatcher{},
 	}
 	for _, opt := range opts {
 		opt(options)
@@ -62,9 +62,9 @@ func (p *Permission) QueryPolicies(ctx context.Context, request *Request, opts .
 
 func (p *Permission) queryPolicies(ctx context.Context, request *Request, options *CheckOptions) ([]*Policy, error) {
 	// 查询出相关策略
-	storageMatcher := p.options.storageMatcher
-	if options.storageMatcher != nil {
-		storageMatcher = options.storageMatcher
+	storageMatcher := p.options.matcher
+	if options.matcher != nil {
+		storageMatcher = options.matcher
 	}
 	policies, err := storageMatcher.Match(ctx, request, p.policyStorage)
 	if err != nil {

@@ -33,18 +33,17 @@ func Cache() cago.Component {
 	return &cache{}
 }
 
-func (*cache) Start(ctx context.Context, config *configs.Config) error {
+func (c *cache) Start(ctx context.Context, config *configs.Config) error {
 	cfg := &Config{}
 	if err := config.Scan("cache", cfg); err != nil {
 		return err
 	}
-	c, err := NewWithConfig(ctx, cfg)
+	cache, err := NewWithConfig(ctx, cfg)
 	if err != nil {
 		return err
 	}
-	defaultCache = &cache{
-		Cache: c,
-	}
+	c.Cache = cache
+	defaultCache = c
 	return nil
 }
 

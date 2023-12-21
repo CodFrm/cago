@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"errors"
-
 	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/pkg/opentelemetry/metric"
 	"github.com/codfrm/cago/pkg/opentelemetry/trace"
@@ -117,11 +116,9 @@ func (d *DB) Start(ctx context.Context, config *configs.Config) error {
 			dbs[name] = db
 		}
 	}
-
-	defaultDB = &DB{
-		defaultDb: orm,
-		dbs:       dbs,
-	}
+	d.defaultDb = orm
+	d.dbs = dbs
+	defaultDB = d
 	return nil
 }
 

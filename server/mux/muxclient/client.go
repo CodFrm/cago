@@ -1,4 +1,4 @@
-package mux
+package muxclient
 
 import (
 	"bytes"
@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/codfrm/cago/pkg/utils"
+	"github.com/codfrm/cago/server/mux"
 	"io"
 	"net/http"
 	"net/url"
@@ -17,43 +19,61 @@ import (
 )
 
 type ClientOptions struct {
-	path string
+	client *http.Client
 }
 
 type ClientOption func(*ClientOptions)
 
-func NewDoOptions(opts ...ClientOption) *ClientOptions {
-	options := &ClientOptions{}
+func WithClient(client *http.Client) ClientOption {
+	return func(options *ClientOptions) {
+		options.client = client
+	}
+}
+
+type ClientDoOptions struct {
+	path string
+}
+
+type ClientDoOption func(*ClientDoOptions)
+
+func newDoOptions(opts ...ClientDoOption) *ClientDoOptions {
+	options := &ClientDoOptions{}
 	for _, opt := range opts {
 		opt(options)
 	}
 	return options
 }
 
-func WithPath(path string) ClientOption {
-	return func(options *ClientOptions) {
+func WithPath(path string) ClientDoOption {
+	return func(options *ClientDoOptions) {
 		options.path = path
 	}
 }
 
 type Client struct {
+	options *ClientOptions
 	baseURL string
 }
 
-func NewClient(baseURL string) *Client {
+func NewClient(baseURL string, opts ...ClientOption) *Client {
+	options := &ClientOptions{client: http.DefaultClient}
+	for _, opt := range opts {
+		opt(options)
+	}
 	return &Client{
+		options: options,
 		baseURL: baseURL,
 	}
 }
 
-func (c *Client) Request(ctx context.Context, req any, opts ...ClientOption) (*http.Request, error) {
-	options := NewDoOptions(opts...)
+func (c *Client) Request(ctx context.Context, req any, opts ...ClientDoOption) (*http.Request, error) {
+	options := newDoOptions(opts...)
 	route, ok := reflect.TypeOf(req).Elem().FieldByName("Meta")
 	if !ok {
 		return nil, errors.New("invalid method, second parameter must have Meta field")
 	}
 	// 必须有Route字段
-	if !ok || route.Type != reflect.TypeOf(Meta{}) {
+	if !ok || route.Type != reflect.TypeOf(mux.Meta{}) {
 		return nil, errors.New("invalid method, second parameter must have Meta field")
 	}
 	method := route.Tag.Get("method")
@@ -102,8 +122,8 @@ func (c *Client) Request(ctx context.Context, req any, opts ...ClientOption) (*h
 				data[key] = ptrElem.Field(i).Interface()
 			} else {
 				// 处理key,label的情况,例如: key,default=1
-				key, opts := head(key, ",")
-				opts, val := head(opts, "=")
+				key, opts := utils.Head(key, ",")
+				opts, val := utils.Head(opts, "=")
 				if opts == "default" && ptrElem.Field(i).IsZero() {
 					form(key, val)
 				} else {
@@ -132,7 +152,7 @@ func (c *Client) Request(ctx context.Context, req any, opts ...ClientOption) (*h
 	return httpReq, nil
 }
 
-func (c *Client) Do(ctx context.Context, req any, resp any, opts ...ClientOption) error {
+func (c *Client) Do(ctx context.Context, req any, resp any, opts ...ClientDoOption) error {
 	httpReq, err := c.Request(ctx, req, opts...)
 	if err != nil {
 		return err
@@ -141,7 +161,7 @@ func (c *Client) Do(ctx context.Context, req any, resp any, opts ...ClientOption
 }
 
 func (c *Client) HttpDo(httpReq *http.Request, resp any) error {
-	httpResp, err := http.DefaultClient.Do(httpReq)
+	httpResp, err := c.options.client.Do(httpReq)
 	if err != nil {
 		return err
 	}

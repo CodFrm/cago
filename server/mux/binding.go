@@ -3,15 +3,14 @@ package mux
 import (
 	"context"
 	"encoding/json"
-	"net/http"
-	"reflect"
-	"strconv"
-	"strings"
-
+	"github.com/codfrm/cago/pkg/utils"
 	"github.com/codfrm/cago/pkg/utils/httputils"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"net/http"
+	"reflect"
+	"strconv"
 )
 
 type bind struct {
@@ -82,8 +81,8 @@ func (b *bind) bind(req *http.Request, ptr any) error {
 				}
 			} else if form != nil {
 				// 处理key,label的情况,例如: key,default=1
-				key, opts := head(key, ",")
-				opts, val := head(opts, "=")
+				key, opts := utils.Head(key, ",")
+				opts, val := utils.Head(opts, "=")
 				if opts == "default" && len(form(key)) == 0 {
 					setValue(ptrElem.Field(i), tag, []string{val})
 				} else {
@@ -133,12 +132,4 @@ func setValue(field reflect.Value, tag reflect.StructTag, value []string) {
 			}
 		}
 	}
-}
-
-func head(str, sep string) (head string, tail string) {
-	idx := strings.Index(str, sep)
-	if idx < 0 {
-		return str, ""
-	}
-	return str[:idx], str[idx+len(sep):]
 }
