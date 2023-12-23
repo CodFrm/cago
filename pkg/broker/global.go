@@ -36,6 +36,10 @@ func Broker(ctx context.Context, config *configs.Config) error {
 	return nil
 }
 
+func SetBroker(b broker2.Broker) {
+	broker = b
+}
+
 func Default() broker2.Broker {
 	return broker
 }

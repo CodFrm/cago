@@ -131,7 +131,7 @@ func (c *Client) Request(ctx context.Context, req any, opts ...ClientDoOption) (
 				}
 			}
 		} else if uri := tag.Get("uri"); uri != "" {
-			path = strings.ReplaceAll(path, ":"+uri, ptrElem.Field(i).String())
+			path = strings.ReplaceAll(path, ":"+uri, fmt.Sprintf("%v", ptrElem.Field(i).Interface()))
 		}
 	}
 	b, err := json.Marshal(data)

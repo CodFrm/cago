@@ -17,6 +17,23 @@ type RouterTree struct {
 	Handler    []interface{}
 }
 
+func Use(handler ...gin.HandlerFunc) *RouterTree {
+	return &RouterTree{
+		Middleware: handler,
+		Handler:    make([]interface{}, 0),
+	}
+}
+
+func (r *RouterTree) Use(handler ...gin.HandlerFunc) *RouterTree {
+	r.Middleware = append(r.Middleware, handler...)
+	return r
+}
+
+func (r *RouterTree) Append(handler ...interface{}) *RouterTree {
+	r.Handler = append(r.Handler, handler...)
+	return r
+}
+
 func BindTree(r *mux.Router, tree []*RouterTree) {
 	for _, v := range tree {
 		if len(v.Handler) > 0 {
