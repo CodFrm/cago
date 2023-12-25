@@ -3,9 +3,9 @@ package nsq
 import (
 	"context"
 	"encoding/json"
+	"github.com/codfrm/cago/pkg/logger"
 
 	"github.com/codfrm/cago/pkg/broker/broker"
-	"github.com/codfrm/cago/pkg/logger"
 	"github.com/nsqio/go-nsq"
 	"go.uber.org/zap"
 )
@@ -17,11 +17,20 @@ type subscribe struct {
 	config   *Config
 }
 
+type log struct {
+}
+
+func (l *log) Output(calldepth int, s string) error {
+	logger.Default().Error(s, zap.StackSkip("stack", calldepth))
+	return nil
+}
+
 func newSubscribe(b *nsqBroker, topic string, handler broker.Handler, options broker.SubscribeOptions) (broker.Subscriber, error) {
 	consumer, err := nsq.NewConsumer(topic, options.Group, b.nsqConfig)
 	if err != nil {
 		return nil, err
 	}
+	consumer.SetLogger(&log{}, nsq.LogLevelError)
 	ret := &subscribe{
 		consumer: consumer, handler: handler,
 		topic: topic, config: b.config,
