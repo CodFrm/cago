@@ -21,6 +21,7 @@ type Swagger struct {
 	defaultContentType string
 	swagger            *spec.Swagger
 	//parseStruct        *parseStruct
+	InnerDefinitions map[string]spec.Schema
 
 	rootPkgPath string
 	rootPkgName string
@@ -28,7 +29,8 @@ type Swagger struct {
 
 func NewSwagger(apiDir string) *Swagger {
 	return &Swagger{
-		apiDir: apiDir,
+		apiDir:           apiDir,
+		InnerDefinitions: make(map[string]spec.Schema),
 	}
 }
 

@@ -177,6 +177,7 @@ func (s *Swagger) parseRoute(filename string, file *ast.File, decl *ast.GenDecl,
 			}
 		} else {
 			// 解析uri参数
+			ignoreField := make(map[string]struct{})
 			for _, field := range structSpec.Fields.List {
 				// 解析参数
 				if field.Names == nil || field.Tag == nil {
@@ -188,6 +189,7 @@ func (s *Swagger) parseRoute(filename string, file *ast.File, decl *ast.GenDecl,
 				if uri == "" {
 					continue
 				}
+				ignoreField[uri] = struct{}{}
 				urlPath = strings.ReplaceAll(urlPath, ":"+uri, "{"+uri+"}")
 				schema, err := newParseStruct(filename, s, file).parseFieldSwagger(field)
 				if err != nil {
@@ -213,6 +215,9 @@ func (s *Swagger) parseRoute(filename string, file *ast.File, decl *ast.GenDecl,
 			schema, err := newParseStruct(filename, s, file).parseFieldType(typeSpec.Type)
 			if err != nil {
 				return err
+			}
+			for k := range ignoreField {
+				delete(schema.SchemaProps.Properties, k)
 			}
 			ref := spec.MustCreateRef("#/definitions/" + file.Name.Name + "." + typeSpec.Name.Name)
 			s.swagger.Definitions[file.Name.Name+"."+typeSpec.Name.Name] = schema

@@ -1,4 +1,6 @@
-FROM debian:12-slim
+ARG BASEIMAGE=debian:12-slim
+
+FROM ${BASEIMAGE}
 
 ARG APP_NAME=cago
 

@@ -170,7 +170,7 @@ func (p *parseStruct) parseFieldType(fieldType ast.Expr) (spec.Schema, error) {
 						if err != nil {
 							return spec.Schema{}, err
 						}
-						schema = p.swagger.Definitions[schema.Ref.Ref.GetPointer().DecodedTokens()[1]]
+						schema = p.InnerDefinitions[schema.Ref.Ref.GetPointer().DecodedTokens()[1]]
 						for k, v := range schema.Properties {
 							swaggerType.Properties[k] = v
 						}
@@ -260,18 +260,23 @@ func (p *parseStruct) parseExpr(expr ast.Expr) (spec.Schema, error) {
 			return spec.Schema{}, err
 		}
 		// 组合以泛型为基础类型
-		key := schema1.Ref.Ref.GetPointer().DecodedTokens()[1]
-		ref := schema1.Ref.String()
-		schema1 = p.swagger.Definitions[key]
+		key := schema1.Ref.Ref.GetPointer().DecodedTokens()[1] + "[" +
+			schema2.Ref.Ref.GetPointer().DecodedTokens()[1] + "]"
+		ref := schema1.Ref.String() + "[" +
+			schema2.Ref.Ref.GetPointer().DecodedTokens()[1] + "]"
+		tmp := p.InnerDefinitions[schema1.Ref.Ref.GetPointer().DecodedTokens()[1]]
+		b, _ := tmp.MarshalJSON()
+		_ = schema1.UnmarshalJSON(b)
 		// 找到any类型
 		for k, v := range schema1.Properties {
 			// 数组类型进去找
 			if v.Type.Contains("array") {
-				if v.Items.Schema.SchemaProps.Type.Contains("any") {
+				if v.Items.Schema.SchemaProps.Type.Contains("any") ||
+					v.Items.Schema.SchemaProps.Type.Contains("object") {
 					// copy泛型类型
 					schema1.Properties[k].Items.Schema.SchemaProps.Type = []string{"object"}
 					schema1.Properties[k].Items.Schema.SchemaProps.Ref = schema2.Ref
-					p.swagger.Definitions[key] = schema1
+					p.InnerDefinitions[key] = schema1
 					return spec.Schema{
 						SchemaProps: spec.SchemaProps{
 							Ref: spec.Ref{
@@ -284,7 +289,7 @@ func (p *parseStruct) parseExpr(expr ast.Expr) (spec.Schema, error) {
 			if v.Type.Contains("any") {
 				// copy泛型类型
 				schema1.Properties[k] = schema2
-				p.swagger.Definitions[key] = schema1
+				p.InnerDefinitions[key] = schema1
 				return spec.Schema{
 					SchemaProps: spec.SchemaProps{
 						Ref: spec.Ref{
