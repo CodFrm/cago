@@ -1,23 +1,22 @@
-package redis
+package cache
 
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"reflect"
 	"strconv"
-
-	"github.com/codfrm/cago/database/cache/cache"
 )
 
 type value struct {
 	ctx     context.Context
 	data    string
 	err     error
-	options *cache.Options
+	options *Options
 }
 
-func newValue(ctx context.Context, data string, options *cache.Options, err ...error) cache.Value {
+func NewValue(ctx context.Context, data string, options *Options, err ...error) Value {
 	var e error
 	if len(err) != 0 {
 		e = err[0]
@@ -69,7 +68,7 @@ type dependStore struct {
 	Data   interface{} `json:"data"`
 }
 
-func Unmarshal(ctx context.Context, data []byte, v interface{}, options *cache.Options) error {
+func Unmarshal(ctx context.Context, data []byte, v interface{}, options *Options) error {
 	// 反序列化时,如果有依赖,带上依赖
 	if options.Depend != nil {
 		newV := reflect.New(reflect.TypeOf(v).Elem())
@@ -92,7 +91,7 @@ func Unmarshal(ctx context.Context, data []byte, v interface{}, options *cache.O
 	}
 }
 
-func Marshal(ctx context.Context, data interface{}, options *cache.Options) ([]byte, error) {
+func Marshal(ctx context.Context, data interface{}, options *Options) ([]byte, error) {
 	if options.Depend != nil {
 		dependStore := &dependStore{
 			Depend: options.Depend.Val(ctx),
@@ -116,4 +115,20 @@ func Marshal(ctx context.Context, data interface{}, options *cache.Options) ([]b
 			return json.Marshal(data)
 		}
 	}
+}
+
+type GetOrSetValue struct {
+	Value
+	Set func() Value
+}
+
+func (g *GetOrSetValue) Scan(v interface{}) error {
+	err := g.Value.Scan(v)
+	if err != nil {
+		if errors.Is(err, ErrDependNotValid) {
+			return g.Set().Scan(v)
+		}
+		return err
+	}
+	return nil
 }

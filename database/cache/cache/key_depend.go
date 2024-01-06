@@ -12,7 +12,7 @@ var ErrDependNotValid = errors.New("depend not valid")
 type KeyDepend struct {
 	store Cache
 	Key   string `json:"key"`
-	Value int64  `json:"value"`
+	Value int64  `json:"Value"`
 }
 
 func NewKeyDepend(store Cache, key string) *KeyDepend {
@@ -52,4 +52,13 @@ func (v *KeyDepend) Valid(ctx context.Context) error {
 		return nil
 	}
 	return ErrDependNotValid
+}
+
+// NilDep 用于set的时候反序列化,减少一次dep判断
+type NilDep struct {
+	Depend
+}
+
+func (n *NilDep) Valid(ctx context.Context) error {
+	return nil
 }

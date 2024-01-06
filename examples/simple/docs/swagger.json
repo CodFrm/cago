@@ -54,40 +54,40 @@
                 }
             }
         },
-      "/example/gin-fun": {
-        "get": {
-          "description": "gin function",
-          "consumes": [
-            "application/json"
-          ],
-          "produces": [
-            "application/json"
-          ],
-          "tags": [
-            "example"
-          ],
-          "summary": "gin function",
-          "responses": {
-            "200": {
-              "description": "OK",
-              "schema": {
-                "properties": {
-                  "code": {
-                    "type": "integer"
-                  },
-                  "data": {
-                    "$ref": "#/definitions/example.GinFunResponse"
-                  },
-                  "msg": {
-                    "type": "string"
-                  }
-                }
-              }
-            },
-            "400": {
-              "description": "Bad Request",
-              "schema": {
-                "$ref": "#/definitions/BadRequest"
+        "/example/gin-fun": {
+            "get": {
+                "description": "gin function",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "example"
+                ],
+                "summary": "gin function",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "code": {
+                                    "type": "integer"
+                                },
+                                "data": {
+                                    "$ref": "#/definitions/example.GinFunResponse"
+                                },
+                                "msg": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BadRequest"
                         }
                     }
                 }
@@ -142,7 +142,7 @@
                     "application/json"
                 ],
                 "tags": [
-                  "user/login"
+                    "user/login"
                 ],
                 "summary": "登录",
                 "parameters": [
@@ -190,7 +190,7 @@
                     "application/json"
                 ],
                 "tags": [
-                  "user/login"
+                    "user/login"
                 ],
                 "summary": "登出",
                 "responses": {
@@ -229,7 +229,7 @@
                     "application/json"
                 ],
                 "tags": [
-                  "user/login"
+                    "user/login"
                 ],
                 "summary": "注册",
                 "parameters": [
@@ -283,9 +283,9 @@
                 }
             }
         },
-      "example.GinFunResponse": {
-        "type": "object"
-      },
+        "example.GinFunResponse": {
+            "type": "object"
+        },
         "example.LoginRequest": {
             "type": "object"
         },

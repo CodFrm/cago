@@ -33,5 +33,5 @@ type Value interface {
 }
 
 func IsNil(err error) bool {
-	return err == ErrNil
+	return errors.Is(err, ErrNil)
 }

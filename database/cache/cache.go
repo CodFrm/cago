@@ -2,6 +2,8 @@ package cache
 
 import (
 	"context"
+	"errors"
+	"github.com/codfrm/cago/database/cache/memory"
 
 	"github.com/codfrm/cago"
 	"github.com/codfrm/cago/configs"
@@ -11,7 +13,8 @@ import (
 )
 
 const (
-	Redis Type = "redis"
+	Redis  Type = "redis"
+	Memory Type = "memory"
 )
 
 type Type string
@@ -52,11 +55,18 @@ func (c *cache) CloseHandle() {
 }
 
 func NewWithConfig(ctx context.Context, cfg *Config, opts ...cache2.Option) (cache2.Cache, error) {
-	return redis.NewRedisCache(&redis2.Options{
-		Addr:     cfg.Addr,
-		Password: cfg.Password,
-		DB:       cfg.DB,
-	})
+	switch cfg.Type {
+	case Redis:
+		return redis.NewRedisCache(&redis2.Options{
+			Addr:     cfg.Addr,
+			Password: cfg.Password,
+			DB:       cfg.DB,
+		})
+	case Memory:
+		return memory.NewMemoryCache()
+	default:
+		return nil, errors.New("not support cache type")
+	}
 }
 
 func Default() cache2.Cache {
