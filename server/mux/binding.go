@@ -79,13 +79,13 @@ func (b *bind) bind(req *http.Request, ptr any) error {
 				if err := b.bind(req, ptrElem.Field(i).Addr().Interface()); err != nil {
 					return err
 				}
-			} else if form != nil {
+			} else {
 				// 处理key,label的情况,例如: key,default=1
 				key, opts := utils.Head(key, ",")
 				opts, val := utils.Head(opts, "=")
-				if opts == "default" && len(form(key)) == 0 {
+				if opts == "default" && (form == nil || len(form(key)) == 0) {
 					setValue(ptrElem.Field(i), tag, []string{val})
-				} else {
+				} else if form != nil {
 					setValue(ptrElem.Field(i), tag, form(key))
 				}
 			}

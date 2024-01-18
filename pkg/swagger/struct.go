@@ -264,7 +264,10 @@ func (p *parseStruct) parseExpr(expr ast.Expr) (spec.Schema, error) {
 			schema2.Ref.Ref.GetPointer().DecodedTokens()[1] + "]"
 		ref := schema1.Ref.String() + "[" +
 			schema2.Ref.Ref.GetPointer().DecodedTokens()[1] + "]"
-		tmp := p.InnerDefinitions[schema1.Ref.Ref.GetPointer().DecodedTokens()[1]]
+		tmp, ok := p.InnerDefinitions[schema1.Ref.Ref.GetPointer().DecodedTokens()[1]]
+		if !ok {
+			tmp = p.swagger.Definitions[schema1.Ref.Ref.GetPointer().DecodedTokens()[1]]
+		}
 		b, _ := tmp.MarshalJSON()
 		_ = schema1.UnmarshalJSON(b)
 		// 找到any类型
