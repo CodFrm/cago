@@ -2,10 +2,11 @@ package trace
 
 import (
 	"context"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"time"
 
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
-	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/sdk/resource"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/trace"
@@ -16,6 +17,7 @@ type Config struct {
 	Sample   float64           `yaml:"sample"`
 	Endpoint string            `yaml:"endpoint"`
 	UseSSL   bool              `yaml:"useSSL"`
+	Type     string            `yaml:"type"`
 	Header   map[string]string `yaml:"header"`
 }
 
@@ -38,17 +40,32 @@ func NewWithConfig(ctx context.Context, cfg *Config, opts ...Option) (trace.Trac
 		// 总是关闭，如果父开启了那么会开启
 		sample = tracesdk.ParentBased(tracesdk.NeverSample())
 	}
-	clientOpts := []otlptracegrpc.Option{
-		otlptracegrpc.WithEndpoint(cfg.Endpoint),
-		otlptracegrpc.WithHeaders(cfg.Header),
-		otlptracegrpc.WithTimeout(10 * time.Second),
-	}
 
-	if !cfg.UseSSL {
-		clientOpts = append(clientOpts, otlptracegrpc.WithInsecure())
-	}
+	var client otlptrace.Client
+	switch cfg.Type {
+	case "http":
+		clientOpts := []otlptracehttp.Option{
+			otlptracehttp.WithEndpoint(cfg.Endpoint),
+			otlptracehttp.WithHeaders(cfg.Header),
+			otlptracehttp.WithTimeout(10 * time.Second),
+		}
 
-	client := otlptracegrpc.NewClient(clientOpts...)
+		if !cfg.UseSSL {
+			clientOpts = append(clientOpts, otlptracehttp.WithInsecure())
+		}
+		client = otlptracehttp.NewClient(clientOpts...)
+	default:
+		clientOpts := []otlptracegrpc.Option{
+			otlptracegrpc.WithEndpoint(cfg.Endpoint),
+			otlptracegrpc.WithHeaders(cfg.Header),
+			otlptracegrpc.WithTimeout(10 * time.Second),
+		}
+
+		if !cfg.UseSSL {
+			clientOpts = append(clientOpts, otlptracegrpc.WithInsecure())
+		}
+		client = otlptracegrpc.NewClient(clientOpts...)
+	}
 
 	exporter, err := otlptrace.New(ctx, client)
 	if err != nil {

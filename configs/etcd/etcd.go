@@ -44,10 +44,11 @@ type etcd struct {
 
 func NewSource(cfg *Config, serialization file.Serialization) (source.Source, error) {
 	cli, err := clientv3.New(clientv3.Config{
-		Endpoints:   cfg.Endpoints,
-		Username:    cfg.Username,
-		Password:    cfg.Password,
-		DialTimeout: 10 * time.Second,
+		Endpoints:            cfg.Endpoints,
+		Username:             cfg.Username,
+		Password:             cfg.Password,
+		DialTimeout:          10 * time.Second,
+		DialKeepAliveTimeout: 10 * time.Second,
 	})
 	if err != nil {
 		return nil, err

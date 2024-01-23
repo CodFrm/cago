@@ -68,6 +68,10 @@ func (h *server) StartCancel(
 	r.ContextWithFallback = true
 	// 加入日志中间件
 	r.Use(middleware.Logger(logger.Default()))
+	// 加入健康检查
+	r.GET("/health", func(c *gin.Context) {
+		c.String(http.StatusOK, "ok")
+	})
 	for _, f := range registerMiddleware {
 		if err := f(cfg, r); err != nil {
 			return err
