@@ -12,3 +12,8 @@ const (
 	// BAN 封禁
 	BAN
 )
+
+const (
+	YES = iota + 1
+	NO
+)
