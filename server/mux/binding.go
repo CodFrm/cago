@@ -83,7 +83,7 @@ func (b *bind) bind(req *http.Request, ptr any) error {
 				// 处理key,label的情况,例如: key,default=1
 				key, opts := utils.Head(key, ",")
 				opts, val := utils.Head(opts, "=")
-				if opts == "default" && (form == nil || len(form(key)) == 0) {
+				if opts == "default" && ptrElem.IsZero() && (form == nil || len(form(key)) == 0) {
 					setValue(ptrElem.Field(i), tag, []string{val})
 				} else if form != nil {
 					setValue(ptrElem.Field(i), tag, form(key))

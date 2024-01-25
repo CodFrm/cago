@@ -61,7 +61,9 @@ func NewSource(cfg *Config, serialization file.Serialization) (source.Source, er
 }
 
 func (e *etcd) Scan(key string, value interface{}) error {
-	resp, err := e.Client.Get(context.Background(), path.Join(e.prefix, key))
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	resp, err := e.Client.Get(ctx, path.Join(e.prefix, key))
 	if err != nil {
 		return err
 	}
@@ -79,7 +81,9 @@ func (e *etcd) Scan(key string, value interface{}) error {
 }
 
 func (e *etcd) Has(key string) (bool, error) {
-	resp, err := e.Client.Get(context.Background(), path.Join(e.prefix, key))
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	resp, err := e.Client.Get(ctx, path.Join(e.prefix, key))
 	if err != nil {
 		return false, err
 	}
