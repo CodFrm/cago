@@ -15,12 +15,13 @@ const (
 )
 
 type Config struct {
-	Endpoint        string
-	AccessKeyID     string
-	SecretAccessKey string
-	UseSSL          bool
-	Type            Type
-	Bucket          string
+	Endpoint        string `yaml:"endpoint"`
+	URL             string `yaml:"url"`
+	AccessKeyID     string `yaml:"accessKeyID"`
+	SecretAccessKey string `yaml:"secretAccessKey"`
+	UseSSL          bool   `yaml:"useSSL"`
+	Type            Type   `yaml:"type"`
+	Bucket          string `yaml:"bucket"`
 }
 
 var defaultClient oss.Client
@@ -40,6 +41,8 @@ func OSS(ctx context.Context, config *configs.Config) error {
 			Endpoint:        cfg.Endpoint,
 			AccessKeyID:     cfg.AccessKeyID,
 			SecretAccessKey: cfg.SecretAccessKey,
+			UseSSL:          cfg.UseSSL,
+			URL:             cfg.URL,
 		})
 		if err != nil {
 			return err
@@ -57,6 +60,6 @@ func Default() oss.Client {
 	return defaultClient
 }
 
-func Bucket() oss.Bucket {
+func DefaultBucket() oss.Bucket {
 	return defaultBucket
 }

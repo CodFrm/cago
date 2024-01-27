@@ -12,30 +12,35 @@ type Config struct {
 	Endpoint        string
 	AccessKeyID     string
 	SecretAccessKey string
+	UseSSL          bool
+	URL             string
 }
 
 type Client struct {
+	url    string
 	client *minio.Client
 	core   *minio.Core
 }
 
 func New(cfg *Config) (oss.Client, error) {
 	// Initialize minio core object.
-	minioCore, err := minio.NewCore(cfg.Endpoint, &minio.Options{
+	opts := &minio.Options{
 		Creds:  credentials.NewStaticV4(cfg.AccessKeyID, cfg.SecretAccessKey, ""),
+		Region: "us-east-1",
 		Secure: false,
-	})
+	}
+	if cfg.UseSSL {
+		opts.Secure = true
+	}
+	minioCore, err := minio.NewCore(cfg.Endpoint, &minio.Options{})
 	if err != nil {
 		return nil, err
 	}
-	minioClient, err := minio.New(cfg.Endpoint, &minio.Options{
-		Creds:  credentials.NewStaticV4(cfg.AccessKeyID, cfg.SecretAccessKey, ""),
-		Secure: false,
-	})
+	minioClient, err := minio.New(cfg.Endpoint, opts)
 	if err != nil {
 		return nil, err
 	}
-	return &Client{client: minioClient, core: minioCore}, nil
+	return &Client{client: minioClient, core: minioCore, url: cfg.URL}, nil
 }
 
 func (c *Client) ListBuckets(ctx context.Context) ([]*oss.BucketInfo, error) {

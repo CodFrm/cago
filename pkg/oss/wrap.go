@@ -64,9 +64,9 @@ func (t *wrapBucket) PreSignedPutObject(ctx context.Context, objectName string, 
 	return
 }
 
-func (t *wrapBucket) GetObject(ctx context.Context, objectName string) (r io.ReadCloser, err error) {
+func (t *wrapBucket) GetObject(ctx context.Context, objectName string) (object oss.Object, err error) {
 	err = t.wrap.Run(ctx, "GetObject", []interface{}{objectName}, func(ctx *wrap.Context) {
-		r, err = t.Bucket.GetObject(ctx, objectName)
+		object, err = t.Bucket.GetObject(ctx, objectName)
 		ctx.Abort(err)
 	})
 	return

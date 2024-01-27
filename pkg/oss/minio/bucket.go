@@ -2,6 +2,7 @@ package minio
 
 import (
 	"context"
+	"github.com/codfrm/cago/pkg/oss/oss"
 	"io"
 	"net/url"
 	"time"
@@ -24,12 +25,12 @@ func (b *Bucket) PreSignedPutObject(ctx context.Context, objectName string, expi
 	return b.client.client.PresignedPutObject(ctx, b.bucket, objectName, expires)
 }
 
-func (b *Bucket) GetObject(ctx context.Context, objectName string) (io.ReadCloser, error) {
+func (b *Bucket) GetObject(ctx context.Context, objectName string) (oss.Object, error) {
 	obj, err := b.client.client.GetObject(ctx, b.bucket, objectName, minio.GetObjectOptions{})
 	if err != nil {
 		return nil, err
 	}
-	return obj, nil
+	return newObject(obj), nil
 }
 
 func (b *Bucket) PreSignedGetObject(ctx context.Context, objectName string, expires time.Duration) (u *url.URL, err error) {
@@ -38,4 +39,8 @@ func (b *Bucket) PreSignedGetObject(ctx context.Context, objectName string, expi
 
 func (b *Bucket) RemoveObject(ctx context.Context, objectName string) error {
 	return b.client.client.RemoveObject(ctx, b.bucket, objectName, minio.RemoveObjectOptions{})
+}
+
+func (b *Bucket) FileURL(ctx context.Context, objectName string) (string, error) {
+	return b.client.url + "/" + b.bucket + "/" + objectName, nil
 }
