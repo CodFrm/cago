@@ -17,6 +17,8 @@ type Client interface {
 	ListBuckets(ctx context.Context) ([]*BucketInfo, error)
 
 	Bucket(ctx context.Context, bucket string) (Bucket, error)
+
+	URL() string
 }
 
 type Bucket interface {

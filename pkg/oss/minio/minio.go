@@ -61,3 +61,7 @@ func (c *Client) Bucket(ctx context.Context, bucket string) (oss.Bucket, error) 
 		bucket: bucket,
 	}, nil
 }
+
+func (c *Client) URL() string {
+	return c.url
+}

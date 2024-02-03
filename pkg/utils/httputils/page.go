@@ -6,6 +6,18 @@ type PageRequest struct {
 	Page int `form:"page" json:"page"`
 	// Deprecated 请使用方法GetSize
 	Size int `form:"size" json:"size"`
+	// Deprecated 请使用方法GetSort
+	Sort string `form:"sort" json:"sort"`
+	// Deprecated 请使用方法GetOrder
+	Order string `form:"order" json:"order"`
+}
+
+func (p *PageRequest) GetSort() string {
+	return p.Sort
+}
+
+func (p *PageRequest) GetOrder() string {
+	return p.Order
 }
 
 func (p *PageRequest) GetPage() int {
