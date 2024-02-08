@@ -22,7 +22,7 @@ type Client interface {
 }
 
 type Bucket interface {
-	PutObject(ctx context.Context, objectName string, r io.Reader) error
+	PutObject(ctx context.Context, objectName string, r io.Reader, objectSize int64) error
 	PreSignedPutObject(ctx context.Context, objectName string, expires time.Duration) (u *url.URL, err error)
 
 	GetObject(ctx context.Context, objectName string) (Object, error)

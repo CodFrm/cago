@@ -50,9 +50,9 @@ func newWrapBucket(bucket oss.Bucket, w *wrap.Wrap) oss.Bucket {
 	}
 }
 
-func (t *wrapBucket) PutObject(ctx context.Context, objectName string, data io.Reader) error {
+func (t *wrapBucket) PutObject(ctx context.Context, objectName string, data io.Reader, objectSize int64) error {
 	return t.wrap.Run(ctx, "PutObject", []interface{}{objectName, data}, func(ctx *wrap.Context) {
-		ctx.Abort(t.Bucket.PutObject(ctx, objectName, data))
+		ctx.Abort(t.Bucket.PutObject(ctx, objectName, data, objectSize))
 	})
 }
 

@@ -15,9 +15,9 @@ type Bucket struct {
 	bucket string
 }
 
-func (b *Bucket) PutObject(ctx context.Context, objectName string, r io.Reader) error {
+func (b *Bucket) PutObject(ctx context.Context, objectName string, r io.Reader, objectSize int64) error {
 	_, err := b.client.client.PutObject(ctx, b.bucket, objectName, r,
-		-1, minio.PutObjectOptions{})
+		objectSize, minio.PutObjectOptions{})
 	return err
 }
 
