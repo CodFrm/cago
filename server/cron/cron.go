@@ -14,21 +14,16 @@ const (
 	tracerName = "github.com/codfrm/cago/server/cron"
 )
 
-type Callback func(r Crontab) error
-
 type server struct {
-	//ctx context.Context
-	//cancel   context.CancelFunc
-	cron     *cron.Cron
-	callback Callback
+	cron *cron.Cron
 }
 
-// Cron 定时任务组件,需要先注册logger和redis组件
-func Cron(callback Callback) cago.Component {
+var defaultCrontab Crontab
 
+// Cron 定时任务组件,需要先注册logger和redis组件
+func Cron() cago.Component {
 	return &server{
-		cron:     cron.New(),
-		callback: callback,
+		cron: cron.New(),
 	}
 }
 
@@ -40,13 +35,15 @@ func (s *server) Start(ctx context.Context, cfg *configs.Config) error {
 			trace2.WithInstrumentationVersion("0.1.0"),
 		)
 	}
-	if err := s.callback(&crontab{tracer: tracer, cron: s.cron}); err != nil {
-		return err
-	}
+	defaultCrontab = &crontab{tracer: tracer, cron: s.cron}
 	s.cron.Start()
 	return nil
 }
 
 func (s *server) CloseHandle() {
 	s.cron.Stop()
+}
+
+func Default() Crontab {
+	return defaultCrontab
 }
