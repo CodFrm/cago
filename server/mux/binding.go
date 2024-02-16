@@ -3,11 +3,13 @@ package mux
 import (
 	"context"
 	"encoding/json"
+	"github.com/codfrm/cago/pkg/logger"
 	"github.com/codfrm/cago/pkg/utils"
 	"github.com/codfrm/cago/pkg/utils/httputils"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.uber.org/zap"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -71,22 +73,27 @@ func (b *bind) bind(req *http.Request, ptr any) error {
 		if tag == "" {
 			continue
 		}
+		fieldElem := ptrElem.Field(i)
 		if key := tag.Get("form"); key != "" {
 			if key == "-" {
 				continue
 			}
 			if key == ",inline" {
-				if err := b.bind(req, ptrElem.Field(i).Addr().Interface()); err != nil {
+				if err := b.bind(req, fieldElem.Addr().Interface()); err != nil {
 					return err
 				}
 			} else {
 				// 处理key,label的情况,例如: key,default=1
 				key, opts := utils.Head(key, ",")
 				opts, val := utils.Head(opts, "=")
-				if opts == "default" && ptrElem.IsZero() && (form == nil || len(form(key)) == 0) {
-					setValue(ptrElem.Field(i), tag, []string{val})
+				logger.Default().Info("field", zap.String("key", key),
+					zap.Bool("bb", fieldElem.IsZero()),
+					zap.Bool("bb2", fieldElem.IsZero()),
+					zap.Bool("aa", form == nil || len(form(key)) == 0))
+				if opts == "default" && fieldElem.IsZero() && (form == nil || len(form(key)) == 0) {
+					setValue(fieldElem, tag, []string{val})
 				} else if form != nil {
-					setValue(ptrElem.Field(i), tag, form(key))
+					setValue(fieldElem, tag, form(key))
 				}
 			}
 		} else if uri := tag.Get("uri"); uri != "" {

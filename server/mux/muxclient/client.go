@@ -114,24 +114,25 @@ func (c *Client) Request(ctx context.Context, req any, opts ...ClientDoOption) (
 		if tag == "" {
 			continue
 		}
+		fieldElem := ptrElem.Field(i)
 		if key := tag.Get("form"); key != "" {
 			if key == "-" {
 				continue
 			}
 			if key == ",inline" {
-				data[key] = ptrElem.Field(i).Interface()
+				data[key] = fieldElem.Interface()
 			} else {
 				// 处理key,label的情况,例如: key,default=1
 				key, opts := utils.Head(key, ",")
 				opts, val := utils.Head(opts, "=")
-				if opts == "default" && ptrElem.Field(i).IsZero() {
+				if opts == "default" && fieldElem.IsZero() {
 					form(key, val)
 				} else {
-					form(key, ptrElem.Field(i).Interface())
+					form(key, fieldElem.Interface())
 				}
 			}
 		} else if uri := tag.Get("uri"); uri != "" {
-			path = strings.ReplaceAll(path, ":"+uri, fmt.Sprintf("%v", ptrElem.Field(i).Interface()))
+			path = strings.ReplaceAll(path, ":"+uri, fmt.Sprintf("%v", fieldElem.Interface()))
 		}
 	}
 	b, err := json.Marshal(data)
