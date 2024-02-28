@@ -23,7 +23,7 @@ type Config struct {
 
 func Elasticsearch(ctx context.Context, cfg *configs.Config) error {
 	config := &Config{}
-	if err := cfg.Scan("elasticsearch", config); err != nil {
+	if err := cfg.Scan(ctx, "elasticsearch", config); err != nil {
 		return err
 	}
 	var tlsConfig *tls.Config

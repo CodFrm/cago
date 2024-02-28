@@ -47,6 +47,30 @@ func (r *Routes) Bind(handler ...interface{}) {
 	}
 }
 
+func (r *Routes) RequestHandle(request interface{}, handlers ...gin.HandlerFunc) *Routes {
+	requestEl := reflect.TypeOf(request)
+	return r.requestHandle(requestEl, handlers...)
+}
+
+func (r *Routes) requestHandle(requestEl reflect.Type, handlers ...gin.HandlerFunc) *Routes {
+	route, ok := requestEl.FieldByName("Meta")
+	// 必须有Route字段
+	if !ok || route.Type != reflect.TypeOf(Meta{}) {
+		panic("invalid method, second parameter must have Meta field")
+	}
+	paths := strings.Split(route.Tag.Get("path"), ",")
+	methods := strings.Split(route.Tag.Get("method"), ",")
+	for _, path := range paths {
+		for _, method := range methods {
+			if method == "" {
+				method = http.MethodGet
+			}
+			r.IRoutes.Handle(method, path, handlers...)
+		}
+	}
+	return r
+}
+
 // 根据方法去绑定路由
 func (r *Routes) bindFunc(controller reflect.Value, method reflect.Value, isFunc bool) error {
 	methodType := method.Type()
@@ -84,24 +108,7 @@ func (r *Routes) bindFunc(controller reflect.Value, method reflect.Value, isFunc
 		}
 	}
 
-	paths := strings.Split(route.Tag.Get("path"), ",")
-	methods := strings.Split(route.Tag.Get("method"), ",")
-	for _, path := range paths {
-		for _, method := range methods {
-			switch method {
-			case http.MethodPost:
-				r.POST(path, r.bindHandler(request, call, ginContext))
-			case http.MethodPut:
-				r.PUT(path, r.bindHandler(request, call, ginContext))
-			case http.MethodDelete:
-				r.DELETE(path, r.bindHandler(request, call, ginContext))
-			case http.MethodOptions:
-				r.OPTIONS(path, r.bindHandler(request, call, ginContext))
-			default:
-				r.GET(path, r.bindHandler(request, call, ginContext))
-			}
-		}
-	}
+	r.requestHandle(request, r.bindHandler(request, call, ginContext))
 	return nil
 }
 

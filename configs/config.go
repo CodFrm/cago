@@ -1,6 +1,7 @@
 package configs
 
 import (
+	"context"
 	"reflect"
 	"strings"
 
@@ -29,6 +30,7 @@ type Config struct {
 }
 
 func NewConfig(appName string, opt ...Option) (*Config, error) {
+	ctx := context.Background()
 	options := &Options{
 		file:          "./configs/config.yaml",
 		serialization: file.Yaml(),
@@ -47,15 +49,15 @@ func NewConfig(appName string, opt ...Option) (*Config, error) {
 		s = options.source
 	}
 	var env Env
-	if err := s.Scan("env", &env); err != nil {
+	if err := s.Scan(ctx, "env", &env); err != nil {
 		return nil, err
 	}
 	var debug bool
-	if err := s.Scan("debug", &debug); err != nil {
+	if err := s.Scan(ctx, "debug", &debug); err != nil {
 		return nil, err
 	}
 	version := ""
-	if err := s.Scan("version", &version); err != nil {
+	if err := s.Scan(ctx, "version", &version); err != nil {
 		return nil, err
 	}
 	c := &Config{
@@ -75,7 +77,7 @@ func NewConfig(appName string, opt ...Option) (*Config, error) {
 
 func (c *Config) init() error {
 	configSource := ""
-	err := c.source.Scan("source", &configSource)
+	err := c.source.Scan(context.Background(), "source", &configSource)
 	if err != nil {
 		return err
 	}
@@ -89,25 +91,25 @@ func (c *Config) init() error {
 	return nil
 }
 
-func (c *Config) Scan(key string, value interface{}) error {
+func (c *Config) Scan(ctx context.Context, key string, value interface{}) error {
 	keys := strings.Split(key, ".")
 	if len(keys) == 1 {
-		return c.source.Scan(key, value)
+		return c.source.Scan(ctx, key, value)
 	}
 	var i interface{}
-	if err := c.findKey(key, &i); err != nil {
+	if err := c.findKey(ctx, key, &i); err != nil {
 		return err
 	}
 	return mapstructure.Decode(i, value)
 }
 
-func (c *Config) findKey(key string, value interface{}) error {
+func (c *Config) findKey(ctx context.Context, key string, value interface{}) error {
 	keys := strings.Split(key, ".")
 	if len(keys) == 1 {
-		return c.source.Scan(key, value)
+		return c.source.Scan(ctx, key, value)
 	}
 	valueMap := make(map[string]interface{})
-	if err := c.source.Scan(keys[0], &valueMap); err != nil {
+	if err := c.source.Scan(ctx, keys[0], &valueMap); err != nil {
 		return err
 	}
 	for i := 1; i < len(keys); i++ {
@@ -124,22 +126,26 @@ func (c *Config) findKey(key string, value interface{}) error {
 	return nil
 }
 
-func (c *Config) String(key string) string {
+func (c *Config) String(ctx context.Context, key string) string {
 	var str string
-	if err := c.findKey(key, &str); err != nil {
+	if err := c.findKey(ctx, key, &str); err != nil {
 		return ""
 	}
 	return str
 }
 
-func (c *Config) Bool(key string) bool {
+func (c *Config) Bool(ctx context.Context, key string) bool {
 	var b bool
-	if err := c.findKey(key, &b); err != nil {
+	if err := c.findKey(ctx, key, &b); err != nil {
 		return false
 	}
 	return b
 }
 
-func (c *Config) Has(key string) (bool, error) {
-	return c.source.Has(key)
+func (c *Config) Has(ctx context.Context, key string) (bool, error) {
+	return c.source.Has(ctx, key)
+}
+
+func (c *Config) Watch(ctx context.Context, key string, callback func(event source.Event)) error {
+	return c.source.Watch(ctx, key, callback)
 }

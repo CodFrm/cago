@@ -2,6 +2,7 @@ package minio
 
 import (
 	"errors"
+
 	"github.com/codfrm/cago/pkg/oss/oss"
 	"github.com/minio/minio-go/v7"
 )

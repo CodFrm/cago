@@ -38,7 +38,7 @@ var tracerProvider trace.TracerProvider
 // Trace 链路追踪组件,尽早注册,其他组件会判断是否存在,再进行使用
 func Trace(ctx context.Context, config *configs.Config) error {
 	cfg := &Config{}
-	if err := config.Scan("trace", cfg); err != nil {
+	if err := config.Scan(ctx, "trace", cfg); err != nil {
 		return err
 	}
 	tp, err := NewWithConfig(ctx, cfg, AppendAttributes(

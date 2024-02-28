@@ -16,7 +16,7 @@ import (
 func init() {
 	configs.RegistrySource("etcd", func(cfg *configs.Config, serialization file.Serialization) (source.Source, error) {
 		etcdConfig := &Config{}
-		if err := cfg.Scan("etcd", etcdConfig); err != nil {
+		if err := cfg.Scan(context.Background(), "etcd", etcdConfig); err != nil {
 			return nil, err
 		}
 		var err error
@@ -60,8 +60,8 @@ func NewSource(cfg *Config, serialization file.Serialization) (source.Source, er
 	}, nil
 }
 
-func (e *etcd) Scan(key string, value interface{}) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+func (e *etcd) Scan(ctx context.Context, key string, value interface{}) error {
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 	resp, err := e.Client.Get(ctx, path.Join(e.prefix, key))
 	if err != nil {
@@ -72,7 +72,7 @@ func (e *etcd) Scan(key string, value interface{}) error {
 		if err != nil {
 			return err
 		}
-		if _, err := e.Client.Put(context.Background(), path.Join(e.prefix, key), string(b)); err != nil {
+		if _, err := e.Client.Put(ctx, path.Join(e.prefix, key), string(b)); err != nil {
 			return err
 		}
 		return fmt.Errorf("etcd %w: %s", source.ErrNotFound, key)
@@ -80,12 +80,32 @@ func (e *etcd) Scan(key string, value interface{}) error {
 	return e.serialization.Unmarshal(resp.Kvs[0].Value, value)
 }
 
-func (e *etcd) Has(key string) (bool, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+func (e *etcd) Has(ctx context.Context, key string) (bool, error) {
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 	resp, err := e.Client.Get(ctx, path.Join(e.prefix, key))
 	if err != nil {
 		return false, err
 	}
 	return len(resp.Kvs) > 0, nil
+}
+
+func (e *etcd) Watch(ctx context.Context, key string, callback func(event source.Event)) error {
+	go func() {
+		w := e.Client.Watch(ctx, path.Join(e.prefix, key))
+		for v := range w {
+			if v.Err() != nil {
+				break
+			}
+			for _, ev := range v.Events {
+				switch ev.Type {
+				case clientv3.EventTypePut:
+					callback(source.Update)
+				case clientv3.EventTypeDelete:
+					callback(source.Delete)
+				}
+			}
+		}
+	}()
+	return nil
 }

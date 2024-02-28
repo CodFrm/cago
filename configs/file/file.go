@@ -1,6 +1,7 @@
 package file
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -29,7 +30,7 @@ func (f *fileSource) Read() ([]byte, error) {
 	return os.ReadFile(f.path)
 }
 
-func (f *fileSource) Scan(key string, value interface{}) error {
+func (f *fileSource) Scan(ctx context.Context, key string, value interface{}) error {
 	cfg, ok := f.config[key]
 	if !ok {
 		f.config[key] = value
@@ -49,7 +50,11 @@ func (f *fileSource) Scan(key string, value interface{}) error {
 	return f.serialization.Unmarshal(b, value)
 }
 
-func (f *fileSource) Has(key string) (bool, error) {
+func (f *fileSource) Has(ctx context.Context, key string) (bool, error) {
 	_, ok := f.config[key]
 	return ok, nil
+}
+
+func (f *fileSource) Watch(ctx context.Context, key string, callback func(event source.Event)) error {
+	return nil
 }

@@ -28,7 +28,7 @@ func (c *emptyClient) Bucket(ctx context.Context, name string) (oss.Bucket, erro
 	return &emptyBucket{}, nil
 }
 
-func (b *emptyBucket) PutObject(ctx context.Context, objectName string, data io.Reader) error {
+func (b *emptyBucket) PutObject(ctx context.Context, objectName string, data io.Reader, objectSize int64) error {
 	return nil
 }
 
@@ -36,7 +36,7 @@ func (b *emptyBucket) PreSignedPutObject(ctx context.Context, objectName string,
 	return nil, nil
 }
 
-func (b *emptyBucket) GetObject(ctx context.Context, objectName string) (io.ReadCloser, error) {
+func (b *emptyBucket) GetObject(ctx context.Context, objectName string) (oss.Object, error) {
 	return nil, nil
 }
 
@@ -65,6 +65,7 @@ func Test_newWrapClient(t *testing.T) {
 	// 断言调用计数
 	assert.Equal(t, listBucketCallCount, 1)
 }
+
 func Test_newWrapBucket(t *testing.T) {
 	w := wrap.New()
 	// 计数器变量
@@ -99,7 +100,7 @@ func Test_newWrapBucket(t *testing.T) {
 		}
 	})
 	b := newWrapBucket(&emptyBucket{}, w)
-	_ = b.PutObject(context.Background(), "object-name", nil)
+	_ = b.PutObject(context.Background(), "object-name", nil, 0)
 	_, _ = b.PreSignedPutObject(context.Background(), "object-name", time.Minute)
 	_, _ = b.GetObject(context.Background(), "object-name")
 	_, _ = b.PreSignedGetObject(context.Background(), "object-name", time.Minute)

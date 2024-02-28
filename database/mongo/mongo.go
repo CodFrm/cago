@@ -19,7 +19,7 @@ var defaultClient *Client
 
 func Mongo(ctx context.Context, config *configs.Config) error {
 	cfg := &Config{}
-	if err := config.Scan("mongo", cfg); err != nil {
+	if err := config.Scan(ctx, "mongo", cfg); err != nil {
 		return err
 	}
 	opts := options.Client()

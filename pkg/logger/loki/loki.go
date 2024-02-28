@@ -24,7 +24,7 @@ type Config struct {
 func init() {
 	logger.RegistryInitLogger(func(ctx context.Context, config *configs.Config, loggerConfig *logger.Config) ([]logger.Option, error) {
 		cfg := &Config{}
-		if err := config.Scan("logger.loki", cfg); err != nil {
+		if err := config.Scan(ctx, "logger.loki", cfg); err != nil {
 			return nil, err
 		}
 		if !cfg.Enable {

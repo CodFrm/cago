@@ -2,9 +2,10 @@ package memory
 
 import (
 	"context"
+	"time"
+
 	"github.com/codfrm/cago/database/cache/cache"
 	gocache "github.com/patrickmn/go-cache"
-	"time"
 )
 
 type memoryCache struct {

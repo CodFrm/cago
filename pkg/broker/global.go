@@ -16,7 +16,7 @@ const instrumName = "github.com/codfrm/cago/pkg/broker"
 
 func Broker(ctx context.Context, config *configs.Config) error {
 	cfg := &Config{}
-	if err := config.Scan("broker", cfg); err != nil {
+	if err := config.Scan(ctx, "broker", cfg); err != nil {
 		return err
 	}
 	options := make([]Option, 0)

@@ -24,7 +24,7 @@ type Component struct {
 
 func Redis(ctx context.Context, config *configs.Config) error {
 	cfg := &Config{}
-	if err := config.Scan("redis", cfg); err != nil {
+	if err := config.Scan(ctx, "redis", cfg); err != nil {
 		return err
 	}
 	ret := redis.NewClient(&redis.Options{

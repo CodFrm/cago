@@ -1,13 +1,14 @@
 package muxtest
 
 import (
+	"net/http"
+	"net/http/httptest"
+
 	"github.com/codfrm/cago/pkg/utils/validator"
 	"github.com/codfrm/cago/server/mux"
 	"github.com/codfrm/cago/server/mux/muxclient"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
-	"net/http"
-	"net/http/httptest"
 )
 
 type TestMux struct {

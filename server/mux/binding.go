@@ -3,16 +3,15 @@ package mux
 import (
 	"context"
 	"encoding/json"
-	"github.com/codfrm/cago/pkg/logger"
+	"net/http"
+	"reflect"
+	"strconv"
+
 	"github.com/codfrm/cago/pkg/utils"
 	"github.com/codfrm/cago/pkg/utils/httputils"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.uber.org/zap"
-	"net/http"
-	"reflect"
-	"strconv"
 )
 
 type bind struct {
@@ -86,10 +85,6 @@ func (b *bind) bind(req *http.Request, ptr any) error {
 				// 处理key,label的情况,例如: key,default=1
 				key, opts := utils.Head(key, ",")
 				opts, val := utils.Head(opts, "=")
-				logger.Default().Info("field", zap.String("key", key),
-					zap.Bool("bb", fieldElem.IsZero()),
-					zap.Bool("bb2", fieldElem.IsZero()),
-					zap.Bool("aa", form == nil || len(form(key)) == 0))
 				if opts == "default" && fieldElem.IsZero() && (form == nil || len(form(key)) == 0) {
 					setValue(fieldElem, tag, []string{val})
 				} else if form != nil {

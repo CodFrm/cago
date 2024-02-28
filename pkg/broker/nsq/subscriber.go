@@ -3,6 +3,7 @@ package nsq
 import (
 	"context"
 	"encoding/json"
+
 	"github.com/codfrm/cago/pkg/logger"
 
 	"github.com/codfrm/cago/pkg/broker/broker"

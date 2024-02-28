@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"errors"
+
 	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/pkg/opentelemetry/metric"
 	"github.com/codfrm/cago/pkg/opentelemetry/trace"
@@ -86,14 +87,14 @@ func (d *DB) Start(ctx context.Context, config *configs.Config) error {
 	cfg := &Config{}
 	// 数据库group配置
 	cfgGroup := make(GroupConfig)
-	if ok, err := config.Has("dbs"); err != nil {
+	if ok, err := config.Has(ctx, "dbs"); err != nil {
 		return err
 	} else if ok {
-		if err := config.Scan("dbs", &cfgGroup); err != nil {
+		if err := config.Scan(ctx, "dbs", &cfgGroup); err != nil {
 			return err
 		}
 	} else {
-		if err := config.Scan("db", cfg); err != nil {
+		if err := config.Scan(ctx, "db", cfg); err != nil {
 			return err
 		}
 		cfgGroup["default"] = cfg

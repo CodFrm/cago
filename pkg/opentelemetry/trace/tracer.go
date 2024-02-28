@@ -2,8 +2,9 @@ package trace
 
 import (
 	"context"
-	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"time"
+
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"

@@ -1,12 +1,23 @@
 package source
 
-import "errors"
+import (
+	"context"
+	"errors"
+)
 
 var (
 	ErrNotFound = errors.New("config key not found")
 )
 
+type Event int
+
+const (
+	Update Event = iota + 1
+	Delete
+)
+
 type Source interface {
-	Scan(key string, value interface{}) error
-	Has(key string) (bool, error)
+	Scan(ctx context.Context, key string, value interface{}) error
+	Has(ctx context.Context, key string) (bool, error)
+	Watch(ctx context.Context, key string, callback func(event Event)) error
 }

@@ -3,8 +3,9 @@ package storage
 import (
 	"context"
 	"fmt"
-	"github.com/codfrm/cago/middleware/permission"
 	"sync"
+
+	"github.com/codfrm/cago/middleware/permission"
 )
 
 var _ permission.PolicyStorage = (*Memory)(nil)

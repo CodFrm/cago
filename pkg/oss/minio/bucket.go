@@ -2,10 +2,11 @@ package minio
 
 import (
 	"context"
-	"github.com/codfrm/cago/pkg/oss/oss"
 	"io"
 	"net/url"
 	"time"
+
+	"github.com/codfrm/cago/pkg/oss/oss"
 
 	"github.com/minio/minio-go/v7"
 )

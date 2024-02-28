@@ -3,6 +3,7 @@ package cache
 import (
 	"context"
 	"errors"
+
 	"github.com/codfrm/cago/database/cache/memory"
 
 	"github.com/codfrm/cago"
@@ -38,7 +39,7 @@ func Cache() cago.Component {
 
 func (c *cache) Start(ctx context.Context, config *configs.Config) error {
 	cfg := &Config{}
-	if err := config.Scan("cache", cfg); err != nil {
+	if err := config.Scan(ctx, "cache", cfg); err != nil {
 		return err
 	}
 	cache, err := NewWithConfig(ctx, cfg)

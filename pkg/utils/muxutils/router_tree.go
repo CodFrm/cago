@@ -1,9 +1,10 @@
 package muxutils
 
 import (
+	"net/http"
+
 	"github.com/codfrm/cago/server/mux"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 type Router struct {

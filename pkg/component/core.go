@@ -37,7 +37,7 @@ func Core() cago.FuncComponent {
 			return err
 		}
 		// 判断是否有trace配置
-		if ok, err := cfg.Has("trace"); err != nil {
+		if ok, err := cfg.Has(ctx, "trace"); err != nil {
 			return err
 		} else if ok {
 			if err := trace.Trace(ctx, cfg); err != nil {

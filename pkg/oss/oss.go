@@ -30,7 +30,7 @@ var defaultBucket oss.Bucket
 // OSS 对象存储, 支持minio
 func OSS(ctx context.Context, config *configs.Config) error {
 	cfg := &Config{}
-	err := config.Scan("oss", cfg)
+	err := config.Scan(ctx, "oss", cfg)
 	if err != nil {
 		return err
 	}

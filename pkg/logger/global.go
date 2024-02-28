@@ -27,7 +27,7 @@ func RegistryInitLogger(f InitLogger) {
 // Logger 日志组件,核心组件,必须提前注册
 func Logger(ctx context.Context, config *configs.Config) error {
 	cfg := &Config{}
-	if err := config.Scan("logger", cfg); err != nil {
+	if err := config.Scan(ctx, "logger", cfg); err != nil {
 		return err
 	}
 	opts := make([]Option, 0)

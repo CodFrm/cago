@@ -46,7 +46,7 @@ func (h *server) StartCancel(
 	cfg *configs.Config,
 ) error {
 	config := &Config{}
-	err := cfg.Scan("http", config)
+	err := cfg.Scan(ctx, "http", config)
 	if err != nil {
 		return err
 	}

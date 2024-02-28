@@ -1,6 +1,7 @@
 package memory
 
 import (
+	"context"
 	"encoding/json"
 
 	"github.com/codfrm/cago/configs/source"
@@ -19,7 +20,7 @@ func NewSource(config map[string]interface{}) source.Source {
 	}
 }
 
-func (e *Memory) Scan(key string, value interface{}) error {
+func (e *Memory) Scan(ctx context.Context, key string, value interface{}) error {
 	if v, ok := e.config[key]; ok {
 		b, err := json.Marshal(v)
 		if err != nil {
@@ -30,7 +31,11 @@ func (e *Memory) Scan(key string, value interface{}) error {
 	return nil
 }
 
-func (e *Memory) Has(key string) (bool, error) {
+func (e *Memory) Has(ctx context.Context, key string) (bool, error) {
 	_, ok := e.config[key]
 	return ok, nil
+}
+
+func (e *Memory) Watch(ctx context.Context, key string, callback func(event source.Event)) error {
+	return nil
 }

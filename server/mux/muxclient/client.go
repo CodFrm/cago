@@ -6,14 +6,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/codfrm/cago/pkg/utils"
-	"github.com/codfrm/cago/server/mux"
 	"io"
 	"net/http"
 	"net/url"
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/codfrm/cago/pkg/utils"
+	"github.com/codfrm/cago/server/mux"
 
 	"github.com/codfrm/cago/pkg/utils/httputils"
 )
@@ -115,7 +116,11 @@ func (c *Client) Request(ctx context.Context, req any, opts ...ClientDoOption) (
 			continue
 		}
 		fieldElem := ptrElem.Field(i)
-		if key := tag.Get("form"); key != "" {
+		key := tag.Get("json")
+		if key == "" {
+			key = tag.Get("form")
+		}
+		if key != "" {
 			if key == "-" {
 				continue
 			}
@@ -135,11 +140,14 @@ func (c *Client) Request(ctx context.Context, req any, opts ...ClientDoOption) (
 			path = strings.ReplaceAll(path, ":"+uri, fmt.Sprintf("%v", fieldElem.Interface()))
 		}
 	}
-	b, err := json.Marshal(data)
-	if err != nil {
-		return nil, err
+	var body io.Reader
+	if len(data) != 0 {
+		b, err := json.Marshal(data)
+		if err != nil {
+			return nil, err
+		}
+		body = bytes.NewBuffer(b)
 	}
-	body := bytes.NewBuffer(b)
 
 	path = c.baseURL + path
 	if len(query) != 0 {
@@ -149,7 +157,9 @@ func (c *Client) Request(ctx context.Context, req any, opts ...ClientDoOption) (
 	if err != nil {
 		return nil, err
 	}
-	httpReq.Header.Set("Content-Type", "application/json")
+	if body != nil {
+		httpReq.Header.Set("Content-Type", "application/json")
+	}
 	return httpReq, nil
 }
 
