@@ -52,6 +52,16 @@ func (r *Routes) RequestHandle(request interface{}, handlers ...gin.HandlerFunc)
 	return r.requestHandle(requestEl, handlers...)
 }
 
+func Metadata(request interface{}) (string, string) {
+	requestEl := reflect.TypeOf(request)
+	route, ok := requestEl.FieldByName("Meta")
+	// 必须有Route字段
+	if !ok || route.Type != reflect.TypeOf(Meta{}) {
+		panic("invalid method, second parameter must have Meta field")
+	}
+	return route.Tag.Get("path"), route.Tag.Get("method")
+}
+
 func (r *Routes) requestHandle(requestEl reflect.Type, handlers ...gin.HandlerFunc) *Routes {
 	route, ok := requestEl.FieldByName("Meta")
 	// 必须有Route字段

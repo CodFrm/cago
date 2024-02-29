@@ -48,6 +48,14 @@ func Logger(ctx context.Context, config *configs.Config) error {
 			zapcore.Lock(os.Stdout),
 			zapcore.DebugLevel,
 		)))
+	} else {
+		if !cfg.DisableConsole {
+			opts = append(opts, AppendCore(zapcore.NewCore(
+				zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig()),
+				zapcore.Lock(os.Stdout),
+				ToLevel(cfg.Level),
+			)))
+		}
 	}
 	for _, f := range initLogger {
 		o, err := f(ctx, config, cfg)

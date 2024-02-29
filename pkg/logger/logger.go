@@ -9,14 +9,15 @@ import (
 )
 
 type Config struct {
-	Level   string
-	LogFile LogFileConfig
+	Level          string
+	DisableConsole bool          `yaml:"disableConsole"`
+	LogFile        LogFileConfig `yaml:"logFile"`
 }
 
 type LogFileConfig struct {
 	Enable        bool
 	Filename      string
-	ErrorFilename string
+	ErrorFilename string `yaml:"errorFilename"`
 }
 
 func New(opt ...Option) (*zap.Logger, error) {

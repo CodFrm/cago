@@ -4,6 +4,8 @@ metadata:
   name: {{ include "cago.fullname" . }}
   labels:
     {{- include "cago.labels" . | nindent 4 }}
+    cago.io/version: {{ .Chart.AppVersion | quote }}
+    cago.io/environment: {{ .Values.appConfig.env | quote }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}

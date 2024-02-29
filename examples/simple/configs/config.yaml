@@ -23,10 +23,12 @@ http:
         - :8080
 logger:
     level: info
-    logfile:
+    disableConsole: false # 是否禁用控制台输出
+    logFile:
         enable: true
-        errorfilename: ./runtime/logs/cago.err.log
+        errorFilename: ./runtime/logs/cago.err.log
         filename: ./runtime/logs/cago.log
+    # 不推荐该方式, 推荐使用`promtail`来抓取日志
     loki:
         level: info
         url: http://127.0.0.1:3100/loki/api/v1/push
