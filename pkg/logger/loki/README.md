@@ -23,23 +23,30 @@ logger:
 拉取promtail的helm chart, `scrapeConfigs`添加job
 
 ```yaml
-- job_name: cago
-  kubernetes_sd_configs:
-    - role: pod
-  relabel_configs:
-    - source_labels:
-        - __meta_kubernetes_pod_label_app_kubernetes_io_name
-      action: keep
-      regex: cago
-    - source_labels:
-        - __meta_kubernetes_pod_label_app_kubernetes_io_instance
-      regex: ^;*([^;]+)(;.*)?$
-      action: replace
-      target_label: instance
-    - source_labels:
-        - __meta_kubernetes_pod_label_app_kubernetes_io_instance
-      regex: -([^-]+)$
-      action: replace
-      replacement: $1
-      target_label: env
+      - job_name: cago
+        pipeline_stages:
+          - cri: { }
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          - source_labels:
+              - __meta_kubernetes_pod_label_app_kubernetes_io_name
+            action: keep
+            regex: cago
+          - source_labels:
+              - __meta_kubernetes_pod_label_app_cago_io_name
+            action: replace
+            target_label: app
+          - source_labels:
+              - __meta_kubernetes_pod_label_app_cago_io_version
+            action: replace
+            target_label: version
+          - source_labels:
+              - __meta_kubernetes_pod_label_app_cago_io_environment
+            action: replace
+            target_label: env
+          { { - toYaml .Values.config.snippets.common | nindent 4 } }
+          { { - with .Values.config.snippets.extraRelabelConfigs } }
+          { { - toYaml . | nindent 4 } }
+          { { - end } }
 ```

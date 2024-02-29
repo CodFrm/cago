@@ -4,8 +4,6 @@ metadata:
   name: {{ include "cago.fullname" . }}
   labels:
     {{- include "cago.labels" . | nindent 4 }}
-    cago.io/version: {{ .Chart.AppVersion | quote }}
-    cago.io/environment: {{ .Values.appConfig.env | quote }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
@@ -21,6 +19,9 @@ spec:
       {{- end }}
       labels:
         {{- include "cago.selectorLabels" . | nindent 8 }}
+        app.cago.io/name: {{ .Values.appConfig.name | quote }}
+        app.cago.io/version: {{ .Values.appConfig.version | quote }}
+        app.cago.io/environment: {{ .Values.appConfig.env | quote }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:

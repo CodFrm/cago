@@ -7,7 +7,7 @@ data:
     source: etcd
     env: {{ .Values.appConfig.env }}
     debug: {{ .Values.appConfig.debug }}
-    version: 1.0.0
+    version: {{ .Chart.appConfig.version }}
     etcd:
       prefix: /config
       endpoints:
