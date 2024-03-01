@@ -34,9 +34,10 @@ func Logger(ctx context.Context, config *configs.Config) error {
 	if cfg.Level != "" {
 		opts = append(opts, Level(cfg.Level))
 	}
+	level := ToLevel(cfg.Level)
 	if cfg.LogFile.Enable {
 		if cfg.LogFile.Filename != "" {
-			opts = append(opts, AppendCore(NewFileCore(ToLevel(cfg.Level), cfg.LogFile.Filename)))
+			opts = append(opts, AppendCore(NewFileCore(level, cfg.LogFile.Filename)))
 		}
 		if cfg.LogFile.ErrorFilename != "" {
 			opts = append(opts, AppendCore(NewFileCore(zap.ErrorLevel, cfg.LogFile.ErrorFilename)))
@@ -53,7 +54,7 @@ func Logger(ctx context.Context, config *configs.Config) error {
 			opts = append(opts, AppendCore(zapcore.NewCore(
 				zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig()),
 				zapcore.Lock(os.Stdout),
-				ToLevel(cfg.Level),
+				level,
 			)))
 		}
 	}

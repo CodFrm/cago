@@ -70,15 +70,12 @@ func NewFileCore(level zapcore.Level, filename string) zapcore.Core {
 		LocalTime:  true,
 		Compress:   false,
 	}
-	levelEnable := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
-		return lvl >= level
-	})
 	encodeConfig := zap.NewProductionEncoderConfig()
 	encodeConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 	encode := zapcore.NewJSONEncoder(encodeConfig)
 	return zapcore.NewCore(
 		encode,
 		zapcore.AddSync(w),
-		levelEnable,
+		level,
 	)
 }

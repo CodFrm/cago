@@ -3,11 +3,13 @@ package db
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/codfrm/cago/configs"
 	"github.com/codfrm/cago/pkg/opentelemetry/metric"
 	"github.com/codfrm/cago/pkg/opentelemetry/trace"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
 	"gorm.io/plugin/opentelemetry/tracing"
 )
@@ -32,8 +34,8 @@ type Config struct {
 	Dsn    string `yaml:"dsn"`
 	Prefix string `yaml:"prefix"`
 	// 读写分离，以后再说吧
-	WriterDsn []string `yaml:"writer_dsn,omitempty"` // 写入数据源
-	ReaderDsn []string `yaml:"reader_dsn,omitempty"` // 读取数据源
+	//WriterDsn []string `yaml:"writerDsn,omitempty"` // 写入数据源
+	//ReaderDsn []string `yaml:"readerDsn,omitempty"` // 读取数据源
 }
 
 type GroupConfig map[string]*Config
@@ -48,9 +50,19 @@ func Database() *DB {
 	return &DB{}
 }
 
-func (d *DB) newDB(cfg *Config) (*gorm.DB, error) {
+func (d *DB) newDB(cfg *Config, debug bool) (*gorm.DB, error) {
 	if cfg.Driver == "" {
 		cfg.Driver = MySQL
+	}
+	logCfg := logger.Config{
+		SlowThreshold:             200 * time.Millisecond,
+		LogLevel:                  logger.Warn,
+		IgnoreRecordNotFoundError: true,
+		Colorful:                  false,
+	}
+	if debug {
+		logCfg.IgnoreRecordNotFoundError = false
+		logCfg.Colorful = true
 	}
 	orm, err := gorm.Open(driver[cfg.Driver](cfg), &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: true,
@@ -58,6 +70,7 @@ func (d *DB) newDB(cfg *Config) (*gorm.DB, error) {
 			TablePrefix:   cfg.Prefix,
 			SingularTable: true,
 		},
+		Logger: NewLogger(cfg.Driver, logCfg),
 	})
 	if err != nil {
 		return nil, err
@@ -103,14 +116,14 @@ func (d *DB) Start(ctx context.Context, config *configs.Config) error {
 		return errors.New("no default db config")
 	}
 	dbs := make(map[string]*gorm.DB)
-	orm, err := d.newDB(cfgGroup["default"])
+	orm, err := d.newDB(cfgGroup["default"], config.Debug)
 	if err != nil {
 		return err
 	}
 	delete(cfgGroup, "default")
 	if len(cfgGroup) > 0 {
 		for name, v := range cfgGroup {
-			db, err := d.newDB(v)
+			db, err := d.newDB(v, config.Debug)
 			if err != nil {
 				return err
 			}
