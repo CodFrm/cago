@@ -2,6 +2,7 @@ package sync
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -36,9 +37,10 @@ func (r *redisLocker) lockOptions(opts ...LockOption) *LockOptions {
 }
 
 // LockKey implements Locker
-func (r *redisLocker) LockKey(key string, opts ...LockOption) error {
+func (r *redisLocker) LockKey(ctx context.Context, key string, opts ...LockOption) error {
 	options := r.lockOptions(opts...)
-	ctx, cancel := context.WithTimeout(context.Background(), options.timeout)
+	var cancel context.CancelFunc
+	ctx, cancel = context.WithTimeout(ctx, options.timeout)
 	defer cancel()
 	key = r.genKey(key)
 	for {
@@ -46,8 +48,8 @@ func (r *redisLocker) LockKey(key string, opts ...LockOption) error {
 		case <-ctx.Done():
 			return ErrTryLockTimeout
 		default:
-			if err := r.tryLockKey(key, options); err != nil {
-				if err != ErrLockOccurred {
+			if err := r.tryLockKey(ctx, key, options); err != nil {
+				if !errors.Is(err, ErrLockOccurred) {
 					return err
 				}
 			} else {
@@ -60,17 +62,17 @@ func (r *redisLocker) LockKey(key string, opts ...LockOption) error {
 }
 
 // TryLockKey 尝试获取锁
-func (r *redisLocker) TryLockKey(key string, opts ...LockOption) error {
+func (r *redisLocker) TryLockKey(ctx context.Context, key string, opts ...LockOption) error {
 	options := r.lockOptions(opts...)
-	return r.tryLockKey(r.genKey(key), options)
+	return r.tryLockKey(ctx, r.genKey(key), options)
 }
 
-func (r *redisLocker) TryLock(opts ...LockOption) error {
-	return r.TryLockKey("", opts...)
+func (r *redisLocker) TryLock(ctx context.Context, opts ...LockOption) error {
+	return r.TryLockKey(ctx, "", opts...)
 }
 
-func (r *redisLocker) tryLockKey(key string, options *LockOptions) error {
-	if ok, err := r.redis.SetNX(context.Background(), key, 1, options.timeout).Result(); err != nil {
+func (r *redisLocker) tryLockKey(ctx context.Context, key string, options *LockOptions) error {
+	if ok, err := r.redis.SetNX(ctx, key, 1, options.timeout).Result(); err != nil {
 		return err
 	} else if !ok {
 		return ErrLockOccurred
@@ -79,8 +81,8 @@ func (r *redisLocker) tryLockKey(key string, options *LockOptions) error {
 }
 
 // UnlockKey implements Locker
-func (r *redisLocker) UnlockKey(key string) error {
-	cnt, err := r.redis.Del(context.Background(), r.genKey(key)).Result()
+func (r *redisLocker) UnlockKey(ctx context.Context, key string) error {
+	cnt, err := r.redis.Del(ctx, r.genKey(key)).Result()
 	if err != nil {
 		return err
 	} else if cnt == 0 {
@@ -90,11 +92,11 @@ func (r *redisLocker) UnlockKey(key string) error {
 }
 
 // Lock implements Locker
-func (r *redisLocker) Lock(opts ...LockOption) error {
-	return r.LockKey("", opts...)
+func (r *redisLocker) Lock(ctx context.Context, opts ...LockOption) error {
+	return r.LockKey(ctx, "", opts...)
 }
 
 // Unlock implements Locker
-func (r *redisLocker) Unlock() error {
-	return r.UnlockKey("")
+func (r *redisLocker) Unlock(ctx context.Context) error {
+	return r.UnlockKey(ctx, "")
 }

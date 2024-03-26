@@ -19,4 +19,5 @@ type ListRequest struct {
 	PBool                 *bool                   `json:"p_bool"`
 	ID                    primitive.ObjectID      `json:"id"`
 	Data                  map[string][]*PkgStruct `json:"data"`
+	Any                   any                     `json:"any"`
 }

@@ -96,11 +96,11 @@ func (t *TokenAuth) Get(ctx context.Context) *AccessToken {
 }
 
 func (t *TokenAuth) Refresh(ctx context.Context, refreshToken string) (*AccessToken, error) {
-	if err := t.options.lock.LockKey(refreshToken); err != nil {
+	if err := t.options.lock.LockKey(ctx, refreshToken); err != nil {
 		return nil, err
 	}
 	defer func() {
-		_ = t.options.lock.UnlockKey(refreshToken)
+		_ = t.options.lock.UnlockKey(ctx, refreshToken)
 	}()
 	m, err := t.options.storage.FindByRefreshToken(ctx, refreshToken)
 	if err != nil {

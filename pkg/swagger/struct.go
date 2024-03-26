@@ -227,6 +227,8 @@ func (p *parseStruct) parseFieldType(fieldType ast.Expr) (spec.Schema, error) {
 		swaggerType.Type = spec.StringOrArray{"number"}
 	case "bool":
 		swaggerType.Type = spec.StringOrArray{"boolean"}
+	case "any":
+		swaggerType.Type = spec.StringOrArray{"any"}
 	default:
 		return p.parseExpr(t)
 	}

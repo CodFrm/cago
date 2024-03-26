@@ -18,7 +18,12 @@ func Go(fun func(ctx context.Context) error, opts ...Option) error {
 		options.ctx = context.Background()
 	}
 	go func() {
-		defer wg.Done()
+		defer func() {
+			wg.Done()
+			// 错误处理
+			if err := recover(); err != nil {
+			}
+		}()
 		_ = fun(options.ctx)
 	}()
 	return nil

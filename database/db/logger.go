@@ -58,7 +58,6 @@ func (l *Logger) LogMode(level logger.LogLevel) logger.Interface {
 
 func (l *Logger) fields(fields ...zap.Field) []zap.Field {
 	ret := []zap.Field{
-		zap.String("component", "gorm"),
 		zap.String("db.driver", l.driver),
 	}
 	if len(fields) > 0 {

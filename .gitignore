@@ -20,6 +20,6 @@
 
 /configs/config.yaml
 
-/docs/
-runtime/
-bin/
+/docs
+/runtime
+/bin

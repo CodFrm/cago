@@ -72,7 +72,7 @@ jobs:
       with:
         push: true
         file: deploy/docker/Dockerfile
-        tags: ${{ env.REGISTRY }}/${{ env.REPOSITORY }}:${{ steps.vars.outputs.sha_short }}
+        tags: ${{ env.REGISTRY }}/${{ env.REPOSITORY }}:${{ env.ENV }}.${{ steps.vars.outputs.sha_short }}
         context: .
         build-args: |
           APP_NAME=${{ env.APP_NAME }}
@@ -103,7 +103,7 @@ jobs:
         cd deploy/helm
         helm upgrade --install \
         --namespace $NAMESPACE $APP_NAME . -f values.yaml \
-        --set image.tag=${{ steps.vars.outputs.sha_short }} --set image.repository=$REGISTRY/$REPOSITORY \
+        --set image.tag=${{ env.ENV }}.${{ steps.vars.outputs.sha_short }} --set image.repository=$REGISTRY/$REPOSITORY \
         --set etcdConfig.password=$ETCD_CONFIG_PASSWORD \
         --set appConfig.env=${{ env.ENV }} \
         --set ingress.hosts[0].host=$DOMAIN \

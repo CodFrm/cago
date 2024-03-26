@@ -27,6 +27,7 @@ type Driver string
 const (
 	MySQL      Driver = "mysql"
 	Clickhouse Driver = "clickhouse"
+	SQLite     Driver = "sqlite"
 )
 
 type Config struct {

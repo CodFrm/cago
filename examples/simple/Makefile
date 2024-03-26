@@ -1,17 +1,22 @@
 
 check-cago:
 ifneq ($(which cago),)
-	go install github.com/codfrm/cago
+	go get -u github.com/codfrm/cago
 endif
 
 check-mockgen:
 ifneq ($(which mockgen),)
-	go install github.com/golang/mock/mockgen
+	go get -u github.com/golang/mock/mockgen
 endif
 
 check-golangci-lint:
 ifneq ($(which golangci-lint),)
 	go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
+endif
+
+check-goconvey:
+ifneq ($(which goconvey),)
+	go get -u github.com/smartystreets/goconvey
 endif
 
 swagger: check-cago
@@ -36,6 +41,9 @@ html-cover: coverage.out
 
 generate: check-mockgen swagger
 	go generate ./... -x
+
+goconvey: check-goconvey
+	goconvey
 
 GOOS=linux
 GOARCH=amd64
