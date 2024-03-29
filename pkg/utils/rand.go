@@ -14,6 +14,7 @@ const (
 	Mix                          // 大小写数字混合
 )
 
+// RandString 随机字符串
 func RandString(n int, randType RandStringType) string {
 	b := make([]byte, n)
 	l := int(10 + (randType * 26))

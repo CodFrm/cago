@@ -12,6 +12,8 @@ type CtxMongoDatabase struct {
 	database *mongo.Database
 }
 
+// NewCtxMongoDatabase creates a new CtxMongoDatabase
+// 对原本的 mongo.Database 进行了封装，这样在调用时就不需要传入 context.Context
 func NewCtxMongoDatabase(ctx context.Context, database *mongo.Database) *CtxMongoDatabase {
 	return &CtxMongoDatabase{
 		ctx:      ctx,

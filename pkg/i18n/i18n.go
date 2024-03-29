@@ -4,6 +4,7 @@ var DefaultLang = "zh-cn"
 
 var langs = map[string]map[int]string{}
 
+// Register 注册语言包
 func Register(lang string, code map[int]string) {
 	if _, ok := langs[lang]; ok {
 		// append

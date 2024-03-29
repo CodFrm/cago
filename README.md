@@ -10,9 +10,13 @@ Cago 只对社区工具进行集成,大大减少迁移难度和学习成本,我�
 
 ## 快速开始
 
+你可以通过简单示例来快速的了解 Cago 的使用。你也可以复制这个示例来创建你的项目。
+
 [简单示例](./examples/simple)
 
 ## 脚手架
+
+你可以安装脚手架来帮助你生成代码。
 
 [脚手架文档](./cmd/cago)
 
@@ -21,13 +25,15 @@ Cago 只对社区工具进行集成,大大减少迁移难度和学习成本,我�
 [部署资源](./deploy)
 
 cago 提供了[`gitlab-ci`](deploy/gitlab/.gitlab-ci.yml)、[`golanglint-ci`](./deploy/.golangci.yml)和
-[`Kubernetes`](./deploy)的 CI/CD 配置文件,可以快速帮你实现 CI/CD.
+[`Kubernetes helm`](./deploy)的 CI/CD 配置文件,可以快速帮你实现 CI/CD.
 
-当本地调试时也可以使用`docker compose up -d`启动调试环境.
+当本地调试时也可以使用[`docker-compose.yaml`](./deploy/docker-compose.yaml)启动调试环境.
 
-默认使用`etcd`作为配置中心,同时也支持文件作为配置启动.
+可以使用`etcd`作为配置中心，也支持文件作为配置启动。
 
 ## 组件
+
+大多数组件都是基于社区工具进行封装，方便使用。
 
 - [常用组件包](./pkg/component)
 - [数据库组件包](./database)
@@ -35,10 +41,48 @@ cago 提供了[`gitlab-ci`](deploy/gitlab/.gitlab-ci.yml)、[`golanglint-ci`](./
 - [中间件](./middleware)
 - [工具包/杂项](./pkg)
 
+## 目录结构
+
+Cago使用三层架构，并混合了DDD的思想，推荐使用下面的目录结构。你也可以根据自己的需求来调整目录结构。
+
+- `cmd/app/main.go` 项目的入口
+- `configs`
+  - `config.yaml` 配置文件
+  - `...` 其他配置文件，也可以写配置读取方法，其它包调用：`configs.GetConfig().XXX`
+- `docs` 文档目录，包括 swagger api 文档、设计文档等
+- `deploy` 部署资源文件
+- `internal` 内部包
+  - `api` API 请求结构体
+    - `example/example.go` api请求与返回结构
+    - `router.go` 路由定义
+  - `controller` 控制器目录，API请求会调用控制器，做一些数据处理校验逻辑
+  - `model` 数据模型
+    - `entity` 数据库实体模型，推荐使用充血模型
+    - `xxx.go` 一些数据模型的定义
+  - `pkg` 项目内通用的模块
+    - `code` 错误码定义
+    - `utils` 工具包
+  - `repository` 数据库操作
+  - `service` 服务接口
+  - `task` 任务模块
+    - `crontab` 定时任务
+    - `job` // 异步任务 打了注释，还没想好
+    - `queue` // 队列任务
+    - `task.go` // 任务定义
+- `migrations` 数据库迁移文件
+- `pkg` 公共的模块，可以被其它项目引用
+- `.golangci.yml` golangci-lint 配置文件
+- `Makefile` 项目的 Makefile 文件
+
 ## 参考项目
 
 - GoFrame
 - GoMicro
+
+## Who use Cago？
+
+- [脚本猫](https://github.com/scriptscat/scriptlist)
+- [DSP2B](https://github.com/dsp2b/dsp2b)
 
 ## License
 

@@ -19,6 +19,9 @@ type Logger struct {
 	traceStr, traceErrStr, traceWarnStr string
 }
 
+// NewLogger create new logger
+// 自定义了gorm的日志输出，会屏蔽掉一些gorm的ErrRecordNotFound错误
+// 将日志输出重定向到了cago的日志库
 func NewLogger(driver Driver, config logger.Config) *Logger {
 	var (
 		infoStr      = "%s\n[info] "

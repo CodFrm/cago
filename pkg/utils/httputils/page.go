@@ -42,6 +42,7 @@ func (p *PageRequest) GetLimit() int {
 	return p.GetSize()
 }
 
+// PageResponse 分页返回
 type PageResponse[T any] struct {
 	List  []T   `json:"list"`
 	Total int64 `json:"total"`

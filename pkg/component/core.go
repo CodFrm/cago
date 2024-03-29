@@ -23,6 +23,7 @@ import (
 )
 
 // Core 核心组件,包括日志组件、链路追踪、指标
+// 日志组件必须注册，链路追踪和指标注册了后，某些组件会根据它们自动开启相关功能
 func Core() cago.FuncComponent {
 	mux.RegisterMiddleware(func(cfg *configs.Config, r *gin.Engine) error {
 		if cfg.Env != configs.PROD {
@@ -52,14 +53,17 @@ func Core() cago.FuncComponent {
 	}
 }
 
+// Logger 日志组件
 func Logger() cago.FuncComponent {
 	return logger.Logger
 }
 
+// Trace 链路追踪组件
 func Trace() cago.FuncComponent {
 	return trace.Trace
 }
 
+// Metrics 指标组件
 func Metrics() cago.FuncComponent {
 	return metric.Metrics
 }

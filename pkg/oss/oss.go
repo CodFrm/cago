@@ -56,10 +56,12 @@ func OSS(ctx context.Context, config *configs.Config) error {
 	return nil
 }
 
+// Default 获取默认的oss客户端
 func Default() oss.Client {
 	return defaultClient
 }
 
+// DefaultBucket 获取默认的oss bucket
 func DefaultBucket() oss.Bucket {
 	return defaultBucket
 }

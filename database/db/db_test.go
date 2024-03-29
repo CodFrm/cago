@@ -76,7 +76,7 @@ func TestDatabase(t *testing.T) {
 		)
 
 	info := &Info{ID: 2}
-	With("mock2").First(info)
+	Use("mock2").First(info)
 	assert.Equal(t, 2, info.ID)
 	assert.Equal(t, "avatar", info.Avatar)
 	mock1.ExpectQuery("SELECT").
@@ -116,4 +116,5 @@ func TestDatabase(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 4, info.ID)
 	assert.Equal(t, "avatar4", info.Avatar)
+
 }

@@ -13,6 +13,8 @@ type CtxIndex struct {
 	index mongo.IndexView
 }
 
+// NewCtxIndex creates a new CtxIndex
+// 对原本的 mongo.IndexView 进行了封装，这样在调用时就不需要传入 context.Context
 func NewCtxIndex(ctx context.Context, index mongo.IndexView) *CtxIndex {
 	return &CtxIndex{
 		ctx:   ctx,

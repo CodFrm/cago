@@ -2,12 +2,13 @@ package limit
 
 import "context"
 
+// Limit 限流器接口
 type Limit interface {
 	Take(ctx context.Context, key string) (func() error, error)
 	FuncTake(ctx context.Context, key string, f func() (interface{}, error)) (interface{}, error)
 }
 
-// CombinationLimit 组合限流器
+// CombinationLimit 组合限流器 可以组合多个限流器
 type CombinationLimit struct {
 	limits []Limit
 }

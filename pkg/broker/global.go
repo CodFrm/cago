@@ -14,6 +14,7 @@ var broker broker2.Broker
 
 const instrumName = "github.com/codfrm/cago/pkg/broker"
 
+// Broker 消息队列组件
 func Broker(ctx context.Context, config *configs.Config) error {
 	cfg := &Config{}
 	if err := config.Scan(ctx, "broker", cfg); err != nil {
@@ -36,10 +37,12 @@ func Broker(ctx context.Context, config *configs.Config) error {
 	return nil
 }
 
+// SetBroker 设置消息队列组件
 func SetBroker(b broker2.Broker) {
 	broker = b
 }
 
+// Default 获取默认消息队列组件
 func Default() broker2.Broker {
 	return broker
 }

@@ -14,6 +14,7 @@ const (
 	languageKey key = iota
 )
 
+// T 根据ctx获取语言，根据key获取对应的文本，然后根据args进行格式化，返回结果
 func T(ctx context.Context, key int, args ...interface{}) string {
 	lang, ok := ctx.Value(languageKey).(string)
 	if !ok {
@@ -26,11 +27,12 @@ func T(ctx context.Context, key int, args ...interface{}) string {
 	return fmt.Sprintf(langMap[key], args...)
 }
 
+// WithLanguage 设置语言
 func WithLanguage(ctx context.Context, lang string) context.Context {
 	return context.WithValue(ctx, languageKey, lang)
 }
 
-// NewErrorWithStatus 自定义错误
+// NewErrorWithStatus 自定义错误，可以设置状态码，code为错误码，会自动获取对应的错误文本，v为格式化参数
 func NewErrorWithStatus(ctx context.Context, status int, code int, v ...interface{}) error {
 	return &httputils.Error{
 		Status: status,

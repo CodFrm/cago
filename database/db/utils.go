@@ -15,6 +15,9 @@ var driver = map[Driver]func(*Config) gorm.Dialector{
 	},
 }
 
+// RegisterDriver 注册数据库驱动 默认会注册mysql
+// t 数据库驱动名
+// f 数据库驱动函数 传入配置返回 gorm.Dialector
 func RegisterDriver(t Driver, f func(*Config) gorm.Dialector) {
 	driver[t] = f
 }

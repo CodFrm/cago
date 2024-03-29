@@ -25,7 +25,13 @@ type Cago struct {
 
 type CloseHandle func()
 
-// New 初始化cago
+// New create a new cago instance
+// ctx 可以管理整个应用的生命周期，当ctx.Done()时，会传递到每一个组件，安全退出
+// cfg 配置文件，每一个组件都可以使用，通过 configs.NewConfig 去构建
+// 应用启动时，会调用每一个组件的 Component.Start 方法，启动组件
+// 应用停止时，会调用每一个组件的 Component.CloseHandle 方法，关闭组件
+// 推荐链式调用的方式去使用
+// cago.New(ctx, cfg).Registry(component.Core()).RegistryCancel(mux.HTTP(api.Router)).Start()
 func New(ctx context.Context, cfg *configs.Config) *Cago {
 	ctx, cancel := context.WithCancel(ctx)
 	cago := &Cago{
@@ -46,7 +52,7 @@ func (r *Cago) Registry(component Component) *Cago {
 	return r
 }
 
-// RegistryCancel 注册cancel组件
+// RegistryCancel 注册cancel组件，cancel组件可以停止整个应用
 func (r *Cago) RegistryCancel(component ComponentCancel) *Cago {
 	err := component.StartCancel(r.ctx, r.cancel, r.cfg)
 	if err != nil {
@@ -56,7 +62,9 @@ func (r *Cago) RegistryCancel(component ComponentCancel) *Cago {
 	return r
 }
 
-// Start 启动框架,在此之前组件已全部启动,此处只做停止等待
+// Start 启动框架 在此之前组件已全部执行 Component.Start 方法启动，此处只做停止等待
+// 可以通过ctx、cancelFunc和进程信号量来控制整个应用的生命周期
+// 停止时会调用 Component.CloseHandle 方法关闭组件，会等待所有组件关闭完成，最终关闭整个应用
 func (r *Cago) Start() error {
 	quitSignal := make(chan os.Signal, 1)
 	// 优雅启停

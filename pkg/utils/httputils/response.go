@@ -4,12 +4,15 @@ import (
 	"net/http"
 )
 
+// JSONResponse 返回json数据
 type JSONResponse struct {
 	Code int         `json:"code"`
 	Msg  string      `json:"msg"`
 	Data interface{} `json:"data"`
 }
 
+// Error 错误返回，包含了状态码、错误码、错误信息、请求ID
+// 请求id为trace链路追踪的id，需要配置trace组件才会有
 type Error struct {
 	Status    int    `json:"-"`
 	Code      int    `json:"code"`

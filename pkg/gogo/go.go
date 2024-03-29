@@ -3,11 +3,16 @@ package gogo
 import (
 	"context"
 	"sync"
+
+	"github.com/codfrm/cago/pkg/logger"
+	"go.uber.org/zap"
 )
 
 var wg sync.WaitGroup
 
-// Go 框架处理协程,用于优雅启停
+// Go 框架处理协程
+// 可以处理协程的panic，但是不会返回错误
+// 也可以处理安全退出，当还有协程在运行时，gogo.Wait()会一直阻塞
 func Go(fun func(ctx context.Context) error, opts ...Option) error {
 	wg.Add(1)
 	options := &Options{}
@@ -22,6 +27,7 @@ func Go(fun func(ctx context.Context) error, opts ...Option) error {
 			wg.Done()
 			// 错误处理
 			if err := recover(); err != nil {
+				logger.Default().Error("goroutine panic", zap.Any("err", err))
 			}
 		}()
 		_ = fun(options.ctx)

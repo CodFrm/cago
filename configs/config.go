@@ -29,6 +29,7 @@ type Config struct {
 	serialization file.Serialization
 }
 
+// NewConfig 创建配置
 func NewConfig(appName string, opt ...Option) (*Config, error) {
 	ctx := context.Background()
 	options := &Options{
@@ -91,6 +92,7 @@ func (c *Config) init() error {
 	return nil
 }
 
+// Scan 读取配置，可以将配置读取到结构体中
 func (c *Config) Scan(ctx context.Context, key string, value interface{}) error {
 	keys := strings.Split(key, ".")
 	if len(keys) == 1 {
@@ -126,6 +128,7 @@ func (c *Config) findKey(ctx context.Context, key string, value interface{}) err
 	return nil
 }
 
+// String 获取配置，返回字符串
 func (c *Config) String(ctx context.Context, key string) string {
 	var str string
 	if err := c.findKey(ctx, key, &str); err != nil {
@@ -134,6 +137,7 @@ func (c *Config) String(ctx context.Context, key string) string {
 	return str
 }
 
+// Bool 获取配置，返回bool
 func (c *Config) Bool(ctx context.Context, key string) bool {
 	var b bool
 	if err := c.findKey(ctx, key, &b); err != nil {
@@ -142,10 +146,12 @@ func (c *Config) Bool(ctx context.Context, key string) bool {
 	return b
 }
 
+// Has 判断配置是否存在
 func (c *Config) Has(ctx context.Context, key string) (bool, error) {
 	return c.source.Has(ctx, key)
 }
 
+// Watch 监听配置变化
 func (c *Config) Watch(ctx context.Context, key string, callback func(event source.Event)) error {
 	return c.source.Watch(ctx, key, callback)
 }

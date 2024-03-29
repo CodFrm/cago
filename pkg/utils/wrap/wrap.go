@@ -11,6 +11,7 @@ type Wrap struct {
 	wraps []Handler
 }
 
+// New 创建一个包装器
 func New() *Wrap {
 	return &Wrap{}
 }

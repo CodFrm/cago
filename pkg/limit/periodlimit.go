@@ -2,6 +2,7 @@ package limit
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -26,7 +27,8 @@ type PeriodLimit struct {
 	keyPrefix     string
 }
 
-// NewPeriodLimit 创建周期限流器,period单位秒,quota限流数量
+// NewPeriodLimit 创建周期限流器
+// period单位秒，quota限流数量，limitStore redis客户端，keyPrefix键前缀
 func NewPeriodLimit(period, quota int64, limitStore *redis.Client, keyPrefix string) *PeriodLimit {
 	return &PeriodLimit{
 		period:     period,
@@ -40,18 +42,20 @@ func (p *PeriodLimit) key(key string) string {
 	return p.keyPrefix + ":" + key
 }
 
+// Take 进行限流
+// 输入对应的key，返回一个取消函数和错误
 func (p *PeriodLimit) Take(ctx context.Context, key string) (func() error, error) {
 	key = p.key(key)
 	now := time.Now().Unix()
 	cnt, err := p.limitStore.ZCount(ctx, key, strconv.FormatInt(now-p.period, 10), "+inf").Result()
 	if err != nil {
-		if redis.Nil != err {
+		if !errors.Is(err, redis.Nil) {
 			return nil, err
 		}
 	}
 	total, err := p.limitStore.ZCard(ctx, key).Result()
 	if err != nil {
-		if redis.Nil != err {
+		if !errors.Is(err, redis.Nil) {
 			return nil, err
 		}
 	}
@@ -84,6 +88,8 @@ func (p *PeriodLimit) Take(ctx context.Context, key string) (func() error, error
 	return nil, httputils.NewError(http.StatusTooManyRequests, -1, log)
 }
 
+// FuncTake 进行限流
+// 输入对应的key和一个函数，当函数返回error时，会自动执行取消，返回函数的返回值和错误
 func (p *PeriodLimit) FuncTake(ctx context.Context, key string, f func() (interface{}, error)) (interface{}, error) {
 	cancel, err := p.Take(ctx, key)
 	if err != nil {
@@ -100,6 +106,7 @@ func (p *PeriodLimit) FuncTake(ctx context.Context, key string, f func() (interf
 }
 
 // Count 获取用量
+// 输入对应的key和period(秒)，返回在period时间内的用量
 func (p *PeriodLimit) Count(ctx context.Context, key string, period int64) (int64, error) {
 	key = p.key(key)
 	now := time.Now().Unix()

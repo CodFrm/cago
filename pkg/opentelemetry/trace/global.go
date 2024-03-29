@@ -8,7 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"
-	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -21,16 +20,6 @@ func init() {
 		}
 		return nil
 	})
-}
-
-type NewExporterFunc func(ctx context.Context, config *Config) (tracesdk.SpanExporter, error)
-
-var (
-	exporters = make(map[string]NewExporterFunc)
-)
-
-func RegisterExporter(name string, f NewExporterFunc) {
-	exporters[name] = f
 }
 
 var tracerProvider trace.TracerProvider
@@ -58,6 +47,8 @@ func Trace(ctx context.Context, config *configs.Config) error {
 	return nil
 }
 
+// Default 获取默认链路追踪组件
+// 获取到后，其它组件可以判断是否存在，再进行使用
 func Default() trace.TracerProvider {
 	return tracerProvider
 }
