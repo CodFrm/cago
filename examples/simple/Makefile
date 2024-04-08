@@ -1,22 +1,22 @@
 
 check-cago:
 ifneq ($(which cago),)
-	go get -u github.com/codfrm/cago
+	go install github.com/codfrm/cago/cmd/cago@latest
 endif
 
 check-mockgen:
 ifneq ($(which mockgen),)
-	go get -u github.com/golang/mock/mockgen
+	go install go.uber.org/mock/mockgen@latest
 endif
 
 check-golangci-lint:
 ifneq ($(which golangci-lint),)
-	go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 endif
 
 check-goconvey:
 ifneq ($(which goconvey),)
-	go get -u github.com/smartystreets/goconvey
+	go install github.com/smartystreets/goconvey@latest
 endif
 
 swagger: check-cago
