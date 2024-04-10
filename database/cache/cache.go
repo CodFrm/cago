@@ -27,7 +27,7 @@ type Config struct {
 	DB       int
 }
 
-var defaultCache *cache
+var defaultCache cache2.Cache
 
 type cache struct {
 	cache2.Cache
@@ -47,7 +47,7 @@ func (c *cache) Start(ctx context.Context, config *configs.Config) error {
 		return err
 	}
 	c.Cache = cache
-	defaultCache = c
+	defaultCache = cache
 	return nil
 }
 
@@ -72,4 +72,8 @@ func NewWithConfig(ctx context.Context, cfg *Config, opts ...cache2.Option) (cac
 
 func Default() cache2.Cache {
 	return defaultCache
+}
+
+func SetDefault(cache cache2.Cache) {
+	defaultCache = cache
 }

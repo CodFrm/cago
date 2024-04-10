@@ -26,7 +26,28 @@ func (t *testTransport) RoundTrip(r *http.Request) (*http.Response, error) {
 	return w.Result(), nil
 }
 
-func NewTestMux() *TestMux {
+type Options struct {
+	baseUrl string
+}
+
+type Option func(*Options)
+
+func newOptions(opts ...Option) *Options {
+	options := &Options{}
+	for _, opt := range opts {
+		opt(options)
+	}
+	return options
+}
+
+func WithBaseUrl(baseUrl string) Option {
+	return func(o *Options) {
+		o.baseUrl = baseUrl
+	}
+}
+
+func NewTestMux(opts ...Option) *TestMux {
+	options := newOptions(opts...)
 	r := gin.Default()
 	var err error
 	binding.Validator, err = validator.NewValidator()
@@ -40,7 +61,7 @@ func NewTestMux() *TestMux {
 			Routes:  &mux.Routes{IRoutes: r},
 			IRouter: r,
 		},
-		Client: muxclient.NewClient("", muxclient.WithClient(&http.Client{
+		Client: muxclient.NewClient(options.baseUrl, muxclient.WithClient(&http.Client{
 			Transport: &testTransport{r: r},
 		})),
 	}

@@ -25,9 +25,45 @@ func Handle(ctx *gin.Context, f func() interface{}) {
 	HandleResp(ctx, resp)
 }
 
-func deal(ctx *gin.Context, resp any, field []zap.Field) {
+// HandleResp 处理响应
+// 1. 如果是 httputils.Error 类型，会根据里面定义的状态码和数据返回
+// 2. 如果是 validator.ValidationErrors 类型，会返回 400 错误码和错误信息
+// 3. 如果是 error 类型，会返回 500 错误码，错误信息会记录到日志中
+// 4. 其他情况会返回 200 状态码，并返回数据
+func HandleResp(ctx *gin.Context, resp any) {
+	if err, ok := resp.(error); ok {
+		if err := HandleError(ctx, err); err != nil {
+			return
+		}
+	}
+	ctx.JSON(http.StatusOK, JSONResponse{
+		Code: 0,
+		Msg:  "success",
+		Data: resp,
+	})
+}
+
+// HandleError 处理错误
+// 当err为nil时不做任何处理
+// 否则根据err的类型进行处理，然后返回
+func HandleError(ctx *gin.Context, err error) error {
+	if err == nil {
+		return nil
+	}
+	var field []zap.Field
+	for {
+		if errr, ok := err.(errs.Unwrap); ok {
+			switch errr := errr.(type) {
+			case *errs.Error:
+				field = append(field, errr.Field()...)
+			}
+			err = errr.Unwrap()
+		} else {
+			break
+		}
+	}
 	// 从trace中获取
-	switch data := resp.(type) {
+	switch data := err.(type) {
 	case *Error:
 		data.RequestID = RequestID(ctx)
 		ctx.AbortWithStatusJSON(data.Status, data)
@@ -35,7 +71,7 @@ func deal(ctx *gin.Context, resp any, field []zap.Field) {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 			"code": -1, "msg": pkgValidator.TransError(data),
 		})
-	case error:
+	default:
 		requestId := RequestID(ctx)
 		field = append(field, zap.Error(data))
 		logger.Ctx(ctx).Error(
@@ -51,34 +87,8 @@ func deal(ctx *gin.Context, resp any, field []zap.Field) {
 				"code": -1, "msg": "系统错误",
 			})
 		}
-	default:
-		ctx.JSON(http.StatusOK, JSONResponse{
-			Code: 0,
-			Msg:  "success",
-			Data: data,
-		})
 	}
-}
-
-// HandleResp 处理响应
-// 1. 如果是 httputils.Error 类型，会根据里面定义的状态码和数据返回
-// 2. 如果是 validator.ValidationErrors 类型，会返回 400 错误码和错误信息
-// 3. 如果是 error 类型，会返回 500 错误码，错误信息会记录到日志中
-// 4. 其他情况会返回 200 状态码，并返回数据
-func HandleResp(ctx *gin.Context, resp any) {
-	var field []zap.Field
-	for {
-		if err, ok := resp.(errs.Unwrap); ok {
-			switch err := err.(type) {
-			case *errs.Error:
-				field = append(field, err.Field()...)
-			}
-			resp = err.Unwrap()
-		} else {
-			break
-		}
-	}
-	deal(ctx, resp, field)
+	return err
 }
 
 // RequestID 获取请求ID

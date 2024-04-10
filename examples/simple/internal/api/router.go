@@ -2,13 +2,13 @@ package api
 
 import (
 	"context"
-	cache2 "github.com/codfrm/cago/database/cache"
+
 	_ "github.com/codfrm/cago/examples/simple/docs"
 	"github.com/codfrm/cago/examples/simple/internal/controller/example_ctr"
 	"github.com/codfrm/cago/examples/simple/internal/controller/user_ctr"
 	"github.com/codfrm/cago/examples/simple/internal/repository/user_repo"
-	"github.com/codfrm/cago/middleware/sessions"
-	"github.com/codfrm/cago/middleware/sessions/cache"
+	"github.com/codfrm/cago/examples/simple/internal/service/user_svc"
+	"github.com/codfrm/cago/pkg/iam/authn"
 	"github.com/codfrm/cago/server/mux"
 )
 
@@ -17,12 +17,13 @@ import (
 // @version  1.0
 // @BasePath /api/v1
 func Router(ctx context.Context, root *mux.Router) error {
-	// 注册储存实例
-	user_repo.RegisterUser(user_repo.NewUser())
+	// 注册认证模块
+	auth := authn.New(user_repo.User(),
+		authn.WithMiddleware(user_svc.Login().Middleware()),
+	)
+	authn.SetDefault(auth)
 
-	r := root.Group("/api/v1", sessions.Middleware("simple-session", cache.NewCacheStore(
-		cache2.Default(), "simple",
-	)))
+	r := root.Group("/api/v1")
 
 	userLoginCtr := user_ctr.NewLogin()
 	{
@@ -31,8 +32,11 @@ func Router(ctx context.Context, root *mux.Router) error {
 			userLoginCtr.Register,
 			userLoginCtr.Login,
 		)
-		r.Group("/", userLoginCtr.Middleware()).Bind(
+
+		r.Group("/", auth.Middleware(true)).Bind(
+			userLoginCtr.CurrentUser,
 			userLoginCtr.Logout,
+			userLoginCtr.RefreshToken,
 		)
 	}
 
@@ -41,9 +45,6 @@ func Router(ctx context.Context, root *mux.Router) error {
 		r.Group("/").Bind(
 			exampleCtl.Ping,
 			exampleCtl.GinFun,
-		)
-		r.Group("/", userLoginCtr.Middleware()).Bind(
-			exampleCtl.Login,
 		)
 	}
 

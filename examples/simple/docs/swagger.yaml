@@ -12,20 +12,21 @@ definitions:
     type: object
   example.GinFunResponse:
     type: object
-  example.LoginRequest:
-    type: object
-  example.LoginResponse:
-    properties:
-      username:
-        type: string
-    type: object
   example.PingResponse:
     properties:
       pong:
         type: string
     type: object
+  user.CurrentUserResponse:
+    properties:
+      username:
+        type: string
+    type: object
   user.LoginRequest:
     properties:
+      password:
+        description: 密码
+        type: string
       username:
         description: 用户名
         type: string
@@ -33,13 +34,25 @@ definitions:
   user.LoginResponse:
     properties:
       username:
-        description: 用户名
         type: string
     type: object
   user.LogoutResponse:
     type: object
+  user.RefreshTokenRequest:
+    properties:
+      refresh_token:
+        type: string
+    type: object
+  user.RefreshTokenResponse:
+    properties:
+      username:
+        type: string
+    type: object
   user.RegisterRequest:
     properties:
+      password:
+        description: 密码
+        type: string
       username:
         description: 用户名
         type: string
@@ -50,36 +63,6 @@ info:
   title: api文档
   version: "1.0"
 paths:
-  /example:
-    post:
-      consumes:
-      - application/json
-      description: 需要登录的接口
-      parameters:
-      - in: body
-        name: body
-        schema:
-          $ref: '#/definitions/example.LoginRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            properties:
-              code:
-                type: integer
-              data:
-                $ref: '#/definitions/example.LoginResponse'
-              msg:
-                type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/BadRequest'
-      summary: 需要登录的接口
-      tags:
-      - example
   /example/gin-fun:
     get:
       consumes:
@@ -130,6 +113,31 @@ paths:
       summary: ping
       tags:
       - example
+  /user/current:
+    get:
+      consumes:
+      - application/json
+      description: 当前登录用户
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/user.CurrentUserResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 当前登录用户
+      tags:
+      - user/login
   /user/login:
     post:
       consumes:
@@ -183,6 +191,36 @@ paths:
           schema:
             $ref: '#/definitions/BadRequest'
       summary: 登出
+      tags:
+      - user/login
+  /user/refresh:
+    post:
+      consumes:
+      - application/json
+      description: 刷新token
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/user.RefreshTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/user.RefreshTokenResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 刷新token
       tags:
       - user/login
   /user/register:

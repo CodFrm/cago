@@ -2,13 +2,15 @@ package manager
 
 import (
 	"context"
-	"github.com/codfrm/cago/pkg/iam/authn"
-	"github.com/redis/go-redis/v9"
-	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
+
+	"github.com/codfrm/cago/pkg/iam/sessions"
+	"github.com/redis/go-redis/v9"
+	"github.com/stretchr/testify/assert"
+
+	miniredis "github.com/alicebob/miniredis/v2"
 )
-import miniredis "github.com/alicebob/miniredis/v2"
 
 func TestNewRedisSessionManager(t *testing.T) {
 	m := miniredis.RunT(t)
@@ -18,9 +20,9 @@ func TestNewRedisSessionManager(t *testing.T) {
 	testExpireSession(t, NewRedisSessionManager("aa", db, 60))
 }
 
-func testExpireSession(t *testing.T, sm authn.SessionManager) {
+func testExpireSession(t *testing.T, sm sessions.SessionManager) {
 	ctx := context.Background()
-	session, err := sm.Start(nil)
+	session, err := sm.Start(ctx)
 	assert.NoError(t, err)
 	assert.NotNil(t, session)
 	session.Values["int64"] = int64(1)
@@ -46,7 +48,7 @@ func testExpireSession(t *testing.T, sm authn.SessionManager) {
 	assert.NoError(t, err)
 	// 读取
 	session3, err := sm.Get(ctx, session.ID)
-	assert.Equal(t, authn.ErrSessionNotFound, err)
+	assert.Equal(t, sessions.ErrSessionNotFound, err)
 	assert.Nil(t, session3)
 
 	// 过期测试
@@ -56,6 +58,6 @@ func testExpireSession(t *testing.T, sm authn.SessionManager) {
 	err = sm.Save(ctx, session)
 	assert.NoError(t, err)
 	session2, err = sm.Get(ctx, session.ID)
-	assert.Equal(t, authn.ErrSessionExpired, err)
+	assert.Equal(t, sessions.ErrSessionExpired, err)
 	assert.Nil(t, session2)
 }

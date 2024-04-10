@@ -32,7 +32,9 @@ func WithClient(client *http.Client) ClientOption {
 }
 
 type ClientDoOptions struct {
-	path string
+	path   string
+	resp   **http.Response
+	header http.Header
 }
 
 type ClientDoOption func(*ClientDoOptions)
@@ -48,6 +50,18 @@ func newDoOptions(opts ...ClientDoOption) *ClientDoOptions {
 func WithPath(path string) ClientDoOption {
 	return func(options *ClientDoOptions) {
 		options.path = path
+	}
+}
+
+func WithResponse(resp **http.Response) ClientDoOption {
+	return func(options *ClientDoOptions) {
+		options.resp = resp
+	}
+}
+
+func WithHeader(header http.Header) ClientDoOption {
+	return func(options *ClientDoOptions) {
+		options.header = header
 	}
 }
 
@@ -157,8 +171,15 @@ func (c *Client) Request(ctx context.Context, req any, opts ...ClientDoOption) (
 	if err != nil {
 		return nil, err
 	}
+	if options.header != nil {
+		for k, v := range options.header {
+			httpReq.Header[k] = v
+		}
+	}
 	if body != nil {
-		httpReq.Header.Set("Content-Type", "application/json")
+		if httpReq.Header.Get("Content-Type") == "" {
+			httpReq.Header.Set("Content-Type", "application/json")
+		}
 	}
 	return httpReq, nil
 }
@@ -168,10 +189,11 @@ func (c *Client) Do(ctx context.Context, req any, resp any, opts ...ClientDoOpti
 	if err != nil {
 		return err
 	}
-	return c.HttpDo(httpReq, resp)
+	return c.HttpDo(httpReq, resp, opts...)
 }
 
-func (c *Client) HttpDo(httpReq *http.Request, resp any) error {
+func (c *Client) HttpDo(httpReq *http.Request, resp any, opts ...ClientDoOption) error {
+	options := newDoOptions(opts...)
 	httpResp, err := c.options.client.Do(httpReq)
 	if err != nil {
 		return err
@@ -191,6 +213,9 @@ func (c *Client) HttpDo(httpReq *http.Request, resp any) error {
 	}
 	if jsonResp.Code != 0 {
 		return httputils.NewError(httpResp.StatusCode, jsonResp.Code, jsonResp.Msg)
+	}
+	if options.resp != nil {
+		*options.resp = httpResp
 	}
 	return nil
 }

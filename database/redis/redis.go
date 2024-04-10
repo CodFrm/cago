@@ -50,6 +50,10 @@ func Redis(ctx context.Context, config *configs.Config) error {
 	return nil
 }
 
+func SetDefault(client *redis.Client) {
+	defaultRedis = client
+}
+
 func Default() *redis.Client {
 	return defaultRedis
 }

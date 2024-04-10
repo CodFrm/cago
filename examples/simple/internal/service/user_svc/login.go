@@ -2,36 +2,39 @@ package user_svc
 
 import (
 	"context"
-	"time"
-
 	"github.com/codfrm/cago/examples/simple/internal/model"
-	"github.com/codfrm/cago/examples/simple/internal/model/entity/user_entity"
-	"github.com/codfrm/cago/examples/simple/internal/pkg/code"
-	"github.com/codfrm/cago/examples/simple/internal/repository/user_repo"
-	"github.com/codfrm/cago/middleware/sessions"
-	"github.com/codfrm/cago/pkg/consts"
-	"github.com/codfrm/cago/pkg/i18n"
 	"github.com/codfrm/cago/pkg/logger"
-	"github.com/codfrm/cago/pkg/opentelemetry/trace"
-	"github.com/codfrm/cago/pkg/utils/httputils"
-	"github.com/gin-gonic/gin"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
+	"strconv"
 
 	api "github.com/codfrm/cago/examples/simple/internal/api/user"
+	"github.com/codfrm/cago/examples/simple/internal/pkg/code"
+	"github.com/codfrm/cago/examples/simple/internal/repository/user_repo"
+	"github.com/codfrm/cago/pkg/i18n"
+	"github.com/codfrm/cago/pkg/iam/authn"
+	"github.com/codfrm/cago/pkg/iam/sessions"
+	"github.com/gin-gonic/gin"
 )
 
 type LoginSvc interface {
 	// Register 注册
 	Register(ctx context.Context, req *api.RegisterRequest) (*api.RegisterResponse, error)
 	// Login 登录
-	Login(ctx *gin.Context, req *api.LoginRequest) (*api.LoginResponse, error)
+	Login(ctx *gin.Context, req *api.LoginRequest) error
 	// Logout 登出
 	Logout(ctx *gin.Context, req *api.LogoutRequest) (*api.LogoutResponse, error)
-	// Middleware 鉴权中间件
-	Middleware() gin.HandlerFunc
-	// Get 从上下文中获取用户登录信息
-	Get(ctx context.Context) *model.AuthInfo
+	// Ctx 从上下文获取用户信息
+	Ctx(ctx context.Context) *model.AuthInfo
+	// WithUser 设置用户信息到上下文
+	WithUser(ctx context.Context, userId int64) (context.Context, error)
+	// Middleware authn处理中间件
+	Middleware() authn.Middleware
+	// CurrentUser 当前登录用户
+	CurrentUser(ctx context.Context, req *api.CurrentUserRequest) (*api.CurrentUserResponse, error)
+	// RefreshToken 刷新token
+	RefreshToken(ctx *gin.Context, req *api.RefreshTokenRequest) error
 }
 
 type loginSvc struct {
@@ -54,73 +57,50 @@ func (l *loginSvc) Register(ctx context.Context, req *api.RegisterRequest) (*api
 		return nil, i18n.NewError(ctx, code.UsernameAlreadyExists)
 	}
 	// 创建用户
-	user = &user_entity.User{
-		Username:   req.Username,
-		Status:     consts.ACTIVE,
-		Createtime: time.Now().Unix(),
-	}
-	if err := user_repo.User().Create(ctx, user); err != nil {
+	_, err = user_repo.User().Register(ctx, &authn.RegisterRequest{
+		Username: req.Password,
+		Password: req.Password,
+	})
+	if err != nil {
 		return nil, err
 	}
 	return &api.RegisterResponse{}, nil
 }
 
 // Login 登录
-func (l *loginSvc) Login(ctx *gin.Context, req *api.LoginRequest) (*api.LoginResponse, error) {
-	// 查找用户
-	user, err := user_repo.User().FindByUsername(ctx, req.Username)
-	if err != nil {
-		return nil, err
-	}
-	if err := user.Check(ctx); err != nil {
-		return nil, err
-	}
-	// 设置session
-	sessions.Ctx(ctx).Set("user_id", user.ID)
-	if err := sessions.Ctx(ctx).Save(); err != nil {
-		return nil, err
-	}
-	return &api.LoginResponse{
-		Username: user.Username,
-	}, nil
+func (l *loginSvc) Login(ctx *gin.Context, req *api.LoginRequest) error {
+	_, err := authn.Default().LoginByPassword(ctx, req.Username, req.Password)
+	return err
 }
 
 // Logout 登出
 func (l *loginSvc) Logout(ctx *gin.Context, req *api.LogoutRequest) (*api.LogoutResponse, error) {
-	sessions.Ctx(ctx).Delete("user_id")
-	if err := sessions.Ctx(ctx).Save(); err != nil {
+	err := authn.Default().Logout(ctx)
+	if err != nil {
 		return nil, err
 	}
 	return &api.LogoutResponse{}, nil
 }
 
-func (l *loginSvc) Middleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		uid, ok := sessions.Ctx(c).Get("user_id").(int64)
-		if !ok {
-			httputils.HandleResp(c, i18n.NewError(c.Request.Context(), code.UserNotLogin))
-			return
-		}
-		ctx, err := l.SetUser(c.Request.Context(), uid)
-		if err != nil {
-			httputils.HandleResp(c, err)
-			return
-		}
-		c.Request = c.Request.WithContext(ctx)
-	}
+func (l *loginSvc) Ctx(ctx context.Context) *model.AuthInfo {
+	user, _ := ctx.Value(model.AuthInfo{}).(*model.AuthInfo)
+	return user
 }
 
-func (l *loginSvc) SetUser(ctx context.Context, uid int64) (context.Context, error) {
-	user, err := user_repo.User().Find(ctx, uid)
+func (l *loginSvc) WithUser(ctx context.Context, userId int64) (context.Context, error) {
+	user, err := user_repo.User().Find(ctx, userId)
 	if err != nil {
 		return nil, err
+	}
+	if user == nil {
+		return nil, i18n.NewError(ctx, code.UserNotFound)
 	}
 	if err := user.Check(ctx); err != nil {
 		return nil, err
 	}
 	// 设置用户信息,链路追踪和日志也添加上用户信息
 	authInfo := &model.AuthInfo{
-		UserID:   uid,
+		UserID:   user.ID,
 		Username: user.Username,
 	}
 	trace.SpanFromContext(ctx).SetAttributes(
@@ -132,10 +112,30 @@ func (l *loginSvc) SetUser(ctx context.Context, uid int64) (context.Context, err
 		model.AuthInfo{}, authInfo), nil
 }
 
-func (l *loginSvc) Get(ctx context.Context) *model.AuthInfo {
-	val := ctx.Value(model.AuthInfo{})
-	if val == nil {
+func (l *loginSvc) Middleware() authn.Middleware {
+	return func(ctx *gin.Context, userId string, session *sessions.Session) error {
+		nUserId, err := strconv.ParseInt(userId, 10, 64)
+		if err != nil {
+			return err
+		}
+		gCtx, err := l.WithUser(ctx.Request.Context(), nUserId)
+		if err != nil {
+			return err
+		}
+		ctx.Request = ctx.Request.WithContext(gCtx)
 		return nil
 	}
-	return val.(*model.AuthInfo)
+}
+
+// CurrentUser 当前登录用户
+func (l *loginSvc) CurrentUser(ctx context.Context, req *api.CurrentUserRequest) (*api.CurrentUserResponse, error) {
+	user := l.Ctx(ctx)
+	return &api.CurrentUserResponse{
+		Username: user.Username,
+	}, nil
+}
+
+// RefreshToken 刷新token
+func (l *loginSvc) RefreshToken(ctx *gin.Context, req *api.RefreshTokenRequest) error {
+	return authn.Default().RefreshSession(ctx, req.RefreshToken)
 }

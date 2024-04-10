@@ -150,6 +150,11 @@ func (d *DB) CloseHandle() {
 	}
 }
 
+// SetDefault 设置默认数据库
+func (d *DB) SetDefault(db *gorm.DB) {
+	d.defaultDb = db
+}
+
 // Default 默认数据库
 func Default() *gorm.DB {
 	return defaultDB.defaultDb

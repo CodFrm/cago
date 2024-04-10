@@ -5,10 +5,11 @@ import (
 	"context"
 	"encoding/gob"
 	"errors"
+	"time"
+
 	"github.com/codfrm/cago/pkg/iam/sessions"
 	"github.com/codfrm/cago/pkg/utils"
 	"github.com/redis/go-redis/v9"
-	"time"
 )
 
 type redisSessionManager struct {
@@ -34,7 +35,7 @@ func (r *redisSessionManager) Start(ctx context.Context) (*sessions.Session, err
 	}, nil
 }
 
-func (r *redisSessionManager) Serialize(session *sessions.Session) ([]byte, error) {
+func serialize(session *sessions.Session) ([]byte, error) {
 	buf := new(bytes.Buffer)
 	enc := gob.NewEncoder(buf)
 	err := enc.Encode(session)
@@ -44,7 +45,7 @@ func (r *redisSessionManager) Serialize(session *sessions.Session) ([]byte, erro
 	return nil, err
 }
 
-func (r *redisSessionManager) Deserialize(d []byte, session *sessions.Session) error {
+func deserialize(d []byte, session *sessions.Session) error {
 	dec := gob.NewDecoder(bytes.NewBuffer(d))
 	return dec.Decode(&session)
 }
@@ -58,7 +59,7 @@ func (r *redisSessionManager) Get(ctx context.Context, id string) (*sessions.Ses
 		}
 		return nil, err
 	}
-	err = r.Deserialize(data, session)
+	err = deserialize(data, session)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +76,7 @@ func (r *redisSessionManager) Save(ctx context.Context, session *sessions.Sessio
 	} else if expires == 0 {
 		expires = 86400 + time.Now().Unix()
 	}
-	data, err := r.Serialize(session)
+	data, err := serialize(session)
 	if err != nil {
 		return err
 	}

@@ -2,9 +2,10 @@ package manager
 
 import (
 	"context"
+	"sync"
+
 	"github.com/codfrm/cago/pkg/iam/sessions"
 	"github.com/codfrm/cago/pkg/utils"
-	"sync"
 )
 
 type memorySessionManager struct {

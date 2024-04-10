@@ -19,8 +19,6 @@ ifneq ($(which goconvey),)
 	go install github.com/smartystreets/goconvey@latest
 endif
 
-swagger: check-cago
-	cago gen swag
 
 lint: check-golangci-lint
 	golangci-lint run
@@ -28,7 +26,7 @@ lint: check-golangci-lint
 lint-fix: check-golangci-lint
 	golangci-lint run --fix
 
-test: lint
+test: lint-fix
 	go test -v ./...
 
 coverage.out cover:
@@ -39,8 +37,9 @@ html-cover: coverage.out
 	go tool cover -html=coverage.out
 	go tool cover -func=coverage.out
 
-generate: check-mockgen swagger
-	go generate ./... -x
+generate: check-mockgen check-cago
+	go generate ./...
+	cago gen
 
 goconvey: check-goconvey
 	goconvey

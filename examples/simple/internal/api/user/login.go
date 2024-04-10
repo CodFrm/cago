@@ -1,6 +1,7 @@
 package user
 
 import (
+	"github.com/codfrm/cago/pkg/iam/sessions/manager"
 	"github.com/codfrm/cago/server/mux"
 )
 
@@ -9,6 +10,8 @@ type RegisterRequest struct {
 	mux.Meta `path:"/user/register" method:"POST"`
 	// 用户名
 	Username string `form:"username" binding:"required"`
+	// 密码
+	Password string `form:"password" binding:"required"`
 }
 
 type RegisterResponse struct {
@@ -19,10 +22,21 @@ type LoginRequest struct {
 	mux.Meta `path:"/user/login" method:"POST"`
 	// 用户名
 	Username string `form:"username" binding:"required"`
+	// 密码
+	Password string `form:"password" binding:"required"`
 }
 
 type LoginResponse struct {
-	// 用户名
+	Username                       string `json:"username"`
+	manager.RefreshSessionResponse `json:"token"`
+}
+
+// CurrentUserRequest 当前登录用户
+type CurrentUserRequest struct {
+	mux.Meta `path:"/user/current" method:"GET"`
+}
+
+type CurrentUserResponse struct {
 	Username string `json:"username"`
 }
 
@@ -32,4 +46,15 @@ type LogoutRequest struct {
 }
 
 type LogoutResponse struct {
+}
+
+// RefreshTokenRequest 刷新token
+type RefreshTokenRequest struct {
+	mux.Meta     `path:"/user/refresh" method:"POST"`
+	RefreshToken string `form:"refresh_token" json:"refresh_token" binding:"required"`
+}
+
+type RefreshTokenResponse struct {
+	Username                       string `json:"username"`
+	manager.RefreshSessionResponse `json:"token"`
 }

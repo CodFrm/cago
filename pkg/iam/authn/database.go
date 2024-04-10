@@ -13,6 +13,14 @@ type GetUserOptions struct {
 
 type GetUserOption func(*GetUserOptions)
 
+func NewGetUserOptions(opts ...GetUserOption) *GetUserOptions {
+	o := &GetUserOptions{}
+	for _, opt := range opts {
+		opt(o)
+	}
+	return o
+}
+
 func WithPassword() GetUserOption {
 	return func(o *GetUserOptions) {
 		o.WithPassword = true
@@ -29,5 +37,5 @@ type Database interface {
 	// GetUserByWhere 通过条件获取用户
 	GetUserByWhere(ctx context.Context, where map[string]interface{}, opts ...GetUserOption) (*User, error)
 	// UpdateUser 更新用户信息
-	UpdateUser(ctx context.Context, userID string, user *UpdateUserRequest) error
+	//UpdateUser(ctx context.Context, userID string, user *UpdateUserRequest) error
 }

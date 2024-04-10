@@ -6,9 +6,9 @@
     },
     "basePath": "/api/v1",
     "paths": {
-        "/example": {
-            "post": {
-                "description": "需要登录的接口",
+      "/example/gin-fun": {
+        "get": {
+          "description": "gin function",
                 "consumes": [
                     "application/json"
                 ],
@@ -18,16 +18,7 @@
                 "tags": [
                     "example"
                 ],
-                "summary": "需要登录的接口",
-                "parameters": [
-                    {
-                        "name": "body",
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/example.LoginRequest"
-                        }
-                    }
-                ],
+          "summary": "gin function",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -37,7 +28,7 @@
                                     "type": "integer"
                                 },
                                 "data": {
-                                    "$ref": "#/definitions/example.LoginResponse"
+                                  "$ref": "#/definitions/example.GinFunResponse"
                                 },
                                 "msg": {
                                     "type": "string"
@@ -54,9 +45,9 @@
                 }
             }
         },
-        "/example/gin-fun": {
+      "/example/ping": {
             "get": {
-                "description": "gin function",
+              "description": "ping",
                 "consumes": [
                     "application/json"
                 ],
@@ -66,7 +57,7 @@
                 "tags": [
                     "example"
                 ],
-                "summary": "gin function",
+              "summary": "ping",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -76,7 +67,7 @@
                                     "type": "integer"
                                 },
                                 "data": {
-                                    "$ref": "#/definitions/example.GinFunResponse"
+                                  "$ref": "#/definitions/example.PingResponse"
                                 },
                                 "msg": {
                                     "type": "string"
@@ -93,9 +84,9 @@
                 }
             }
         },
-        "/example/ping": {
+      "/user/current": {
             "get": {
-                "description": "ping",
+              "description": "当前登录用户",
                 "consumes": [
                     "application/json"
                 ],
@@ -103,9 +94,9 @@
                     "application/json"
                 ],
                 "tags": [
-                    "example"
+                  "user/login"
                 ],
-                "summary": "ping",
+              "summary": "当前登录用户",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -115,7 +106,7 @@
                                     "type": "integer"
                                 },
                                 "data": {
-                                    "$ref": "#/definitions/example.PingResponse"
+                                  "$ref": "#/definitions/user.CurrentUserResponse"
                                 },
                                 "msg": {
                                     "type": "string"
@@ -204,6 +195,54 @@
                                 "data": {
                                     "$ref": "#/definitions/user.LogoutResponse"
                                 },
+                              "msg": {
+                                "type": "string"
+                              }
+                            }
+                        }
+                    },
+                  "400": {
+                    "description": "Bad Request",
+                    "schema": {
+                      "$ref": "#/definitions/BadRequest"
+                    }
+                  }
+                }
+            }
+        },
+      "/user/refresh": {
+        "post": {
+          "description": "刷新token",
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "tags": [
+            "user/login"
+          ],
+          "summary": "刷新token",
+          "parameters": [
+            {
+              "name": "body",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/user.RefreshTokenRequest"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "properties": {
+                  "code": {
+                    "type": "integer"
+                  },
+                  "data": {
+                    "$ref": "#/definitions/user.RefreshTokenResponse"
+                  },
                                 "msg": {
                                     "type": "string"
                                 }
@@ -286,21 +325,18 @@
         "example.GinFunResponse": {
             "type": "object"
         },
-        "example.LoginRequest": {
-            "type": "object"
-        },
-        "example.LoginResponse": {
+      "example.PingResponse": {
             "type": "object",
             "properties": {
-                "username": {
+              "pong": {
                     "type": "string"
                 }
             }
         },
-        "example.PingResponse": {
+      "user.CurrentUserResponse": {
             "type": "object",
             "properties": {
-                "pong": {
+              "username": {
                     "type": "string"
                 }
             }
@@ -308,6 +344,10 @@
         "user.LoginRequest": {
             "type": "object",
             "properties": {
+              "password": {
+                "description": "密码",
+                "type": "string"
+              },
                 "username": {
                     "description": "用户名",
                     "type": "string"
@@ -318,7 +358,6 @@
             "type": "object",
             "properties": {
                 "username": {
-                    "description": "用户名",
                     "type": "string"
                 }
             }
@@ -326,9 +365,29 @@
         "user.LogoutResponse": {
             "type": "object"
         },
+      "user.RefreshTokenRequest": {
+        "type": "object",
+        "properties": {
+          "refresh_token": {
+            "type": "string"
+          }
+        }
+      },
+      "user.RefreshTokenResponse": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string"
+          }
+        }
+      },
         "user.RegisterRequest": {
             "type": "object",
             "properties": {
+              "password": {
+                "description": "密码",
+                "type": "string"
+              },
                 "username": {
                     "description": "用户名",
                     "type": "string"

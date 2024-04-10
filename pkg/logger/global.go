@@ -16,7 +16,7 @@ const loggerKey loggerContextKeyType = iota
 type InitLogger func(ctx context.Context, config *configs.Config, loggerConfig *Config) ([]Option, error)
 
 var (
-	logger     *zap.Logger
+	logger     = zap.L()
 	initLogger = make([]InitLogger, 0)
 )
 

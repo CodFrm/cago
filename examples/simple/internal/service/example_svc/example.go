@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/codfrm/cago/examples/simple/internal/service/user_svc"
 	"github.com/codfrm/cago/examples/simple/internal/task/producer"
 	"github.com/codfrm/cago/pkg/logger"
 	"github.com/codfrm/cago/pkg/utils"
@@ -14,8 +13,6 @@ import (
 )
 
 type ExampleSvc interface {
-	// Login 需要登录的接口
-	Login(ctx context.Context, req *api.LoginRequest) (*api.LoginResponse, error)
 	// Ping ping
 	Ping(ctx context.Context, req *api.PingRequest) (*api.PingResponse, error)
 }
@@ -27,13 +24,6 @@ var defaultExample = &exampleSvc{}
 
 func Example() ExampleSvc {
 	return defaultExample
-}
-
-// Login 需要登录的接口
-func (e *exampleSvc) Login(ctx context.Context, req *api.LoginRequest) (*api.LoginResponse, error) {
-	return &api.LoginResponse{
-		Username: user_svc.Login().Get(ctx).Username,
-	}, nil
 }
 
 // Ping ping

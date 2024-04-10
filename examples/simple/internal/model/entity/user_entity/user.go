@@ -9,11 +9,12 @@ import (
 )
 
 type User struct {
-	ID         int64  `gorm:"column:id;type:bigint(20);not null;primary_key"`
-	Username   string `gorm:"column:username;type:varchar(255);index:username,unique;not null"`
-	Status     int    `gorm:"column:status;type:int(11);not null"`
-	Createtime int64  `gorm:"column:createtime;type:bigint(20)"`
-	Updatetime int64  `gorm:"column:updatetime;type:bigint(20)"`
+	ID             int64  `gorm:"column:id;type:bigint(20);not null;primary_key"`
+	Username       string `gorm:"column:username;type:varchar(255);index:username,unique;not null"`
+	HashedPassword string `gorm:"column:hashed_password;type:varchar(255);not null"`
+	Status         int    `gorm:"column:status;type:int(11);not null"`
+	Createtime     int64  `gorm:"column:createtime;type:bigint(20)"`
+	Updatetime     int64  `gorm:"column:updatetime;type:bigint(20)"`
 }
 
 func (u *User) Check(ctx context.Context) error {

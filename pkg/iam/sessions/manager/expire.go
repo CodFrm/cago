@@ -2,9 +2,10 @@ package manager
 
 import (
 	"context"
-	"github.com/codfrm/cago/pkg/iam/sessions"
 	"strconv"
 	"time"
+
+	"github.com/codfrm/cago/pkg/iam/sessions"
 )
 
 type expireSessionManager struct {
