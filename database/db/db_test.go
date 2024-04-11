@@ -104,7 +104,7 @@ func TestDatabase(t *testing.T) {
 	assert.Equal(t, 3, info.ID)
 	assert.Equal(t, "avatar3", info.Avatar)
 
-	ctx = ContextWith(ctx, "mock2")
+	ctx = WithContext(ctx, "mock2")
 	mock2.ExpectQuery("SELECT").
 		WithArgs(4).
 		WillReturnRows(

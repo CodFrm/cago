@@ -19,13 +19,13 @@ import (
 func Router(ctx context.Context, root *mux.Router) error {
 	// 注册认证模块
 	auth := authn.New(user_repo.User(),
-		authn.WithMiddleware(user_svc.Login().Middleware()),
+		authn.WithMiddleware(user_svc.User().Middleware()),
 	)
 	authn.SetDefault(auth)
 
 	r := root.Group("/api/v1")
 
-	userLoginCtr := user_ctr.NewLogin()
+	userLoginCtr := user_ctr.NewUser()
 	{
 		// 绑定路由
 		r.Group("/").Bind(

@@ -38,6 +38,8 @@ func newOptions(opts ...Option) *Options {
 			func(options *manager.RefreshHTTPSessionManagerOptions) {
 				options.AccessTokenMapping = manager.NewCacheAccessTokenMapping(cache2.Default())
 				options.ResponseFunc = func(ctx *gin.Context, accessToken, refreshToken *sessions.Session) error {
+					ctx.SetCookie("access_token", accessToken.ID,
+						int(accessToken.Metadata["expire"].(int64)), "/", "", false, true)
 					ctx.JSON(http.StatusOK, httputils.JSONResponse{
 						Code: 0,
 						Data: gin.H{

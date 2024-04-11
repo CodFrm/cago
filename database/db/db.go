@@ -168,24 +168,24 @@ func Use(key string) *gorm.DB {
 	return defaultDB.dbs[key]
 }
 
-// ContextWith 根据 key 参数指定数据库，并将数据库实例存入 context
-// 如果你想修改后续的数据库实例，你可以使用 db.ContextWith
-// ctx:=db.ContextWith(ctx, "db2")
+// WithContext 根据 key 参数指定数据库，并将数据库实例存入 context
+// 如果你想修改后续的数据库实例，你可以使用 db.WithContext
+// ctx:=db.WithContext(ctx, "db2")
 // SomeMethod(ctx)
-func ContextWith(ctx context.Context, key string) context.Context {
+func WithContext(ctx context.Context, key string) context.Context {
 	if key == "default" {
-		return ContextWithDB(ctx, defaultDB.defaultDb)
+		return WithContextDB(ctx, defaultDB.defaultDb)
 	}
-	return ContextWithDB(ctx, defaultDB.dbs[key])
+	return WithContextDB(ctx, defaultDB.dbs[key])
 }
 
-// ContextWithDB 将数据库实例存入 context
-// 如果你有事务的需求，你可以使用 db.ContextWithDB，然后使用带Ctx的方法来获取数据库实例，这样会自动传递数据库实例
+// WithContextDB 将数据库实例存入 context
+// 如果你有事务的需求，你可以使用 db.WithContextDB，然后使用带Ctx的方法来获取数据库实例，这样会自动传递数据库实例
 //
 //	db.Default().Transaction(func(tx *gorm.DB) error {
-//	  return SomeMethod(db.ContextWithDB(ctx, tx))
+//	  return SomeMethod(db.WithContextDB(ctx, tx))
 //	})
-func ContextWithDB(ctx context.Context, db *gorm.DB) context.Context {
+func WithContextDB(ctx context.Context, db *gorm.DB) context.Context {
 	return context.WithValue(ctx, dbKey, db)
 }
 

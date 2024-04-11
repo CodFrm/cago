@@ -1,8 +1,8 @@
 package authn
 
 import (
-	"github.com/codfrm/cago/pkg/i18n"
 	"github.com/codfrm/cago/pkg/iam/sessions"
+	"github.com/codfrm/cago/pkg/utils/httputils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -13,9 +13,8 @@ type LoginHandler func(ctx *gin.Context) (*User, error)
 type SaveSession func(ctx *gin.Context, user *User, session *sessions.Session) error
 
 var (
-	UsernameNotFound           = 10000
-	UsernameOrPasswordRequired = 10001
-	PasswordWrong              = 10002
+	UsernameNotFound = httputils.NewBadRequestError(-1, "用户名不存在")
+	PasswordWrong    = httputils.NewBadRequestError(-1, "密码错误")
 )
 
 func (a *Authn) LoginByPassword(ctx *gin.Context, username, password string) (*User, error) {
@@ -25,10 +24,10 @@ func (a *Authn) LoginByPassword(ctx *gin.Context, username, password string) (*U
 			return nil, err
 		}
 		if user == nil {
-			return nil, i18n.NewError(ctx, UsernameNotFound)
+			return nil, UsernameNotFound
 		}
 		if err := user.CheckPassword(password); err != nil {
-			return nil, i18n.NewError(ctx, PasswordWrong)
+			return nil, PasswordWrong
 		}
 		return user, nil
 	})

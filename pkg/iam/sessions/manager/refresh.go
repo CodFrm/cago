@@ -47,6 +47,8 @@ func NewRefreshHTTPSessionManager(sessionManager, refreshSessionManager sessions
 		TokenDuration:   7200,
 		RefreshDuration: 86400 * 30,
 		ResponseFunc: func(ctx *gin.Context, accessToken, refreshToken *sessions.Session) error {
+			ctx.SetCookie("access_token", accessToken.ID,
+				int(accessToken.Metadata["expire"].(int64)), "/", "", false, true)
 			ctx.JSON(http.StatusOK, httputils.JSONResponse{
 				Code: 0,
 				Data: &RefreshSessionResponse{
