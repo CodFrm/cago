@@ -56,7 +56,7 @@ func (b *bind) bind(req *http.Request, ptr any) error {
 	} else {
 		switch b.ctx.ContentType() {
 		case binding.MIMEJSON:
-			if req == nil || req.Body == nil {
+			if req.Body == nil {
 				return httputils.NewInternalServerError(-1, "json body is nil")
 			}
 			decoder := json.NewDecoder(req.Body)

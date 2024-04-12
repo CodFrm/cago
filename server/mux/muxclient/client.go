@@ -88,7 +88,7 @@ func (c *Client) Request(ctx context.Context, req any, opts ...ClientDoOption) (
 		return nil, errors.New("invalid method, second parameter must have Meta field")
 	}
 	// 必须有Route字段
-	if !ok || route.Type != reflect.TypeOf(mux.Meta{}) {
+	if route.Type != reflect.TypeOf(mux.Meta{}) {
 		return nil, errors.New("invalid method, second parameter must have Meta field")
 	}
 	method := route.Tag.Get("method")

@@ -2,14 +2,14 @@ package api
 
 import (
 	"context"
-
 	_ "github.com/codfrm/cago/examples/simple/docs"
 	"github.com/codfrm/cago/examples/simple/internal/controller/example_ctr"
 	"github.com/codfrm/cago/examples/simple/internal/controller/user_ctr"
-	"github.com/codfrm/cago/examples/simple/internal/repository/user_repo"
-	"github.com/codfrm/cago/examples/simple/internal/service/user_svc"
+	"github.com/codfrm/cago/pkg/iam/audit"
 	"github.com/codfrm/cago/pkg/iam/authn"
 	"github.com/codfrm/cago/server/mux"
+	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 // Router 路由
@@ -17,12 +17,6 @@ import (
 // @version  1.0
 // @BasePath /api/v1
 func Router(ctx context.Context, root *mux.Router) error {
-	// 注册认证模块
-	auth := authn.New(user_repo.User(),
-		authn.WithMiddleware(user_svc.User().Middleware()),
-	)
-	authn.SetDefault(auth)
-
 	r := root.Group("/api/v1")
 
 	userLoginCtr := user_ctr.NewUser()
@@ -33,7 +27,7 @@ func Router(ctx context.Context, root *mux.Router) error {
 			userLoginCtr.Login,
 		)
 
-		r.Group("/", auth.Middleware(true)).Bind(
+		r.Group("/", authn.Default().Middleware(true)).Bind(
 			userLoginCtr.CurrentUser,
 			userLoginCtr.Logout,
 			userLoginCtr.RefreshToken,
@@ -45,6 +39,14 @@ func Router(ctx context.Context, root *mux.Router) error {
 		r.Group("/").Bind(
 			exampleCtl.Ping,
 			exampleCtl.GinFun,
+		)
+
+		r.Group("/", authn.Default().Middleware(true), audit.Default().Middleware(func(ctx *gin.Context) []zap.Field {
+			return []zap.Field{
+				zap.String("path", ctx.Request.URL.Path),
+			}
+		})).Bind(
+			exampleCtl.Audit,
 		)
 	}
 

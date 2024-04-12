@@ -19,7 +19,7 @@ func Logger(log *zap.Logger) gin.HandlerFunc {
 			// 请求开始时间
 			zap.Time("start_time", tm),
 		)
-		ctx.Request = ctx.Request.WithContext(logger.ContextWithLogger(ctx.Request.Context(), log))
+		ctx.Request = ctx.Request.WithContext(logger.WithContextLogger(ctx.Request.Context(), log))
 		// 处理错误日志
 		ctx.Next()
 	}

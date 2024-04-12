@@ -63,7 +63,7 @@ func New(opts ...Option) (broker2.Broker, error) {
 		case "Subscribe":
 			topic := ctx.Args(0).(string)
 			options := ctx.Args(2).(broker2.SubscribeOptions)
-			sctx = logger.ContextWithLogger(sctx, logger.Ctx(sctx).With(
+			sctx = logger.WithContextLogger(sctx, logger.Ctx(sctx).With(
 				zap.String("topic", topic), zap.String("group", options.Group),
 				// 请求开始时间
 				zap.Time("start_time", time.Now()),
@@ -116,7 +116,7 @@ func New(opts ...Option) (broker2.Broker, error) {
 					trace.WithSpanKind(trace.SpanKindConsumer),
 				)
 				defer span.End()
-				sctx = logger.ContextWithLogger(sctx, logger.Ctx(sctx).With(
+				sctx = logger.WithContextLogger(sctx, logger.Ctx(sctx).With(
 					trace2.LoggerLabel(sctx)...,
 				))
 				ctx = ctx.WithContext(sctx)

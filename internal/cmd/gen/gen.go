@@ -52,9 +52,6 @@ func (c *Cmd) Commands() []*cobra.Command {
 func (c *Cmd) gen(cmd *cobra.Command, args []string) error {
 	c.defaultBody = JSONBodyType
 	var err error
-	if err != nil {
-		return err
-	}
 	c.pkgPath, c.pkgName, err = utils.FindRootPkgName(c.apiPath)
 	if err != nil {
 		return err

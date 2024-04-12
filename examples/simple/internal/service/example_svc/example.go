@@ -2,6 +2,7 @@ package example_svc
 
 import (
 	"context"
+	"github.com/codfrm/cago/pkg/iam/audit"
 	"time"
 
 	"github.com/codfrm/cago/examples/simple/internal/task/producer"
@@ -15,6 +16,8 @@ import (
 type ExampleSvc interface {
 	// Ping ping
 	Ping(ctx context.Context, req *api.PingRequest) (*api.PingResponse, error)
+	// Audit 审计操作
+	Audit(ctx context.Context, req *api.AuditRequest) (*api.AuditResponse, error)
 }
 
 type exampleSvc struct {
@@ -33,4 +36,10 @@ func (e *exampleSvc) Ping(ctx context.Context, req *api.PingRequest) (*api.PingR
 		return nil, err
 	}
 	return &api.PingResponse{Pong: utils.RandString(6, utils.Mix)}, nil
+}
+
+// Audit 审计操作
+func (e *exampleSvc) Audit(ctx context.Context, req *api.AuditRequest) (*api.AuditResponse, error) {
+	_ = audit.Default().Module("example").Record(ctx, "audit", zap.String("key", "value"))
+	return nil, nil
 }

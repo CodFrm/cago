@@ -107,7 +107,7 @@ func (l *userSvc) WithUser(ctx context.Context, userId int64) (context.Context, 
 		attribute.Int64("user_id", user.ID),
 	)
 	return context.WithValue(
-		logger.ContextWithLogger(ctx, logger.Ctx(ctx).
+		logger.WithContextLogger(ctx, logger.Ctx(ctx).
 			With(zap.Int64("user_id", user.ID))),
 		model.AuthInfo{}, authInfo), nil
 }

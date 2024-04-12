@@ -10,6 +10,10 @@ definitions:
         description: 错误信息
         type: string
     type: object
+  example.AuditRequest:
+    type: object
+  example.AuditResponse:
+    type: object
   example.GinFunResponse:
     type: object
   example.PingResponse:
@@ -63,6 +67,36 @@ info:
   title: api文档
   version: "1.0"
 paths:
+  /example/audit:
+    post:
+      consumes:
+      - application/json
+      description: 审计操作
+      parameters:
+      - in: body
+        name: body
+        schema:
+          $ref: '#/definitions/example.AuditRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              code:
+                type: integer
+              data:
+                $ref: '#/definitions/example.AuditResponse'
+              msg:
+                type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+      summary: 审计操作
+      tags:
+      - example
   /example/gin-fun:
     get:
       consumes:
@@ -137,7 +171,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 当前登录用户
       tags:
-      - user/login
+      - user
   /user/login:
     post:
       consumes:
@@ -167,7 +201,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 登录
       tags:
-      - user/login
+      - user
   /user/logout:
     get:
       consumes:
@@ -192,7 +226,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 登出
       tags:
-      - user/login
+      - user
   /user/refresh:
     post:
       consumes:
@@ -222,7 +256,7 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 刷新token
       tags:
-      - user/login
+      - user
   /user/register:
     post:
       consumes:
@@ -252,5 +286,5 @@ paths:
             $ref: '#/definitions/BadRequest'
       summary: 注册
       tags:
-      - user/login
+      - user
 swagger: "2.0"

@@ -6,6 +6,54 @@
     },
     "basePath": "/api/v1",
     "paths": {
+      "/example/audit": {
+        "post": {
+          "description": "审计操作",
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "tags": [
+            "example"
+          ],
+          "summary": "审计操作",
+          "parameters": [
+            {
+              "name": "body",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/example.AuditRequest"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "schema": {
+                "properties": {
+                  "code": {
+                    "type": "integer"
+                  },
+                  "data": {
+                    "$ref": "#/definitions/example.AuditResponse"
+                  },
+                  "msg": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "schema": {
+                "$ref": "#/definitions/BadRequest"
+              }
+            }
+          }
+        }
+      },
       "/example/gin-fun": {
         "get": {
           "description": "gin function",
@@ -94,7 +142,7 @@
                     "application/json"
                 ],
                 "tags": [
-                  "user/login"
+                  "user"
                 ],
               "summary": "当前登录用户",
                 "responses": {
@@ -133,7 +181,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "user/login"
+                  "user"
                 ],
                 "summary": "登录",
                 "parameters": [
@@ -181,7 +229,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "user/login"
+                  "user"
                 ],
                 "summary": "登出",
                 "responses": {
@@ -220,7 +268,7 @@
             "application/json"
           ],
           "tags": [
-            "user/login"
+            "user"
           ],
           "summary": "刷新token",
           "parameters": [
@@ -268,7 +316,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "user/login"
+                  "user"
                 ],
                 "summary": "注册",
                 "parameters": [
@@ -322,6 +370,12 @@
                 }
             }
         },
+      "example.AuditRequest": {
+        "type": "object"
+      },
+      "example.AuditResponse": {
+        "type": "object"
+      },
         "example.GinFunResponse": {
             "type": "object"
         },

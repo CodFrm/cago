@@ -36,7 +36,7 @@ func (w *Wrap) Run(sctx stdContext.Context, name string, args []interface{}, han
 // UnWarContext 解包基础context
 func UnWarContext(parentCtx stdContext.Context) stdContext.Context {
 	ctx := stdContext.Background()
-	ctx = logger.ContextWithLogger(ctx, logger.Ctx(parentCtx))
+	ctx = logger.WithContextLogger(ctx, logger.Ctx(parentCtx))
 	span := trace.SpanFromContext(ctx)
 	if span.SpanContext().IsValid() {
 		ctx = trace.ContextWithSpan(ctx, span)

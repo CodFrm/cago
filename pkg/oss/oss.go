@@ -36,6 +36,8 @@ func OSS(ctx context.Context, config *configs.Config) error {
 	}
 	var cli oss.Client
 	switch cfg.Type {
+	default:
+		fallthrough
 	case Minio:
 		cli, err = minio.New(&minio.Config{
 			Endpoint:        cfg.Endpoint,

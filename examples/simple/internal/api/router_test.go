@@ -2,11 +2,14 @@ package api
 
 import (
 	"context"
+	"github.com/codfrm/cago/examples/simple/internal/api/example"
 	"github.com/codfrm/cago/examples/simple/internal/api/user"
 	"github.com/codfrm/cago/examples/simple/internal/model/entity/user_entity"
 	"github.com/codfrm/cago/examples/simple/internal/repository/user_repo"
 	mock_user_repo "github.com/codfrm/cago/examples/simple/internal/repository/user_repo/mock"
+	"github.com/codfrm/cago/examples/simple/internal/service/user_svc"
 	"github.com/codfrm/cago/pkg/consts"
+	"github.com/codfrm/cago/pkg/iam"
 	"github.com/codfrm/cago/pkg/iam/authn"
 	"github.com/codfrm/cago/pkg/utils/testutils"
 	"github.com/codfrm/cago/server/mux/muxclient"
@@ -28,6 +31,8 @@ func TestRouter(t *testing.T) {
 	ctx := context.Background()
 	mockUserRepo := mock_user_repo.NewMockUserRepo(mockCtrl)
 	user_repo.RegisterUser(mockUserRepo)
+
+	testutils.IAM(t, user_repo.User(), iam.WithAuthnOptions(authn.WithMiddleware(user_svc.User().Middleware())))
 
 	// 注册路由
 	testMux := muxtest.NewTestMux(muxtest.WithBaseUrl("/api/v1"))
@@ -65,6 +70,13 @@ func TestRouter(t *testing.T) {
 			}))
 			assert.NoError(t, err)
 			assert.Equal(t, "test", resp.Username)
+		})
+		convey.Convey("日志审计", func() {
+			resp := &example.AuditResponse{}
+			err := testMux.Do(ctx, &example.AuditRequest{}, resp, muxclient.WithHeader(http.Header{
+				"Cookie": []string{"access_token=" + loginResp.AccessToken},
+			}))
+			assert.NoError(t, err)
 		})
 		convey.Convey("退出登录", func() {
 			resp := &user.LogoutResponse{}

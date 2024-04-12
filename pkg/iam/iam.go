@@ -1,7 +1,63 @@
 package iam
 
-import "github.com/codfrm/cago/pkg/iam/authn"
+import (
+	"context"
+	"github.com/codfrm/cago"
+	"github.com/codfrm/cago/configs"
+	"github.com/codfrm/cago/pkg/iam/audit"
+	"github.com/codfrm/cago/pkg/iam/authn"
+)
 
-type IAM struct {
+type Iam struct {
 	Authn *authn.Authn
+	Audit *audit.Audit
+}
+
+var defaultIAM *Iam
+
+type Options struct {
+	authnOpts []authn.Option
+}
+
+type Option func(*Options)
+
+func newOptions(opts ...Option) *Options {
+	options := &Options{}
+	for _, o := range opts {
+		o(options)
+	}
+	return options
+}
+
+func WithAuthnOptions(opts ...authn.Option) Option {
+	return func(options *Options) {
+		options.authnOpts = opts
+	}
+}
+
+// IAM IAM组件 集成了认证、鉴权、审计、会话管理模块
+func IAM(database authn.Database, opts ...Option) cago.FuncComponent {
+	return func(ctx context.Context, cfg *configs.Config) error {
+		defaultIAM = New(database, opts...)
+		SetDefault(defaultIAM)
+		return nil
+	}
+}
+
+func New(database authn.Database, opts ...Option) *Iam {
+	options := newOptions(opts...)
+	return &Iam{
+		Authn: authn.New(database, options.authnOpts...),
+		Audit: audit.NewAudit(),
+	}
+}
+
+func SetDefault(iam *Iam) {
+	defaultIAM = iam
+	authn.SetDefault(iam.Authn)
+	audit.SetDefault(iam.Audit)
+}
+
+func Default() *Iam {
+	return defaultIAM
 }

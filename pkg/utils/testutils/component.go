@@ -6,6 +6,8 @@ import (
 	"github.com/codfrm/cago/database/cache"
 	"github.com/codfrm/cago/database/cache/memory"
 	redis2 "github.com/codfrm/cago/database/redis"
+	"github.com/codfrm/cago/pkg/iam"
+	"github.com/codfrm/cago/pkg/iam/authn"
 	"github.com/redis/go-redis/v9"
 	"sync"
 	"testing"
@@ -48,3 +50,10 @@ func Redis(t *testing.T) {
 //		db.Default()
 //	})
 //}
+
+// IAM 注册IAM组件
+func IAM(t *testing.T, database authn.Database, opts ...iam.Option) {
+	onceDo("iam", func() {
+		iam.SetDefault(iam.New(database, opts...))
+	})
+}

@@ -65,7 +65,7 @@ func Middleware(serviceName string, tracerProvider trace.TracerProvider) gin.Han
 		defer span.End()
 
 		// 给logger加上traceID
-		ctx = logger.ContextWithLogger(ctx, logger.Ctx(c.Request.Context()).
+		ctx = logger.WithContextLogger(ctx, logger.Ctx(c.Request.Context()).
 			With(LoggerLabel(ctx)...))
 
 		// 请求带上traceID

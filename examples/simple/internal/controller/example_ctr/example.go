@@ -26,3 +26,8 @@ func (e *Example) Ping(ctx context.Context, req *api.PingRequest) (*api.PingResp
 func (e *Example) GinFun(ctx *gin.Context, req *api.GinFunRequest) {
 	ctx.String(http.StatusOK, "ok")
 }
+
+// Audit 审计操作
+func (e *Example) Audit(ctx context.Context, req *api.AuditRequest) (*api.AuditResponse, error) {
+	return example_svc.Example().Audit(ctx, req)
+}

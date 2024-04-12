@@ -102,16 +102,16 @@ func CtxWith(ctx context.Context, fields ...zap.Field) *zap.Logger {
 	return Ctx(ctx).With(fields...)
 }
 
-// ContextWithLogger 将日志实例存入上下文
+// WithContextLogger 将日志实例存入上下文
 // 在想为后续操作指定日志实例时使用
-// logger.ContextWithLogger(ctx, logger.With(zap.String("key", "value")))
-func ContextWithLogger(ctx context.Context, logger *zap.Logger) context.Context {
+// logger.WithContextLogger(ctx, logger.With(zap.String("key", "value")))
+func WithContextLogger(ctx context.Context, logger *zap.Logger) context.Context {
 	return context.WithValue(ctx, loggerKey, logger)
 }
 
-// ContextWith 取出context中的日志实例并添加字段存入上下文
+// WithContext 取出context中的日志实例并添加字段存入上下文
 // 在想为后续操作添加字段时使用
-// logger.ContextWith(ctx, zap.String("key", "value"))
-func ContextWith(ctx context.Context, fields ...zap.Field) context.Context {
+// logger.WithContext(ctx, zap.String("key", "value"))
+func WithContext(ctx context.Context, fields ...zap.Field) context.Context {
 	return context.WithValue(ctx, loggerKey, Ctx(ctx).With(fields...))
 }

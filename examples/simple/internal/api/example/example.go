@@ -20,3 +20,12 @@ type GinFunRequest struct {
 // GinFunResponse gin function
 type GinFunResponse struct {
 }
+
+// AuditRequest 审计操作
+type AuditRequest struct {
+	mux.Meta `path:"/example/audit" method:"POST"`
+}
+
+// AuditResponse 审计操作
+type AuditResponse struct {
+}

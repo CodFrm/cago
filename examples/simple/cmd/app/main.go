@@ -3,6 +3,9 @@ package main
 import (
 	"context"
 	"github.com/codfrm/cago/examples/simple/internal/repository/user_repo"
+	"github.com/codfrm/cago/examples/simple/internal/service/user_svc"
+	"github.com/codfrm/cago/pkg/iam"
+	"github.com/codfrm/cago/pkg/iam/authn"
 	"log"
 
 	"github.com/codfrm/cago/database/db"
@@ -33,6 +36,10 @@ func main() {
 		Registry(component.Redis()).
 		Registry(component.Cache()).
 		Registry(consumer.Consumer()).
+		Registry(iam.IAM(
+			user_repo.User(),
+			iam.WithAuthnOptions(authn.WithMiddleware(user_svc.User().Middleware()))),
+		).
 		Registry(cago.FuncComponent(func(ctx context.Context, cfg *configs.Config) error {
 			return migrations.RunMigrations(db.Default())
 		})).
