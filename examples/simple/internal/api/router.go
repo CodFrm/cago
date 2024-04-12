@@ -5,11 +5,8 @@ import (
 	_ "github.com/codfrm/cago/examples/simple/docs"
 	"github.com/codfrm/cago/examples/simple/internal/controller/example_ctr"
 	"github.com/codfrm/cago/examples/simple/internal/controller/user_ctr"
-	"github.com/codfrm/cago/pkg/iam/audit"
-	"github.com/codfrm/cago/pkg/iam/authn"
+	"github.com/codfrm/cago/examples/simple/internal/service/user_svc"
 	"github.com/codfrm/cago/server/mux"
-	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 )
 
 // Router 路由
@@ -27,7 +24,7 @@ func Router(ctx context.Context, root *mux.Router) error {
 			userLoginCtr.Login,
 		)
 
-		r.Group("/", authn.Default().Middleware(true)).Bind(
+		r.Group("/", user_svc.User().Middleware(true)).Bind(
 			userLoginCtr.CurrentUser,
 			userLoginCtr.Logout,
 			userLoginCtr.RefreshToken,
@@ -41,11 +38,9 @@ func Router(ctx context.Context, root *mux.Router) error {
 			exampleCtl.GinFun,
 		)
 
-		r.Group("/", authn.Default().Middleware(true), audit.Default().Middleware(func(ctx *gin.Context) []zap.Field {
-			return []zap.Field{
-				zap.String("path", ctx.Request.URL.Path),
-			}
-		})).Bind(
+		r.Group("/",
+			user_svc.User().Middleware(true),
+			user_svc.User().AuditMiddleware("example")).Bind(
 			exampleCtl.Audit,
 		)
 	}

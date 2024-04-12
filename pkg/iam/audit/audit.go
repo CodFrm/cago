@@ -67,20 +67,15 @@ func (a *Audit) With(fields ...zap.Field) *Audit {
 
 // Record 记录审计日志
 func (a *Audit) Record(ctx context.Context, eventName string, fields ...zap.Field) error {
-	ctxFields, ok := ctx.Value(fieldsKey).([]zap.Field)
-	if ok {
-		fields = append(fields, ctxFields...)
-	} else {
-		fields = ctxFields
-	}
 	fields = append(fields, a.fields...)
 	return a.storage.Record(ctx, a.module, eventName, fields...)
 }
 
 // Middleware 中间件 可以添加自定义的字段
-func (a *Audit) Middleware(getFields func(ctx *gin.Context) []zap.Field) gin.HandlerFunc {
+func (a *Audit) Middleware(module string, getFields func(ctx *gin.Context) []zap.Field) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		// 添加会话相关信息, 例如ip、user-agent等
+		audit := Ctx(ctx).Module(module)
 		fields := []zap.Field{
 			zap.String("ip", ctx.ClientIP()),
 			zap.String("user-agent", ctx.GetHeader("User-Agent")),
@@ -88,8 +83,7 @@ func (a *Audit) Middleware(getFields func(ctx *gin.Context) []zap.Field) gin.Han
 		if getFields != nil {
 			fields = append(fields, getFields(ctx)...)
 		}
-		ctx.Request = ctx.Request.WithContext(WithFields(ctx.Request.Context(),
-			fields...,
-		))
+		audit = audit.With(fields...)
+		ctx.Request = ctx.Request.WithContext(WithAudit(ctx.Request.Context(), audit))
 	}
 }

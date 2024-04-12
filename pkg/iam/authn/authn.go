@@ -51,7 +51,7 @@ func Default() *Authn {
 
 // Middleware 中间件
 // force 表示是否强制要求认证
-func (a *Authn) Middleware(force bool) gin.HandlerFunc {
+func (a *Authn) Middleware(force bool, middleware Middleware) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		session, err := a.options.sessionManager.GetFromRequest(ctx)
 		if err != nil {
@@ -81,8 +81,8 @@ func (a *Authn) Middleware(force bool) gin.HandlerFunc {
 			return
 		}
 		ctx.Request = ctx.Request.WithContext(WithSession(ctx.Request.Context(), session))
-		if a.options.middleware != nil {
-			err = a.options.middleware(ctx, userId, session)
+		if middleware != nil {
+			err = middleware(ctx, userId, session)
 			if err != nil {
 				httputils.HandleResp(ctx, err)
 				return

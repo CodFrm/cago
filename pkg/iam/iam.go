@@ -17,6 +17,7 @@ var defaultIAM *Iam
 
 type Options struct {
 	authnOpts []authn.Option
+	auditOpts []audit.Option
 }
 
 type Option func(*Options)
@@ -35,6 +36,12 @@ func WithAuthnOptions(opts ...authn.Option) Option {
 	}
 }
 
+func WithAuditOptions(opts ...audit.Option) Option {
+	return func(options *Options) {
+		options.auditOpts = opts
+	}
+}
+
 // IAM IAM组件 集成了认证、鉴权、审计、会话管理模块
 func IAM(database authn.Database, opts ...Option) cago.FuncComponent {
 	return func(ctx context.Context, cfg *configs.Config) error {
@@ -48,7 +55,7 @@ func New(database authn.Database, opts ...Option) *Iam {
 	options := newOptions(opts...)
 	return &Iam{
 		Authn: authn.New(database, options.authnOpts...),
-		Audit: audit.NewAudit(),
+		Audit: audit.NewAudit(options.auditOpts...),
 	}
 }
 

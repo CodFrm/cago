@@ -2,13 +2,12 @@ package audit
 
 import (
 	"context"
-	"go.uber.org/zap"
 )
 
 type key int
 
 const (
-	fieldsKey key = iota
+	auditKey key = iota
 )
 
 var defaultAudit *Audit
@@ -21,12 +20,14 @@ func Default() *Audit {
 	return defaultAudit
 }
 
-func WithFields(ctx context.Context, fields ...zap.Field) context.Context {
-	ctxFields, ok := ctx.Value(fieldsKey).([]zap.Field)
+func Ctx(ctx context.Context) *Audit {
+	audit, ok := ctx.Value(auditKey).(*Audit)
 	if ok {
-		ctxFields = append(ctxFields, fields...)
-	} else {
-		ctxFields = fields
+		return audit
 	}
-	return context.WithValue(ctx, fieldsKey, ctxFields)
+	return defaultAudit
+}
+
+func WithAudit(ctx context.Context, audit *Audit) context.Context {
+	return context.WithValue(ctx, auditKey, audit)
 }

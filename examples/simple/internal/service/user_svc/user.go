@@ -3,6 +3,7 @@ package user_svc
 import (
 	"context"
 	"github.com/codfrm/cago/examples/simple/internal/model"
+	"github.com/codfrm/cago/pkg/iam/audit"
 	"github.com/codfrm/cago/pkg/logger"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -30,7 +31,9 @@ type UserSvc interface {
 	// WithUser 设置用户信息到上下文
 	WithUser(ctx context.Context, userId int64) (context.Context, error)
 	// Middleware authn处理中间件
-	Middleware() authn.Middleware
+	Middleware(force bool) gin.HandlerFunc
+	// AuditMiddleware 审计处理中间件
+	AuditMiddleware(module string) gin.HandlerFunc
 	// CurrentUser 当前登录用户
 	CurrentUser(ctx context.Context, req *api.CurrentUserRequest) (*api.CurrentUserResponse, error)
 	// RefreshToken 刷新token
@@ -112,8 +115,8 @@ func (l *userSvc) WithUser(ctx context.Context, userId int64) (context.Context, 
 		model.AuthInfo{}, authInfo), nil
 }
 
-func (l *userSvc) Middleware() authn.Middleware {
-	return func(ctx *gin.Context, userId string, session *sessions.Session) error {
+func (l *userSvc) Middleware(force bool) gin.HandlerFunc {
+	return authn.Default().Middleware(force, func(ctx *gin.Context, userId string, session *sessions.Session) error {
 		nUserId, err := strconv.ParseInt(userId, 10, 64)
 		if err != nil {
 			return err
@@ -124,7 +127,22 @@ func (l *userSvc) Middleware() authn.Middleware {
 		}
 		ctx.Request = ctx.Request.WithContext(gCtx)
 		return nil
-	}
+	})
+}
+
+func (l *userSvc) AuditMiddleware(module string) gin.HandlerFunc {
+	return audit.Default().Middleware(module, func(ctx *gin.Context) []zap.Field {
+		user := l.Ctx(ctx)
+		fields := []zap.Field{
+			zap.String("path", ctx.Request.URL.Path),
+		}
+		if user != nil {
+			fields = append(fields,
+				zap.Int64("user_id", user.UserID),
+				zap.String("username", user.Username))
+		}
+		return fields
+	})
 }
 
 // CurrentUser 当前登录用户

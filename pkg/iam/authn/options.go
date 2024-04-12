@@ -21,7 +21,6 @@ type Middleware func(ctx *gin.Context, userId string, session *sessions.Session)
 
 type Options struct {
 	sessionManager sessions.HTTPSessionManager
-	middleware     Middleware
 }
 
 type Option func(*Options)
@@ -73,12 +72,6 @@ func newOptions(opts ...Option) *Options {
 func WithSessionManager(session sessions.HTTPSessionManager) Option {
 	return func(o *Options) {
 		o.sessionManager = session
-	}
-}
-
-func WithMiddleware(middleware Middleware) Option {
-	return func(o *Options) {
-		o.middleware = middleware
 	}
 }
 

@@ -7,9 +7,7 @@ import (
 	"github.com/codfrm/cago/examples/simple/internal/model/entity/user_entity"
 	"github.com/codfrm/cago/examples/simple/internal/repository/user_repo"
 	mock_user_repo "github.com/codfrm/cago/examples/simple/internal/repository/user_repo/mock"
-	"github.com/codfrm/cago/examples/simple/internal/service/user_svc"
 	"github.com/codfrm/cago/pkg/consts"
-	"github.com/codfrm/cago/pkg/iam"
 	"github.com/codfrm/cago/pkg/iam/authn"
 	"github.com/codfrm/cago/pkg/utils/testutils"
 	"github.com/codfrm/cago/server/mux/muxclient"
@@ -32,7 +30,7 @@ func TestRouter(t *testing.T) {
 	mockUserRepo := mock_user_repo.NewMockUserRepo(mockCtrl)
 	user_repo.RegisterUser(mockUserRepo)
 
-	testutils.IAM(t, user_repo.User(), iam.WithAuthnOptions(authn.WithMiddleware(user_svc.User().Middleware())))
+	testutils.IAM(t, user_repo.User())
 
 	// 注册路由
 	testMux := muxtest.NewTestMux(muxtest.WithBaseUrl("/api/v1"))
