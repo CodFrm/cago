@@ -16,23 +16,23 @@ import (
 func Router(ctx context.Context, root *mux.Router) error {
 	r := root.Group("/api/v1")
 
-	userLoginCtr := user_ctr.NewUser()
+	userCtr := user_ctr.NewUser()
 	{
 		// 绑定路由
 		r.Group("/").Bind(
-			userLoginCtr.Register,
-			userLoginCtr.Login,
+			userCtr.Register,
+			userCtr.Login,
 		)
 
 		r.Group("/", user_svc.User().Middleware(true)).Bind(
-			userLoginCtr.CurrentUser,
-			userLoginCtr.Logout,
-			userLoginCtr.RefreshToken,
+			userCtr.CurrentUser,
+			userCtr.Logout,
+			userCtr.RefreshToken,
 		)
 	}
 
+	exampleCtl := example_ctr.NewExample()
 	{
-		exampleCtl := example_ctr.NewExample()
 		r.Group("/").Bind(
 			exampleCtl.Ping,
 			exampleCtl.GinFun,

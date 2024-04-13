@@ -54,7 +54,8 @@ func (h *server) StartCancel(
 	var r *gin.Engine
 	if cfg.Debug {
 		gin.SetMode(gin.DebugMode)
-		r = gin.Default()
+		r = gin.New()
+		r.Use(gin.Logger(), Recover())
 	} else {
 		gin.SetMode(gin.ReleaseMode)
 		r = gin.New()

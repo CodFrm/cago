@@ -30,6 +30,7 @@ func NewBroker(config Config, options ...broker.Option) (broker.Broker, error) {
 	if err != nil {
 		return nil, err
 	}
+	producer.SetLoggerLevel(nsq.LogLevelError)
 	return &nsqBroker{
 		config:    &config,
 		nsqConfig: nsqConfig,

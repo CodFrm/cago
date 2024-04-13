@@ -32,6 +32,11 @@ func WrapStack(err error) error {
 	return Wrap(err, "", zap.StackSkip("stack", 2))
 }
 
+// WrapStackSkip 包装一个错误，同时记录堆栈信息
+func WrapStackSkip(err error, skip int) error {
+	return Wrap(err, "", zap.StackSkip("stack", skip+1))
+}
+
 // Wrap 包装一个错误，同时记录错误信息
 func Wrap(err error, msg string, field ...zap.Field) error {
 	return &Error{

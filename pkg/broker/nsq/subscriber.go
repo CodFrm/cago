@@ -19,10 +19,11 @@ type subscribe struct {
 }
 
 type log struct {
+	logger *zap.Logger
 }
 
 func (l *log) Output(calldepth int, s string) error {
-	logger.Default().Error(s, zap.StackSkip("stack", calldepth))
+	l.logger.Error(s, zap.StackSkip("stack", calldepth+1))
 	return nil
 }
 
@@ -31,12 +32,14 @@ func newSubscribe(b *nsqBroker, topic string, handler broker.Handler, options br
 	if err != nil {
 		return nil, err
 	}
-	consumer.SetLogger(&log{}, nsq.LogLevelError)
+	logger := logger.Default().With(
+		zap.String("topic", topic), zap.String("group", options.Group),
+	)
+	consumer.SetLogger(&log{logger: logger}, nsq.LogLevelError)
 	ret := &subscribe{
 		consumer: consumer, handler: handler,
 		topic: topic, config: b.config,
 	}
-	logger := logger.Default().With(zap.String("topic", topic), zap.String("group", options.Group))
 	ret.consumer.AddHandler(nsq.HandlerFunc(func(message *nsq.Message) (err error) {
 		message.DisableAutoResponse()
 		data := &broker.Message{}

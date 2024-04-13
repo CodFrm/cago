@@ -41,7 +41,9 @@ func main() {
 			if err != nil {
 				return err
 			}
-			return iam.IAM(user_repo.User(), iam.WithAuditOptions(audit.WithStorage(storage)))(ctx, cfg)
+			return iam.IAM(user_repo.User(),
+				iam.WithAuthnOptions(),
+				iam.WithAuditOptions(audit.WithStorage(storage)))(ctx, cfg)
 		})).
 		Registry(cago.FuncComponent(func(ctx context.Context, cfg *configs.Config) error {
 			return migrations.RunMigrations(db.Default())
