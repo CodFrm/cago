@@ -2,6 +2,9 @@
 package testutils
 
 import (
+	"sync"
+	"testing"
+
 	"github.com/alicebob/miniredis/v2"
 	"github.com/codfrm/cago/database/cache"
 	"github.com/codfrm/cago/database/cache/memory"
@@ -9,8 +12,6 @@ import (
 	"github.com/codfrm/cago/pkg/iam"
 	"github.com/codfrm/cago/pkg/iam/authn"
 	"github.com/redis/go-redis/v9"
-	"sync"
-	"testing"
 )
 
 var onceMap = make(map[string]*sync.Once)

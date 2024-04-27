@@ -2,6 +2,7 @@ package audit_logger
 
 import (
 	"context"
+
 	"github.com/codfrm/cago/pkg/logger"
 	"go.uber.org/zap"
 )

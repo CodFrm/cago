@@ -20,12 +20,12 @@ func Default() *Audit {
 	return defaultAudit
 }
 
-func Ctx(ctx context.Context) *Audit {
+func Ctx(ctx context.Context) *CtxAudit {
 	audit, ok := ctx.Value(auditKey).(*Audit)
 	if ok {
-		return audit
+		return NewCtxAudit(ctx, audit)
 	}
-	return defaultAudit
+	return NewCtxAudit(ctx, defaultAudit)
 }
 
 func WithAudit(ctx context.Context, audit *Audit) context.Context {

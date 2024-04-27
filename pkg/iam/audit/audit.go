@@ -2,6 +2,7 @@ package audit
 
 import (
 	"context"
+
 	"github.com/codfrm/cago/pkg/iam/audit/audit_logger"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -86,4 +87,20 @@ func (a *Audit) Middleware(module string, getFields func(ctx *gin.Context) []zap
 		audit = audit.With(fields...)
 		ctx.Request = ctx.Request.WithContext(WithAudit(ctx.Request.Context(), audit))
 	}
+}
+
+type CtxAudit struct {
+	context.Context
+	*Audit
+}
+
+func NewCtxAudit(ctx context.Context, audit *Audit) *CtxAudit {
+	return &CtxAudit{
+		Context: ctx, Audit: audit,
+	}
+}
+
+func (c *CtxAudit) Record(eventName string, fields ...zap.Field) error {
+	fields = append(fields, c.Audit.fields...)
+	return c.Audit.storage.Record(c.Context, c.Audit.module, eventName, fields...)
 }

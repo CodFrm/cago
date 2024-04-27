@@ -61,7 +61,6 @@ func newSubscribe(b *nsqBroker, topic string, handler broker.Handler, options br
 				} else {
 					logger.Error("nsq subscriber handle error", zap.Bool("retry", true), zap.Error(err))
 				}
-				logger.Error("nsq subscriber handle error", zap.Error(err))
 			} else if options.AutoAck && !ev.isAct {
 				message.Finish()
 			}

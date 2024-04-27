@@ -111,8 +111,7 @@ func (p *parseStruct) parseStruct(typeSpec *ast.TypeSpec) error {
 					var num int
 					switch basicList.Kind {
 					case token.INT:
-						n, _ := strconv.ParseInt(value, 10, 64)
-						num = int(n)
+						num, _ = strconv.Atoi(value)
 					}
 					schema.Enum = append(schema.Enum, num)
 					schema.Description += "\n" + fmt.Sprintf("- %s: %s", valueSpec.Names[0].Name,

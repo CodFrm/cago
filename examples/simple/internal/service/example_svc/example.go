@@ -40,6 +40,6 @@ func (e *exampleSvc) Ping(ctx context.Context, req *api.PingRequest) (*api.PingR
 
 // Audit 审计操作
 func (e *exampleSvc) Audit(ctx context.Context, req *api.AuditRequest) (*api.AuditResponse, error) {
-	_ = audit.Ctx(ctx).Record(ctx, "audit", zap.String("key", "value"))
+	_ = audit.Ctx(ctx).Record("audit", zap.String("key", "value"))
 	return nil, nil
 }

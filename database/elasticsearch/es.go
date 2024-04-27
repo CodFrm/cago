@@ -15,10 +15,11 @@ import (
 )
 
 type Config struct {
-	Address  []string
-	Username string
-	Password string
-	Cert     string
+	Address            []string
+	Username           string
+	Password           string
+	Cert               string
+	InsecureSkipVerify bool `yaml:"insecureSkipVerify"`
 }
 
 func Elasticsearch(ctx context.Context, cfg *configs.Config) error {
@@ -38,7 +39,7 @@ func Elasticsearch(ctx context.Context, cfg *configs.Config) error {
 		}
 		tlsConfig = &tls.Config{
 			RootCAs:            certs,
-			InsecureSkipVerify: true,
+			InsecureSkipVerify: config.InsecureSkipVerify,
 		}
 	}
 	dialer := &net.Dialer{Timeout: time.Second * 4}
