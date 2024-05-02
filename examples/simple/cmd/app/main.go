@@ -2,15 +2,17 @@ package main
 
 import (
 	"context"
+	"log"
+
 	"github.com/codfrm/cago/examples/simple/internal/repository/user_repo"
+	"github.com/codfrm/cago/examples/simple/internal/task"
+	"github.com/codfrm/cago/examples/simple/migrations"
 	"github.com/codfrm/cago/pkg/iam"
 	"github.com/codfrm/cago/pkg/iam/audit"
 	"github.com/codfrm/cago/pkg/iam/audit/audit_db"
-	"log"
+	"github.com/codfrm/cago/server/cron"
 
 	"github.com/codfrm/cago/database/db"
-	"github.com/codfrm/cago/examples/simple/internal/task/consumer"
-	"github.com/codfrm/cago/examples/simple/migrations"
 	"github.com/codfrm/cago/pkg/component"
 
 	"github.com/codfrm/cago"
@@ -35,7 +37,10 @@ func main() {
 		Registry(component.Broker()).
 		Registry(component.Redis()).
 		Registry(component.Cache()).
-		Registry(consumer.Consumer()).
+		Registry(cron.Cron()).
+		Registry(cago.FuncComponent(func(ctx context.Context, cfg *configs.Config) error {
+			return migrations.RunMigrations(db.Default())
+		})).
 		Registry(cago.FuncComponent(func(ctx context.Context, cfg *configs.Config) error {
 			storage, err := audit_db.NewDatabaseStorage(db.Default())
 			if err != nil {
@@ -45,9 +50,7 @@ func main() {
 				iam.WithAuthnOptions(),
 				iam.WithAuditOptions(audit.WithStorage(storage)))(ctx, cfg)
 		})).
-		Registry(cago.FuncComponent(func(ctx context.Context, cfg *configs.Config) error {
-			return migrations.RunMigrations(db.Default())
-		})).
+		Registry(cago.FuncComponent(task.Task)).
 		RegistryCancel(mux.HTTP(api.Router)).
 		Start()
 	if err != nil {

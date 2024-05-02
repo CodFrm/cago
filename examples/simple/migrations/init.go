@@ -13,7 +13,7 @@ func RunMigrations(db *gorm.DB) error {
 }
 
 func run(db *gorm.DB, fs ...func() *gormigrate.Migration) error {
-	var ms []*gormigrate.Migration
+	ms := make([]*gormigrate.Migration, 0)
 	for _, f := range fs {
 		ms = append(ms, f())
 	}

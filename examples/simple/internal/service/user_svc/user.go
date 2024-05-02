@@ -2,13 +2,14 @@ package user_svc
 
 import (
 	"context"
+	"strconv"
+
 	"github.com/codfrm/cago/examples/simple/internal/model"
 	"github.com/codfrm/cago/pkg/iam/audit"
 	"github.com/codfrm/cago/pkg/logger"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
-	"strconv"
 
 	api "github.com/codfrm/cago/examples/simple/internal/api/user"
 	"github.com/codfrm/cago/examples/simple/internal/pkg/code"

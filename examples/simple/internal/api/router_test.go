@@ -2,6 +2,9 @@ package api
 
 import (
 	"context"
+	"net/http"
+	"testing"
+
 	"github.com/codfrm/cago/examples/simple/internal/api/example"
 	"github.com/codfrm/cago/examples/simple/internal/api/user"
 	"github.com/codfrm/cago/examples/simple/internal/model/entity/user_entity"
@@ -16,8 +19,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"golang.org/x/crypto/bcrypt"
-	"net/http"
-	"testing"
 )
 
 func TestRouter(t *testing.T) {

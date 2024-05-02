@@ -66,9 +66,11 @@ Cago使用三层架构，并混合了DDD的思想，推荐使用下面的目录�
   - `service` 服务接口
   - `task` 任务模块
     - `crontab` 定时任务
-    - `job` // 异步任务 打了注释，还没想好
-    - `queue` // 队列任务
-    - `task.go` // 任务定义
+    - `queue` 消息队列
+      - `handler` 消息队列处理器
+      - `message` 消息定义
+      - `xxx.go` 消息队列定义
+    - `task.go` 任务定义
 - `migrations` 数据库迁移文件
 - `pkg` 公共的模块，可以被其它项目引用
 - `.golangci.yml` golangci-lint 配置文件

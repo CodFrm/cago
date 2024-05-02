@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+
 	_ "github.com/codfrm/cago/examples/simple/docs"
 	"github.com/codfrm/cago/examples/simple/internal/controller/example_ctr"
 	"github.com/codfrm/cago/examples/simple/internal/controller/user_ctr"

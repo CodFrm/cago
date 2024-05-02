@@ -2,6 +2,7 @@ package migrations
 
 import (
 	"context"
+
 	"github.com/codfrm/cago/database/db"
 	"github.com/codfrm/cago/examples/simple/internal/api/user"
 	"github.com/codfrm/cago/examples/simple/internal/model/entity/user_entity"
