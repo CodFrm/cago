@@ -33,7 +33,9 @@ type Options struct {
 type Option func(*Options)
 
 func newOptions(opts ...Option) *Options {
-	options := &Options{}
+	options := &Options{
+		baseUrl: "/api/v1",
+	}
 	for _, opt := range opts {
 		opt(options)
 	}

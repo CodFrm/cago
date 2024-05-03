@@ -34,7 +34,7 @@ func TestRouter(t *testing.T) {
 	testutils.IAM(t, user_repo.User())
 
 	// 注册路由
-	testMux := muxtest.NewTestMux(muxtest.WithBaseUrl("/api/v1"))
+	testMux := muxtest.NewTestMux()
 	err := Router(context.Background(), testMux.Router)
 	assert.Nil(t, err)
 

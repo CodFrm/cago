@@ -56,7 +56,7 @@ func TestDatabase(t *testing.T) {
 	err = db.Start(context.Background(), cfg)
 	assert.Nil(t, err)
 	mock1.ExpectQuery("SELECT").
-		WithArgs(1).
+		WithArgs(1, 1).
 		WillReturnRows(
 			sqlmock.NewRows([]string{"id", "username"}).AddRow(
 				1, "admin"),
@@ -69,7 +69,7 @@ func TestDatabase(t *testing.T) {
 
 	// 测试mock2
 	mock2.ExpectQuery("SELECT").
-		WithArgs(2).
+		WithArgs(2, 1).
 		WillReturnRows(
 			sqlmock.NewRows([]string{"id", "avatar"}).AddRow(
 				2, "avatar"),
@@ -80,7 +80,7 @@ func TestDatabase(t *testing.T) {
 	assert.Equal(t, 2, info.ID)
 	assert.Equal(t, "avatar", info.Avatar)
 	mock1.ExpectQuery("SELECT").
-		WithArgs(2).
+		WithArgs(2, 1).
 		WillReturnError(gorm.ErrRecordNotFound)
 	err = Default().First(info).Error
 	assert.Equal(t, gorm.ErrRecordNotFound, err)
@@ -88,13 +88,13 @@ func TestDatabase(t *testing.T) {
 	// 测试context
 	ctx := context.Background()
 	mock2.ExpectQuery("SELECT").
-		WithArgs(3).
+		WithArgs(3, 1).
 		WillReturnRows(
 			sqlmock.NewRows([]string{"id", "avatar"}).AddRow(
 				3, "avatar3"),
 		)
 	mock1.ExpectQuery("SELECT").
-		WithArgs(3).
+		WithArgs(3, 1).
 		WillReturnError(gorm.ErrRecordNotFound)
 
 	info = &Info{ID: 3}
@@ -106,7 +106,7 @@ func TestDatabase(t *testing.T) {
 
 	ctx = WithContext(ctx, "mock2")
 	mock2.ExpectQuery("SELECT").
-		WithArgs(4).
+		WithArgs(4, 1).
 		WillReturnRows(
 			sqlmock.NewRows([]string{"id", "avatar"}).AddRow(
 				4, "avatar4"),

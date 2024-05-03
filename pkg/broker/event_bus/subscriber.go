@@ -31,7 +31,7 @@ func newSubscriber(e *eventBusBroker, topic string, handler broker.Handler) (bro
 			}
 		}()
 	}
-	if err := e.bus.Subscribe(topic, ret.handle); err != nil {
+	if err := e.bus.SubscribeAsync(topic, ret.handle, true); err != nil {
 		return nil, err
 	}
 	return ret, nil

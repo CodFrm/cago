@@ -75,11 +75,12 @@ func TestTestMux(t *testing.T) {
 	tr.ServeHTTP(w, req1)
 
 	r := NewTestMux()
+	rg := r.Group("/api/v1")
 
-	r.Bind(testHandler)
-	r.Bind(testFormHandler)
-	r.Bind(uriHandler)
-	r.Bind(queryHandler)
+	rg.Bind(testHandler)
+	rg.Bind(testFormHandler)
+	rg.Bind(uriHandler)
+	rg.Bind(queryHandler)
 
 	req := &testRequest{Time: time.Now().Unix()}
 	resp := &testResponse{}
