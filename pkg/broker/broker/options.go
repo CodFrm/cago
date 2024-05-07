@@ -16,10 +16,11 @@ type PublishOptions struct {
 }
 
 type SubscribeOptions struct {
-	Context context.Context
-	AutoAck bool
-	Group   string
-	Retry   bool
+	Context    context.Context
+	AutoAck    bool
+	Group      string
+	Retry      bool
+	Concurrent int
 }
 
 func NewOptions(opts ...Option) Options {
@@ -40,7 +41,11 @@ func NewPublishOptions(opts ...PublishOption) PublishOptions {
 
 func NewSubscribeOptions(opts ...SubscribeOption) SubscribeOptions {
 	opt := SubscribeOptions{
-		AutoAck: true,
+		Context:    nil,
+		AutoAck:    true,
+		Group:      "",
+		Retry:      false,
+		Concurrent: 1,
 	}
 	for _, o := range opts {
 		o(&opt)
@@ -77,5 +82,11 @@ func WithPublishContext(ctx context.Context) PublishOption {
 func WithSubscribeContext(ctx context.Context) SubscribeOption {
 	return func(options *SubscribeOptions) {
 		options.Context = ctx
+	}
+}
+
+func WithConcurrent(concurrent int) SubscribeOption {
+	return func(options *SubscribeOptions) {
+		options.Concurrent = concurrent
 	}
 }

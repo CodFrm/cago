@@ -40,7 +40,7 @@ func newSubscribe(b *nsqBroker, topic string, handler broker.Handler, options br
 		consumer: consumer, handler: handler,
 		topic: topic, config: b.config,
 	}
-	ret.consumer.AddHandler(nsq.HandlerFunc(func(message *nsq.Message) (err error) {
+	ret.consumer.AddConcurrentHandlers(nsq.HandlerFunc(func(message *nsq.Message) (err error) {
 		message.DisableAutoResponse()
 		data := &broker.Message{}
 		ev := &event{
@@ -71,7 +71,7 @@ func newSubscribe(b *nsqBroker, topic string, handler broker.Handler, options br
 		}
 		err = handler(context.Background(), ev)
 		return err
-	}))
+	}), options.Concurrent)
 	if b.config.NSQLookupAddr != nil {
 		err = ret.consumer.ConnectToNSQLookupds(b.config.NSQLookupAddr)
 	} else {
