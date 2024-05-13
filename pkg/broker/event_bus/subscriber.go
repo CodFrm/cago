@@ -14,15 +14,23 @@ type subscriber struct {
 	handle func(data *broker.Message)
 }
 
-func newSubscriber(e *eventBusBroker, topic string, handler broker.Handler) (broker.Subscriber, error) {
+func newSubscriber(e *eventBusBroker, topic string, handler broker.Handler, options broker.SubscribeOptions) (broker.Subscriber, error) {
 	ret := &subscriber{
 		e:     e,
 		topic: topic,
 	}
-	logger := logger.Default().With(zap.String("topic", topic))
+	logger := logger.Default().With(
+		zap.String("topic", topic), zap.String("group", options.Group),
+	)
 	ret.handle = func(data *broker.Message) {
 		go func() {
-			err := handler(context.Background(), &event{
+			var ctx context.Context
+			if options.Context != nil {
+				ctx = options.Context
+			} else {
+				ctx = context.Background()
+			}
+			err := handler(ctx, &event{
 				topic: topic,
 				data:  data,
 			})

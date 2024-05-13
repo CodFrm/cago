@@ -69,7 +69,13 @@ func newSubscribe(b *nsqBroker, topic string, handler broker.Handler, options br
 			logger.Error("nsq subscriber unmarshal error", zap.Error(err))
 			return err
 		}
-		err = handler(context.Background(), ev)
+		var ctx context.Context
+		if options.Context != nil {
+			ctx = options.Context
+		} else {
+			ctx = context.Background()
+		}
+		err = handler(ctx, ev)
 		return err
 	}), options.Concurrent)
 	if b.config.NSQLookupAddr != nil {

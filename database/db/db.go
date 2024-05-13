@@ -29,6 +29,7 @@ const (
 	MySQL      Driver = "mysql"
 	Clickhouse Driver = "clickhouse"
 	SQLite     Driver = "sqlite"
+	Postgres   Driver = "postgres"
 )
 
 type Config struct {
