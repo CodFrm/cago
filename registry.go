@@ -66,6 +66,7 @@ func (r *Cago) RegistryCancel(component ComponentCancel) *Cago {
 // 可以通过ctx、cancelFunc和进程信号量来控制整个应用的生命周期
 // 停止时会调用 Component.CloseHandle 方法关闭组件，会等待所有组件关闭完成，最终关闭整个应用
 func (r *Cago) Start() error {
+	r.info(r.cfg.AppName + " is starting...")
 	quitSignal := make(chan os.Signal, 1)
 	// 优雅启停
 	signal.Notify(

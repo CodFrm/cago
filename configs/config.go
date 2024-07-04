@@ -13,6 +13,9 @@ import (
 
 type Env string
 
+// Version 编译时注入 -w -s -X github.com/codfrm/cago/configs.Version=1.0.0
+var Version = "1.0.0"
+
 const (
 	DEV  Env = "dev"
 	TEST Env = "test"
@@ -57,15 +60,11 @@ func NewConfig(appName string, opt ...Option) (*Config, error) {
 	if err := s.Scan(ctx, "debug", &debug); err != nil {
 		return nil, err
 	}
-	version := ""
-	if err := s.Scan(ctx, "version", &version); err != nil {
-		return nil, err
-	}
 	c := &Config{
 		AppName:       appName,
 		Debug:         debug,
 		Env:           env,
-		Version:       version,
+		Version:       Version,
 		source:        s,
 		serialization: options.serialization,
 	}
