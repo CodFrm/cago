@@ -20,6 +20,7 @@ func PublishExample(ctx context.Context, msg *message.ExampleMsg) error {
 	})
 }
 
+// SubscribeExample 订阅示例消息
 func SubscribeExample(ctx context.Context, fn func(ctx context.Context, msg *message.ExampleMsg) error) error {
 	_, err := broker.Default().Subscribe(ctx, ExampleTopic, func(ctx context.Context, event broker2.Event) error {
 		msg := &message.ExampleMsg{}

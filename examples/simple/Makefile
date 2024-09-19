@@ -48,6 +48,7 @@ GOOS=linux
 GOARCH=amd64
 APP_NAME=simple
 APP_VERSION=1.0.0
+LD_FLAGS=-w -s -X github.com/codfrm/cago/configs.Version=${APP_VERSION}
 
 SUFFIX=
 ifeq ($(GOOS),windows)
@@ -55,5 +56,5 @@ ifeq ($(GOOS),windows)
 endif
 
 build:
-	GOOS=$(GOOS) GOARCH=$(GOARCH) go build -o bin/$(APP_NAME)_v$(APP_VERSION)$(SUFFIX) ./cmd/app
-
+	GOOS=$(GOOS) GOARCH=$(GOARCH) go build -o bin/$(APP_NAME)_v$(APP_VERSION)$(SUFFIX) \
+		-trimpath -ldflags "${LD_FLAGS}" ./cmd/app
