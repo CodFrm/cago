@@ -48,6 +48,10 @@ func TracerFromContext(ctx context.Context) trace.Tracer {
 	return tracer
 }
 
+func StartSpan(ctx context.Context, name string, opts ...trace.SpanStartOption) (context.Context, trace.Span) {
+	return TracerFromContext(ctx).Start(ctx, name, opts...)
+}
+
 // Middleware 链路追踪中间件
 func Middleware(serviceName string, tracerProvider trace.TracerProvider) gin.HandlerFunc {
 	tracer := tracerProvider.Tracer(
