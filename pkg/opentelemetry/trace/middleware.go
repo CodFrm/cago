@@ -40,6 +40,14 @@ const (
 	tracerName = "github.com/codfrm/cago/pkg/trace"
 )
 
+func TracerFromContext(ctx context.Context) trace.Tracer {
+	tracer, ok := ctx.Value(tracerKey).(trace.Tracer)
+	if !ok {
+		return Default().Tracer(tracerName)
+	}
+	return tracer
+}
+
 // Middleware 链路追踪中间件
 func Middleware(serviceName string, tracerProvider trace.TracerProvider) gin.HandlerFunc {
 	tracer := tracerProvider.Tracer(
