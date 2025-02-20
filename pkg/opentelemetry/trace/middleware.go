@@ -48,6 +48,10 @@ func TracerFromContext(ctx context.Context) trace.Tracer {
 	return tracer
 }
 
+func ContextWithTracer(ctx context.Context, tracer trace.Tracer) context.Context {
+	return context.WithValue(ctx, tracerKey, tracer)
+}
+
 func StartSpan(ctx context.Context, name string, opts ...trace.SpanStartOption) (context.Context, trace.Span) {
 	return TracerFromContext(ctx).Start(ctx, name, opts...)
 }
@@ -84,7 +88,7 @@ func Middleware(serviceName string, tracerProvider trace.TracerProvider) gin.Han
 		c.Header("X-Trace-Id", span.SpanContext().TraceID().String())
 
 		// 放入tracer
-		ctx = context.WithValue(ctx, tracerKey, tracer)
+		ctx = ContextWithTracer(ctx, tracer)
 
 		// pass the span through the request context
 		c.Request = c.Request.WithContext(ctx)
