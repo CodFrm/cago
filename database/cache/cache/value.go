@@ -93,8 +93,12 @@ func Unmarshal(ctx context.Context, data []byte, v interface{}, options *Options
 
 func Marshal(ctx context.Context, data interface{}, options *Options) ([]byte, error) {
 	if options.Depend != nil {
+		val, err := options.Depend.Val(ctx)
+		if err != nil {
+			return nil, err
+		}
 		dependStore := &dependStore{
-			Depend: options.Depend.Val(ctx),
+			Depend: val,
 			Data:   data,
 		}
 		return json.Marshal(dependStore)

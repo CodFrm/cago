@@ -18,8 +18,12 @@ type Cache interface {
 	Close() error
 }
 
+type DependValue interface {
+	Equate(DependValue) bool
+}
+
 type Depend interface {
-	Val(ctx context.Context) interface{}
+	Val(ctx context.Context) (DependValue, error)
 	Valid(ctx context.Context) error
 }
 

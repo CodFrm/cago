@@ -27,7 +27,7 @@ func Go(fun func(ctx context.Context) error, opts ...Option) error {
 			wg.Done()
 			// 错误处理
 			if err := recover(); err != nil {
-				logger.Default().Error("goroutine panic", zap.Any("err", err))
+				logger.Default().Error("goroutine panic", zap.Any("err", err), zap.Stack("stack"))
 			}
 		}()
 		_ = fun(options.ctx)
