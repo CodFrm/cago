@@ -131,6 +131,38 @@ type GetOrSetValue struct {
 	Set func() Value
 }
 
+func (g *GetOrSetValue) Int64() (int64, error) {
+	var val int64
+	if err := g.Scan(&val); err != nil {
+		return 0, err
+	}
+	return val, nil
+}
+
+func (g *GetOrSetValue) Bool() (bool, error) {
+	var val bool
+	if err := g.Scan(&val); err != nil {
+		return false, err
+	}
+	return val, nil
+}
+
+func (g *GetOrSetValue) Bytes() ([]byte, error) {
+	var val []byte
+	if err := g.Scan(&val); err != nil {
+		return nil, err
+	}
+	return val, nil
+}
+
+func (g *GetOrSetValue) Result() (string, error) {
+	var val string
+	if err := g.Scan(&val); err != nil {
+		return "", err
+	}
+	return val, nil
+}
+
 func (g *GetOrSetValue) Scan(v interface{}) error {
 	err := g.Value.Scan(v)
 	if err != nil {
