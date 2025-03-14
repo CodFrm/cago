@@ -30,7 +30,7 @@ func WithKeyDepend(store Cache, key string) Option {
 
 // InvalidKey 使key失效
 func (v *KeyDepend) InvalidKey(ctx context.Context) error {
-	return v.store.Set(ctx, v.Key, &KeyDepend{Key: v.Key, Value: Int64DependValue(time.Now().Unix())}).Err()
+	return v.store.Set(ctx, v.Key, Int64DependValue(time.Now().Unix())).Err()
 }
 
 type Int64DependValue int64
@@ -44,7 +44,7 @@ func (v *KeyDepend) Val(ctx context.Context) (DependValue, error) {
 	var i int64
 	if err := v.store.Get(ctx, v.Key).Scan(&i); err != nil {
 		if err := v.InvalidKey(ctx); err != nil {
-			return nil, err
+			return Int64DependValue(time.Now().Unix()), nil
 		}
 		return Int64DependValue(time.Now().Unix()), nil
 	}
