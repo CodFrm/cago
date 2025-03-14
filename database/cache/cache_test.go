@@ -19,9 +19,20 @@ func TestDepend(t *testing.T) {
 	assert.NoError(t, err)
 	result, err = c.Get(context.Background(), "test", WithDepend(cache2.NewKeyDepend(c, "test:dep"))).Int64()
 	assert.Error(t, err)
-	// 无依赖
+
+	// 错误的depend格式
+	c.Set(context.Background(), "test", 1, WithDepend(cache2.NewKeyDepend(c, "test:dep")))
+	c.Set(context.Background(), "test:dep", "123456")
+	result, err = c.Get(context.Background(), "test", WithDepend(cache2.NewKeyDepend(c, "test:dep"))).Int64()
+	assert.Error(t, err)
+	assert.Equal(t, int64(0), result)
+}
+
+func TestCache(t *testing.T) {
+	c, _ := memory.NewMemoryCache()
+	// 字符串
 	c.Set(context.Background(), "test", 1)
-	result, err = c.Get(context.Background(), "test").Int64()
+	result, err := c.Get(context.Background(), "test").Int64()
 	assert.NoError(t, err)
 	assert.Equal(t, int64(1), result)
 
