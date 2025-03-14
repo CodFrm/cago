@@ -68,9 +68,13 @@ func (v *KeyDepend) Valid(ctx context.Context) error {
 	return ErrDependNotValid
 }
 
-// NilDep 用于set的时候反序列化,减少一次dep判断
+// NilDep NilDepend 用于set的时候反序列化,减少一次dep判断,会跳过依赖检查
 type NilDep struct {
 	Depend
+}
+
+func (n *NilDep) ValInterface() (DependValue, error) {
+	return nil, nil
 }
 
 func (n *NilDep) Valid(ctx context.Context) error {
