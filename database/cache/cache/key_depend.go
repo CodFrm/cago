@@ -42,11 +42,9 @@ func (i Int64DependValue) Equate(d DependValue) bool {
 // Val 获取依赖的值
 func (v *KeyDepend) Val(ctx context.Context) (DependValue, error) {
 	var i int64
-	if err := v.store.Get(ctx, v.key).Scan(&i); err != nil {
+	if err := v.store.Get(ctx, v.key).Scan(&i); err != nil || i == -1 {
 		newValue := rand.Int64()
-		if err := v.store.Set(ctx, v.key, Int64DependValue(newValue)).Err(); err != nil {
-			return Int64DependValue(newValue), nil
-		}
+		v.store.Set(ctx, v.key, Int64DependValue(newValue))
 		return Int64DependValue(newValue), nil
 	}
 	return Int64DependValue(i), nil

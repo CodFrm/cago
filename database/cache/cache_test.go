@@ -40,6 +40,17 @@ func TestDepend(t *testing.T) {
 	}, WithDepend(cache2.NewKeyDepend(c, "getOrSet:dep"))).Int64()
 	assert.NoError(t, err)
 	assert.Equal(t, int64(2), result)
+	_ = dep.InvalidKey(context.Background())
+	result, err = c.GetOrSet(context.Background(), "getOrSet", func() (interface{}, error) {
+		return 3, nil
+	}, WithDepend(cache2.NewKeyDepend(c, "getOrSet:dep"))).Int64()
+	assert.NoError(t, err)
+	assert.Equal(t, int64(3), result)
+	result, err = c.GetOrSet(context.Background(), "getOrSet", func() (interface{}, error) {
+		return 4, nil
+	}, WithDepend(cache2.NewKeyDepend(c, "getOrSet:dep"))).Int64()
+	assert.NoError(t, err)
+	assert.Equal(t, int64(3), result)
 }
 
 func TestCache(t *testing.T) {
