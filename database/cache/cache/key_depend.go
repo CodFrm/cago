@@ -3,7 +3,7 @@ package cache
 import (
 	"context"
 	"errors"
-	"time"
+	"math/rand/v2"
 )
 
 var ErrDependNotValid = errors.New("depend not valid")
@@ -11,14 +11,14 @@ var ErrDependNotValid = errors.New("depend not valid")
 // KeyDepend key依赖
 type KeyDepend struct {
 	store Cache
-	Key   string           `json:"key"`
-	Value Int64DependValue `json:"Value"`
+	key   string
+	value Int64DependValue
 }
 
 func NewKeyDepend(store Cache, key string) *KeyDepend {
 	return &KeyDepend{
 		store: store,
-		Key:   key,
+		key:   key,
 	}
 }
 
@@ -30,7 +30,7 @@ func WithKeyDepend(store Cache, key string) Option {
 
 // InvalidKey 使key失效
 func (v *KeyDepend) InvalidKey(ctx context.Context) error {
-	return v.store.Set(ctx, v.Key, Int64DependValue(time.Now().Unix())).Err()
+	return v.store.Set(ctx, v.key, Int64DependValue(-1)).Err()
 }
 
 type Int64DependValue int64
@@ -42,13 +42,18 @@ func (i Int64DependValue) Equate(d DependValue) bool {
 // Val 获取依赖的值
 func (v *KeyDepend) Val(ctx context.Context) (DependValue, error) {
 	var i int64
-	if err := v.store.Get(ctx, v.Key).Scan(&i); err != nil {
-		if err := v.InvalidKey(ctx); err != nil {
-			return Int64DependValue(time.Now().Unix()), nil
+	if err := v.store.Get(ctx, v.key).Scan(&i); err != nil {
+		newValue := rand.Int64()
+		if err := v.store.Set(ctx, v.key, Int64DependValue(newValue)).Err(); err != nil {
+			return Int64DependValue(newValue), nil
 		}
-		return Int64DependValue(time.Now().Unix()), nil
+		return Int64DependValue(newValue), nil
 	}
 	return Int64DependValue(i), nil
+}
+
+func (v *KeyDepend) ValInterface() (DependValue, error) {
+	return &v.value, nil
 }
 
 // Valid 检查依赖是否有效
@@ -57,7 +62,7 @@ func (v *KeyDepend) Valid(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	if val.Equate(v.Value) {
+	if val.Equate(v.value) {
 		return nil
 	}
 	return ErrDependNotValid

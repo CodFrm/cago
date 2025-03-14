@@ -1,0 +1,37 @@
+package cache
+
+import (
+	"context"
+	cache2 "github.com/codfrm/cago/database/cache/cache"
+	"github.com/codfrm/cago/database/cache/memory"
+	"github.com/stretchr/testify/assert"
+	"testing"
+)
+
+func TestDepend(t *testing.T) {
+	c, _ := memory.NewMemoryCache()
+	dep := cache2.NewKeyDepend(c, "test:dep")
+	c.Set(context.Background(), "test", 1, WithDepend(dep))
+	result, err := c.Get(context.Background(), "test", WithDepend(cache2.NewKeyDepend(c, "test:dep"))).Int64()
+	assert.NoError(t, err)
+	assert.Equal(t, int64(1), result)
+	err = dep.InvalidKey(context.Background())
+	assert.NoError(t, err)
+	result, err = c.Get(context.Background(), "test", WithDepend(cache2.NewKeyDepend(c, "test:dep"))).Int64()
+	assert.Error(t, err)
+	// 无依赖
+	c.Set(context.Background(), "test", 1)
+	result, err = c.Get(context.Background(), "test").Int64()
+	assert.NoError(t, err)
+	assert.Equal(t, int64(1), result)
+
+	// byte类型
+	c.Set(context.Background(), "test", []byte("test"), WithDepend(cache2.NewKeyDepend(c, "test:dep")))
+	resultByte, err := c.Get(context.Background(), "test", WithDepend(cache2.NewKeyDepend(c, "test:dep"))).Bytes()
+	assert.NoError(t, err)
+	assert.Equal(t, []byte("test"), resultByte)
+	c.Set(context.Background(), "test", []byte("test"))
+	resultByte, err = c.Get(context.Background(), "test").Bytes()
+	assert.NoError(t, err)
+	assert.Equal(t, []byte("test"), resultByte)
+}

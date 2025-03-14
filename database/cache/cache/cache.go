@@ -24,6 +24,7 @@ type DependValue interface {
 
 type Depend interface {
 	Val(ctx context.Context) (DependValue, error)
+	ValInterface() (DependValue, error)
 	Valid(ctx context.Context) error
 }
 
